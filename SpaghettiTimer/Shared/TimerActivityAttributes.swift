@@ -11,4 +11,5 @@ import Foundation
 nonisolated struct SpaghettiTimerMetadata: AlarmMetadata {
     let presetName: String
     let alarmID: String
+    let presetID: String
 }

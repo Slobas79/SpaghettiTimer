@@ -4,7 +4,14 @@
       "Bash(sed -i '' 's/JustTimerWidgetExtension/SpaghettiTimerWidgetExtension/g; s/JustTimerWidget/SpaghettiTimerWidget/g; s/JustTimer/SpaghettiTimer/g' JustTimer.xcodeproj/project.pbxproj)",
       "Bash(sed -i '' 's/JustTimerWidgetExtension/SpaghettiTimerWidgetExtension/g; s/JustTimerWidget/SpaghettiTimerWidget/g; s/JustTimer/SpaghettiTimer/g' JustTimer.xcodeproj/xcshareddata/xcschemes/JustTimer.xcscheme)",
       "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 16' build)",
-      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 17' build)"
+      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 17' build)",
+      "mcp__xcode__XcodeListWindows",
+      "mcp__xcode__BuildProject",
+      "Bash(xcrun xctrace *)",
+      "Bash(xcodebuild -project /Users/slobodanstamenic/Projects/SpaghettiTimer/SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'id=00008110-000270291442801E' -configuration Debug build)",
+      "Bash(xcrun devicectl *)",
+      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'id=00008110-000270291442801E' build)",
+      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'id=00008110-000270291442801E' run)"
     ]
   }
 }

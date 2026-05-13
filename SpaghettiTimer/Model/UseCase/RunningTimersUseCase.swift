@@ -246,7 +246,9 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     private func schedule(_ timer: RunningTimer, presetName: String) async {
         let alert = AlarmPresentation.Alert(
             title: LocalizedStringResource(stringLiteral: presetName),
-            stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill")
+            stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill"),
+            secondaryButton: .init(text: "Repeat", textColor: .white, systemImageName: "repeat"),
+            secondaryButtonBehavior: .custom
         )
         let countdown = AlarmPresentation.Countdown(
             title: LocalizedStringResource(stringLiteral: presetName),
@@ -258,12 +260,13 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         )
         let attributes = AlarmAttributes<SpaghettiTimerMetadata>(
             presentation: .init(alert: alert, countdown: countdown, paused: paused),
-            metadata: SpaghettiTimerMetadata(presetName: presetName, alarmID: timer.id.uuidString),
+            metadata: SpaghettiTimerMetadata(presetName: presetName, alarmID: timer.id.uuidString, presetID: timer.presetID.uuidString),
             tintColor: .accentColor
         )
         let configuration = AlarmManager.AlarmConfiguration.timer(
             duration: timer.duration,
             attributes: attributes,
+            secondaryIntent: RepeatTimerIntent(timerID: timer.id.uuidString, presetID: timer.presetID.uuidString),
             sound: .default
         )
         do {

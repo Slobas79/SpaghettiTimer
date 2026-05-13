@@ -62,6 +62,7 @@
 				Shared/AppGroup.swift,
 				Shared/CancelTimerIntent.swift,
 				Shared/PauseTimerIntent.swift,
+				Shared/RepeatTimerIntent.swift,
 				Shared/ResumeTimerIntent.swift,
 				Shared/StartTimerIntent.swift,
 				Shared/TimerActivityAttributes.swift,
