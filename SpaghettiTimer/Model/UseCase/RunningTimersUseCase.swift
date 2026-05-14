@@ -52,7 +52,6 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
                 self.seenAlarmIDs.formUnion(activeIDs)
                 self.removeTimers(notIn: activeIDs)
                 self.syncPauseState(from: alarms)
-                self.dismissAlerted(alarms)
             }
         }
     }
@@ -78,13 +77,6 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         repo.save(running)
         onChange?()
         WidgetCenter.shared.reloadAllTimelines()
-    }
-
-    private func dismissAlerted(_ alarms: [Alarm]) {
-        for alarm in alarms where alarm.state == .alerting {
-            let id = alarm.id
-            Task { try? AlarmManager.shared.cancel(id: id) }
-        }
     }
 
     private func syncPauseState(from alarms: [Alarm]) {
