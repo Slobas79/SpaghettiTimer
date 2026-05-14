@@ -15,17 +15,22 @@ struct TimerLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: AlarmAttributes<SpaghettiTimerMetadata>.self) { context in
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    pauseResumeButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
+                    cancelButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
+                }
+                Spacer()
+                HStack( spacing: 4) {
                     Text(context.attributes.metadata?.presetName ?? "Timer")
                         .font(.headline)
                     countdownText(state: context.state)
                         .font(.system(size: 28, weight: .semibold, design: .rounded))
                         .monospacedDigit()
+                        .multilineTextAlignment(.trailing)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Spacer()
-                pauseResumeButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
-                cancelButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding()
             .activityBackgroundTint(Color.black.opacity(0.85))
             .activitySystemActionForegroundColor(.white)
