@@ -60,7 +60,7 @@ struct TimerTile: View {
             if !runningTimers.isEmpty {
                 Button(action: onStop) {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.title3)
+                        .font(.title)
                         .symbolRenderingMode(.palette)
                         .foregroundStyle(.white, Color.accentColor)
                 }
@@ -74,7 +74,7 @@ struct TimerTile: View {
                 if active.isPaused, let onResume {
                     Button(action: onResume) {
                         Image(systemName: "play.circle.fill")
-                            .font(.title3)
+                            .font(.title)
                             .symbolRenderingMode(.palette)
                             .foregroundStyle(.white, Color.accentColor)
                     }
@@ -84,7 +84,7 @@ struct TimerTile: View {
                 } else if !active.isPaused, let onPause {
                     Button(action: onPause) {
                         Image(systemName: "pause.circle.fill")
-                            .font(.title3)
+                            .font(.title)
                             .symbolRenderingMode(.palette)
                             .foregroundStyle(.white, Color.accentColor)
                     }
@@ -98,7 +98,7 @@ struct TimerTile: View {
             if let onPin {
                 Button(action: onPin) {
                     Image(systemName: "pin.fill")
-                        .font(.title3)
+                        .font(.title)
                         .symbolRenderingMode(.palette)
                         .foregroundStyle(.white, Color.accentColor)
                 }
@@ -110,7 +110,7 @@ struct TimerTile: View {
                     withAnimation(.easeInOut(duration: 0.25)) { onUnpin() }
                 } label: {
                     Image(systemName: "pin.slash.fill")
-                        .font(.title3)
+                        .font(.title)
                         .symbolRenderingMode(.palette)
                         .foregroundStyle(.white, Color.accentColor)
                 }
