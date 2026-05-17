@@ -65,6 +65,7 @@
 				Shared/RepeatTimerIntent.swift,
 				Shared/ResumeTimerIntent.swift,
 				Shared/StartTimerIntent.swift,
+				Shared/StopTimerIntent.swift,
 				Shared/TimerActivityAttributes.swift,
 			);
 			target = 7BA8A9AA2FAA7B2200DD2D1C /* SpaghettiTimerWidgetExtension */;

@@ -5,6 +5,7 @@
 //  Created by Slobodan Stamenic on 23. 4. 2026..
 //
 
+import AlarmKit
 import AppIntents
 import SwiftUI
 import WidgetKit
@@ -23,14 +24,14 @@ struct PresetsProvider: TimelineProvider {
     func getSnapshot(in context: Context, completion: @escaping (PresetsEntry) -> Void) {
         let now = Date()
         let presets = PresetsRepoImpl().allPresets()
-        let timers = RunningTimersRepoImpl().load()
+        let timers = Self.prunedTimers(at: now)
         completion(PresetsEntry(date: now, presets: presets, activePresetIDs: Self.activeIDs(in: timers, at: now)))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<PresetsEntry>) -> Void) {
         let now = Date()
         let presets = PresetsRepoImpl().allPresets()
-        let timers = RunningTimersRepoImpl().load()
+        let timers = Self.prunedTimers(at: now)
 
         let transitionDates = timers
             .filter { !$0.isPaused && $0.endDate > now }
@@ -52,6 +53,32 @@ struct PresetsProvider: TimelineProvider {
 
     private static func activeIDs(in timers: [RunningTimer], at date: Date) -> Set<UUID> {
         Set(timers.filter { $0.isPaused || !$0.isFinished(at: date) }.map { $0.presetID })
+    }
+
+    private static func prunedTimers(at now: Date) -> [RunningTimer] {
+        let repo = RunningTimersRepoImpl()
+        let stored = repo.load()
+        guard !stored.isEmpty else { return stored }
+
+        let liveAlarmIDs: Set<UUID>?
+        if let alarms = try? AlarmManager.shared.alarms {
+            liveAlarmIDs = Set(alarms.map(\.id))
+        } else {
+            liveAlarmIDs = nil
+        }
+
+        let kept = stored.filter { timer in
+            if let liveAlarmIDs, !liveAlarmIDs.contains(timer.id) { return false }
+            if !timer.isPaused && timer.isFinished(at: now) { return false }
+            if timer.endDate.addingTimeInterval(1) < now { return false }
+            return true
+        }
+
+        if kept.count != stored.count {
+            repo.save(kept)
+        }
+        print("[Widget] prunedTimers stored=\(stored.count) live=\(liveAlarmIDs?.count ?? -1) kept=\(kept.count)")
+        return kept
     }
 }
 

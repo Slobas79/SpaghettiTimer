@@ -11,7 +11,8 @@
       "Bash(xcodebuild -project /Users/slobodanstamenic/Projects/SpaghettiTimer/SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'id=00008110-000270291442801E' -configuration Debug build)",
       "Bash(xcrun devicectl *)",
       "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'id=00008110-000270291442801E' build)",
-      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'id=00008110-000270291442801E' run)"
+      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'id=00008110-000270291442801E' run)",
+      "mcp__xcode__DocumentationSearch"
     ]
   }
 }

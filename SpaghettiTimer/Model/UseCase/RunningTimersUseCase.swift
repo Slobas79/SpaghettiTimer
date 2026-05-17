@@ -37,7 +37,26 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     init(repo: RunningTimersRepo) {
         self.repo = repo
         reload()
+        reconcileOnStartup()
         observeAlarmDismissals()
+    }
+
+    private func reconcileOnStartup() {
+        guard !running.isEmpty else { return }
+        let liveIDs: Set<UUID>
+        if let alarms = try? AlarmManager.shared.alarms {
+            liveIDs = Set(alarms.map(\.id))
+        } else {
+            return
+        }
+        let now = Date()
+        let dismissed = running.filter { !liveIDs.contains($0.id) && !$0.isFinished(at: now) }
+        guard !dismissed.isEmpty else { return }
+        let dismissedSet = Set(dismissed.map(\.id))
+        running.removeAll { dismissedSet.contains($0.id) }
+        repo.save(running)
+        onChange?()
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     deinit {
@@ -258,6 +277,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         let configuration = AlarmManager.AlarmConfiguration.timer(
             duration: timer.duration,
             attributes: attributes,
+            stopIntent: StopTimerIntent(timerID: timer.id.uuidString),
             secondaryIntent: RepeatTimerIntent(timerID: timer.id.uuidString, presetID: timer.presetID.uuidString),
             sound: .default
         )

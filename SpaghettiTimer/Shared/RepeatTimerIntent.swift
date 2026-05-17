@@ -67,14 +67,23 @@ struct RepeatTimerIntent: LiveActivityIntent {
             secondaryButton: .init(text: "Repeat", textColor: .white, systemImageName: "repeat"),
             secondaryButtonBehavior: .custom
         )
+        let countdown = AlarmPresentation.Countdown(
+            title: LocalizedStringResource(stringLiteral: preset.name),
+            pauseButton: .init(text: "Pause", textColor: .white, systemImageName: "pause.fill")
+        )
+        let paused = AlarmPresentation.Paused(
+            title: LocalizedStringResource(stringLiteral: preset.name),
+            resumeButton: .init(text: "Resume", textColor: .white, systemImageName: "play.fill")
+        )
         let attributes = AlarmAttributes<SpaghettiTimerMetadata>(
-            presentation: .init(alert: alert),
+            presentation: .init(alert: alert, countdown: countdown, paused: paused),
             metadata: SpaghettiTimerMetadata(presetName: preset.name, alarmID: running.id.uuidString, presetID: preset.id.uuidString),
             tintColor: .accentColor
         )
         let configuration = AlarmManager.AlarmConfiguration.timer(
             duration: preset.duration,
             attributes: attributes,
+            stopIntent: StopTimerIntent(timerID: running.id.uuidString),
             secondaryIntent: RepeatTimerIntent(timerID: running.id.uuidString, presetID: preset.id.uuidString),
             sound: .default
         )
