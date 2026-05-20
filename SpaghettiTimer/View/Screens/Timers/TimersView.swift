@@ -19,23 +19,32 @@ struct TimersView: View {
         NavigationStack {
             TimelineView(.periodic(from: .now, by: 0.25)) { context in
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(viewModel.tiles) { item in
-                            TimerTile(
-                                preset: item.preset,
-                                runningTimers: viewModel.runningTimers(for: item.preset),
+                    LazyVStack(spacing: 12) {
+                        ForEach(viewModel.runningRows) { timer in
+                            RunningTimerRow(
+                                timer: timer,
                                 now: context.date,
-                                onStart: { viewModel.start(item.preset) },
-                                onStop: { viewModel.stopOldest(for: item.preset) },
-                                onUnpin: item.isPinned ? { viewModel.deletePreset(item.preset) } : nil,
-                                onPin: item.isPinned ? nil : { viewModel.pin(item.preset) },
-                                onPause: { viewModel.pauseOldest(for: item.preset) },
-                                onResume: { viewModel.resumeOldest(for: item.preset) }
+                                onPause: { viewModel.pause(timer) },
+                                onResume: { viewModel.resume(timer) },
+                                onCancel: { viewModel.stop(timer) }
                             )
+                            .transition(.move(edge: .top).combined(with: .opacity))
                         }
-                        AddTimerTile(action: { showingNew = true })
+
+                        LazyVGrid(columns: columns, spacing: 16) {
+                            ForEach(viewModel.presetTiles) { item in
+                                TimerTile(
+                                    preset: item.preset,
+                                    onStart: { viewModel.start(item.preset) },
+                                    onUnpin: { viewModel.deletePreset(item.preset) },
+                                    onPin: nil
+                                )
+                            }
+                            AddTimerTile(action: { showingNew = true })
+                        }
                     }
                     .padding(16)
+                    .animation(.easeInOut(duration: 0.25), value: viewModel.runningRows)
                 }
             }
             .sheet(isPresented: $showingNew) {

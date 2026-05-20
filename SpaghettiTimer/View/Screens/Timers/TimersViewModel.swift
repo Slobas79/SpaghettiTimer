@@ -43,28 +43,16 @@ final class TimersViewModel {
         runningUseCase.start(preset: preset)
     }
 
-    func stopOldest(for preset: TimerPreset) {
-        let matches = running.filter { $0.presetID == preset.id }
-        let oldest = matches.min(by: { $0.startDate < $1.startDate })
-        if let oldest {
-            runningUseCase.stop(oldest)
-        }
+    func stop(_ timer: RunningTimer) {
+        runningUseCase.stop(timer)
     }
 
-    func pauseOldest(for preset: TimerPreset) {
-        let matches = running.filter { $0.presetID == preset.id }
-        let oldest = matches.min(by: { $0.startDate < $1.startDate })
-        if let oldest {
-            runningUseCase.pause(oldest)
-        }
+    func pause(_ timer: RunningTimer) {
+        runningUseCase.pause(timer)
     }
 
-    func resumeOldest(for preset: TimerPreset) {
-        let matches = running.filter { $0.presetID == preset.id }
-        let oldest = matches.min(by: { $0.startDate < $1.startDate })
-        if let oldest {
-            runningUseCase.resume(oldest)
-        }
+    func resume(_ timer: RunningTimer) {
+        runningUseCase.resume(timer)
     }
 
     func addPreset(name: String, duration: TimeInterval) {
@@ -88,40 +76,17 @@ final class TimersViewModel {
         presetsUseCase.pinPreset(preset)
     }
 
-    func runningTimers(for preset: TimerPreset) -> [RunningTimer] {
-        running.filter { $0.presetID == preset.id }
-    }
-
     struct TileItem: Identifiable {
         let preset: TimerPreset
-        let isPinned: Bool
         var id: UUID { preset.id }
     }
 
-    var tiles: [TileItem] {
-        let pinnedByID = Dictionary(uniqueKeysWithValues: presets.map { ($0.id, $0) })
-        var seen = Set<UUID>()
-        var result: [TileItem] = []
+    var runningRows: [RunningTimer] {
+        running.sorted { $0.startDate < $1.startDate }
+    }
 
-        for timer in running where seen.insert(timer.presetID).inserted {
-            if let pinned = pinnedByID[timer.presetID] {
-                result.append(TileItem(preset: pinned, isPinned: true))
-            } else {
-                result.append(TileItem(
-                    preset: TimerPreset(
-                        id: timer.presetID,
-                        name: timer.name,
-                        duration: timer.duration,
-                        isBuiltIn: false
-                    ),
-                    isPinned: false
-                ))
-            }
-        }
-        for preset in presets where seen.insert(preset.id).inserted {
-            result.append(TileItem(preset: preset, isPinned: true))
-        }
-        return result
+    var presetTiles: [TileItem] {
+        presets.map { TileItem(preset: $0) }
     }
 
     func tick(at date: Date) {}
