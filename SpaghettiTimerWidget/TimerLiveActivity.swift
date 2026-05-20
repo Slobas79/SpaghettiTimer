@@ -15,7 +15,7 @@ struct TimerLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: AlarmAttributes<SpaghettiTimerMetadata>.self) { context in
             HStack {
-                HStack {
+                HStack(spacing: 8) {
                     pauseResumeButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
                     cancelButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
                 }
@@ -46,7 +46,7 @@ struct TimerLiveActivity: Widget {
                         .multilineTextAlignment(.trailing)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    HStack {
+                    HStack(spacing: 8) {
                         pauseResumeButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
                         cancelButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
                     }
@@ -70,14 +70,20 @@ struct TimerLiveActivity: Widget {
             switch state.mode {
             case .countdown:
                 Button(intent: PauseTimerIntent(timerID: id.uuidString)) {
-                    Image(systemName: "pause.fill")
+                    Image(systemName: "pause.circle.fill")
+                        .font(.title)
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, Color.accentColor)
                 }
-                .tint(.accentColor)
+                .buttonStyle(.plain)
             case .paused:
                 Button(intent: ResumeTimerIntent(timerID: id.uuidString)) {
-                    Image(systemName: "play.fill")
+                    Image(systemName: "play.circle.fill")
+                        .font(.title)
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, Color.accentColor)
                 }
-                .tint(.accentColor)
+                .buttonStyle(.plain)
             default:
                 EmptyView()
             }
@@ -91,8 +97,11 @@ struct TimerLiveActivity: Widget {
             case .countdown, .paused:
                 Button(intent: CancelTimerIntent(timerID: id.uuidString)) {
                     Image(systemName: "xmark.circle.fill")
+                        .font(.title)
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, Color.accentColor)
                 }
-                .tint(.red)
+                .buttonStyle(.plain)
             default:
                 EmptyView()
             }
