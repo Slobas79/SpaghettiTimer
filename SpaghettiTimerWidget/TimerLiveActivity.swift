@@ -30,6 +30,16 @@ struct TimerLiveActivity: Widget {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color.accentColor.opacity(0.18))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(Color.accentColor, lineWidth: 1.5)
+            )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding()
             .activityBackgroundTint(Color.black.opacity(0.85))
