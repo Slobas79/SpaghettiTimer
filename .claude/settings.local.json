@@ -14,7 +14,8 @@
       "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'id=00008110-000270291442801E' run)",
       "mcp__xcode__DocumentationSearch",
       "Read(//Users/slobodanstamenic/Downloads/**)",
-      "Bash(sips -s format jpeg /Users/slobodanstamenic/Downloads/IMG_1972.HEIC --out /tmp/wireframe.jpg)"
+      "Bash(sips -s format jpeg /Users/slobodanstamenic/Downloads/IMG_1972.HEIC --out /tmp/wireframe.jpg)",
+      "WebSearch"
     ]
   }
 }

@@ -12,13 +12,9 @@ struct AddTimerTile: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: "plus")
-                    .font(.system(size: 32, weight: .semibold))
-                Text("New timer")
-                    .font(.subheadline)
-            }
-            .foregroundStyle(.secondary)
+            Image(systemName: "plus")
+                .font(.system(size: 32, weight: .semibold))
+                .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, minHeight: 120)
             .padding(12)
             .background(
