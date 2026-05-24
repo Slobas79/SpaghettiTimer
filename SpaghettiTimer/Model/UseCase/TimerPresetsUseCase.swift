@@ -15,6 +15,7 @@ protocol TimerPresetsUseCase: AnyObject {
 
     func reload()
     func addPreset(name: String, duration: TimeInterval)
+    func updatePreset(_ preset: TimerPreset, name: String, duration: TimeInterval)
     func pinPreset(_ preset: TimerPreset)
     func deletePreset(_ preset: TimerPreset)
 }
@@ -39,6 +40,23 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
     func addPreset(name: String, duration: TimeInterval) {
         var user = repo.loadUserPresets()
         user.insert(TimerPreset(name: name, duration: duration, isBuiltIn: false), at: 0)
+        repo.saveUserPresets(user)
+        reload()
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    func updatePreset(_ preset: TimerPreset, name: String, duration: TimeInterval) {
+        var user = repo.loadUserPresets()
+        if let idx = user.firstIndex(where: { $0.id == preset.id }) {
+            user[idx].name = name
+            user[idx].duration = duration
+        } else {
+            // Built-in: hide the original, insert an edited user copy keeping the same id.
+            var hidden = repo.loadHiddenBuiltInIDs()
+            hidden.insert(preset.id)
+            repo.saveHiddenBuiltInIDs(hidden)
+            user.insert(TimerPreset(id: preset.id, name: name, duration: duration, isBuiltIn: false), at: 0)
+        }
         repo.saveUserPresets(user)
         reload()
         WidgetCenter.shared.reloadAllTimelines()

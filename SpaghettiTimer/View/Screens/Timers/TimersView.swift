@@ -10,6 +10,7 @@ import SwiftUI
 struct TimersView: View {
     @State var viewModel: TimersViewModel
     @State private var showingNew = false
+    @State private var editingPreset: TimerPreset?
 
     private let columns = [
         GridItem(.adaptive(minimum: 140), spacing: 16)
@@ -37,7 +38,8 @@ struct TimersView: View {
                                     preset: item.preset,
                                     onStart: { viewModel.start(item.preset) },
                                     onUnpin: { viewModel.deletePreset(item.preset) },
-                                    onPin: nil
+                                    onPin: nil,
+                                    onEdit: { editingPreset = item.preset }
                                 )
                             }
                             AddTimerTile(action: { showingNew = true })
@@ -50,6 +52,11 @@ struct TimersView: View {
             .sheet(isPresented: $showingNew) {
                 NewTimerSheet { name, duration, pinned in
                     viewModel.createTimer(name: name, duration: duration, pinned: pinned)
+                }
+            }
+            .sheet(item: $editingPreset) { preset in
+                NewTimerSheet(editing: preset) { name, duration, _ in
+                    viewModel.updateTimer(preset, name: name, duration: duration)
                 }
             }
             .onAppear { viewModel.refresh() }

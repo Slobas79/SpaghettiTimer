@@ -10,13 +10,25 @@ import SwiftUI
 struct NewTimerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
-    @State private var name: String = ""
-    @State private var hours: Int = 0
-    @State private var minutes: Int = 5
-    @State private var seconds: Int = 0
-    @State private var isPinned: Bool = false
+    @State private var name: String
+    @State private var hours: Int
+    @State private var minutes: Int
+    @State private var seconds: Int
+    @State private var isPinned: Bool
 
+    let editing: TimerPreset?
     let onSave: (String, TimeInterval, Bool) -> Void
+
+    init(editing: TimerPreset? = nil, onSave: @escaping (String, TimeInterval, Bool) -> Void) {
+        self.editing = editing
+        self.onSave = onSave
+        let total = Int((editing?.duration ?? 300).rounded())
+        _name = State(initialValue: editing?.name ?? "")
+        _hours = State(initialValue: total / 3600)
+        _minutes = State(initialValue: (total % 3600) / 60)
+        _seconds = State(initialValue: total % 60)
+        _isPinned = State(initialValue: editing != nil)
+    }
 
     private var duration: TimeInterval {
         TimeInterval(hours * 3600 + minutes * 60 + seconds)
@@ -41,29 +53,31 @@ struct NewTimerSheet: View {
                     }
                     .frame(maxHeight: 160)
                 }
-                Section {
-                    Toggle(isOn: $isPinned) {
-                        Label {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Pin timer")
-                                Text("Keep this timer permanently available.")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                if editing == nil {
+                    Section {
+                        Toggle(isOn: $isPinned) {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Pin timer")
+                                    Text("Keep this timer permanently available.")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: isPinned ? "pin.fill" : "pin")
                             }
-                        } icon: {
-                            Image(systemName: isPinned ? "pin.fill" : "pin")
                         }
                     }
                 }
             }
-            .navigationTitle("New Timer")
+            .navigationTitle(editing == nil ? "New Timer" : "Edit Timer")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isPinned ? "Save" : "Start") {
+                    Button(editing != nil ? "Save" : (isPinned ? "Save" : "Start")) {
                         onSave(name.trimmingCharacters(in: .whitespacesAndNewlines), duration, isPinned)
                         dismiss()
                     }

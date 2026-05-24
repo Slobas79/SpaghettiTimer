@@ -68,6 +68,10 @@ final class TimersViewModel {
         }
     }
 
+    func updateTimer(_ preset: TimerPreset, name: String, duration: TimeInterval) {
+        presetsUseCase.updatePreset(preset, name: name, duration: duration)
+    }
+
     func deletePreset(_ preset: TimerPreset) {
         presetsUseCase.deletePreset(preset)
     }

@@ -12,6 +12,7 @@ struct TimerTile: View {
     let onStart: () -> Void
     let onUnpin: (() -> Void)?
     let onPin: (() -> Void)?
+    let onEdit: (() -> Void)?
 
     var body: some View {
         Button(action: onStart) {
@@ -35,6 +36,9 @@ struct TimerTile: View {
             )
         }
         .buttonStyle(.plain)
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.5).onEnded { _ in onEdit?() }
+        )
         .overlay(alignment: .topLeading) {
             if let onPin {
                 Button(action: onPin) {
@@ -59,20 +63,6 @@ struct TimerTile: View {
                 .padding(8)
                 .accessibilityLabel("Unpin timer")
                 .transition(.scale.combined(with: .opacity))
-            }
-        }
-        .contextMenu {
-            if let onPin {
-                Button(action: onPin) {
-                    Label("Pin timer", systemImage: "pin")
-                }
-            }
-            if let onUnpin {
-                Button(role: .destructive) {
-                    withAnimation(.easeInOut(duration: 0.25)) { onUnpin() }
-                } label: {
-                    Label("Unpin timer", systemImage: "pin.slash")
-                }
             }
         }
     }
