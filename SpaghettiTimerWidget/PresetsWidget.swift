@@ -109,21 +109,45 @@ struct PresetsProvider: TimelineProvider {
 struct PresetsWidgetView: View {
     let entry: PresetsEntry
 
+    @Environment(\.widgetFamily) private var family
+
     private let spacing: CGFloat = 8
-    private let tileMinWidth: CGFloat = 90
-    private let tileHeight: CGFloat = 56
+
+    private var maxCount: Int { family == .systemLarge ? 9 : 6 }
+
+    /// (cols, rows) for the number of tiles actually shown.
+    private func gridShape(_ n: Int) -> (cols: Int, rows: Int) {
+        switch n {
+        case ..<2:  return (1, 1)   // 0 or 1
+        case 2:     return (2, 1)
+        case 3:     return (3, 1)
+        case 4:     return (2, 2)
+        case 5, 6:  return (3, 2)
+        default:    return (3, 3)   // 7…9 (large only)
+        }
+    }
 
     var body: some View {
-        GeometryReader { geo in
-            let cols = max(1, Int((geo.size.width + spacing) / (tileMinWidth + spacing)))
-            let rows = max(1, Int((geo.size.height + spacing) / (tileHeight + spacing)))
-            let capacity = cols * rows
-            let columns = Array(repeating: GridItem(.flexible(), spacing: spacing), count: cols)
+        let shown = Array(entry.presets.prefix(maxCount))
+        let (cols, _) = gridShape(shown.count)
+        let rows = shown.chunked(into: cols)
 
-            LazyVGrid(columns: columns, spacing: spacing) {
-                ForEach(entry.presets.prefix(capacity)) { preset in
-                    tile(for: preset)
+        VStack(spacing: spacing) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: spacing) {
+                    ForEach(row) { preset in
+                        tile(for: preset)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    // Pad the final row to `cols` cells so widths stay even.
+                    if row.count < cols {
+                        ForEach(0..<(cols - row.count), id: \.self) { _ in
+                            Rectangle().hidden()
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .padding(8)
@@ -152,7 +176,7 @@ struct PresetsWidgetView: View {
                     }
                 }
             }
-            .frame(maxWidth: .infinity, minHeight: tileHeight)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(6)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -196,5 +220,14 @@ struct PresetsWidget: Widget {
         .configurationDisplayName("SpaghettiTimer")
         .description("Start your favorite timers right from the Home Screen.")
         .supportedFamilies([.systemMedium, .systemLarge])
+    }
+}
+
+private extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        guard size > 0 else { return [self] }
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0..<Swift.min($0 + size, count)])
+        }
     }
 }
