@@ -48,6 +48,6 @@ nonisolated final class PresetsRepoImpl: PresetsRepo {
     func allPresets() -> [TimerPreset] {
         let hidden = loadHiddenBuiltInIDs()
         let visibleBuiltIns = TimerPreset.builtIns.filter { !hidden.contains($0.id) }
-        return loadUserPresets() + visibleBuiltIns
+        return visibleBuiltIns + loadUserPresets()
     }
 }

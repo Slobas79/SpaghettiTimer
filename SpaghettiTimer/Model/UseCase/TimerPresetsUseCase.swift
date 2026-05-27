@@ -38,7 +38,7 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
 
     func addPreset(name: String, duration: TimeInterval) {
         var user = repo.loadUserPresets()
-        user.insert(TimerPreset(name: name, duration: duration, isBuiltIn: false), at: 0)
+        user.append(TimerPreset(name: name, duration: duration, isBuiltIn: false))
         repo.saveUserPresets(user)
         reload()
         WidgetCenter.shared.reloadAllTimelines()
@@ -47,9 +47,8 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
     func pinPreset(_ preset: TimerPreset) {
         var user = repo.loadUserPresets()
         guard !user.contains(where: { $0.id == preset.id }) else { return }
-        user.insert(
-            TimerPreset(id: preset.id, name: preset.name, duration: preset.duration, isBuiltIn: false),
-            at: 0
+        user.append(
+            TimerPreset(id: preset.id, name: preset.name, duration: preset.duration, isBuiltIn: false)
         )
         repo.saveUserPresets(user)
         reload()
