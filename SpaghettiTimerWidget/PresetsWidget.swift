@@ -150,7 +150,7 @@ struct PresetsWidgetView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .padding(8)
+        .padding(spacing)
     }
 
     @ViewBuilder
@@ -217,6 +217,7 @@ struct PresetsWidget: Widget {
             PresetsWidgetView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
+        .contentMarginsDisabled()
         .configurationDisplayName("SpaghettiTimer")
         .description("Start your favorite timers right from the Home Screen.")
         .supportedFamilies([.systemMedium, .systemLarge])
