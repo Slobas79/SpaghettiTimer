@@ -207,6 +207,7 @@ struct PresetsWidget: Widget {
         StaticConfiguration(kind: kind, provider: PresetsProvider()) { entry in
             PresetsWidgetView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
+                .environment(\.colorScheme, .dark)
         }
         .contentMarginsDisabled()
         .configurationDisplayName("SpaghettiTimer")

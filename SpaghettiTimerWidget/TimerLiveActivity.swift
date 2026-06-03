@@ -53,6 +53,7 @@ struct TimerLiveActivity: Widget {
             .padding()
             .activityBackgroundTint(Color.black.opacity(0.85))
             .activitySystemActionForegroundColor(.white)
+            .environment(\.colorScheme, .dark)
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
