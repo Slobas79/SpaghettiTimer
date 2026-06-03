@@ -38,7 +38,8 @@ struct StartTimerIntent: AppIntent {
             presetID: preset.id,
             name: preset.name,
             startDate: Date(),
-            duration: preset.duration
+            duration: preset.duration,
+            autoRestartDelaySeconds: preset.autoRestartDelaySeconds
         )
 
         var timers = runningRepo.load()
@@ -50,32 +51,7 @@ struct StartTimerIntent: AppIntent {
             _ = try? await manager.requestAuthorization()
         }
 
-        let alert = AlarmPresentation.Alert(
-            title: LocalizedStringResource(stringLiteral: preset.name),
-            stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill"),
-            secondaryButton: .init(text: "Repeat", textColor: .white, systemImageName: "repeat"),
-            secondaryButtonBehavior: .custom
-        )
-        let countdown = AlarmPresentation.Countdown(
-            title: LocalizedStringResource(stringLiteral: preset.name),
-            pauseButton: .init(text: "Pause", textColor: .white, systemImageName: "pause.fill")
-        )
-        let paused = AlarmPresentation.Paused(
-            title: LocalizedStringResource(stringLiteral: preset.name),
-            resumeButton: .init(text: "Resume", textColor: .white, systemImageName: "play.fill")
-        )
-        let attributes = AlarmAttributes<SpaghettiTimerMetadata>(
-            presentation: .init(alert: alert, countdown: countdown, paused: paused),
-            metadata: SpaghettiTimerMetadata(presetName: preset.name, alarmID: running.id.uuidString, presetID: preset.id.uuidString),
-            tintColor: .accentColor
-        )
-        let configuration = AlarmManager.AlarmConfiguration.timer(
-            duration: preset.duration,
-            attributes: attributes,
-            stopIntent: StopTimerIntent(timerID: running.id.uuidString),
-            secondaryIntent: RepeatTimerIntent(timerID: running.id.uuidString, presetID: preset.id.uuidString),
-            sound: .default
-        )
+        let configuration = AlarmConfigurationFactory.makeConfiguration(for: running)
         _ = try? await manager.schedule(id: running.id, configuration: configuration)
 
         WidgetCenter.shared.reloadAllTimelines()

@@ -30,8 +30,17 @@ struct TimerTile: View {
             .frame(maxWidth: .infinity, minHeight: 120)
             .padding(12)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color(.secondarySystemBackground))
+                ZStack {
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(Color(.secondarySystemBackground))
+                    if preset.autoRestartDelaySeconds != nil {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 80, weight: .semibold))
+                            .foregroundStyle(Color.accentColor.opacity(0.18))
+                            .accessibilityHidden(true)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             )
         }
         .buttonStyle(.plain)

@@ -13,5 +13,5 @@ final class DependencyInjectionContainer {
 
     // Use cases
     private(set) lazy var presetsUseCase: TimerPresetsUseCase = TimerPresetsUseCaseImpl(repo: presetsRepo)
-    private(set) lazy var runningTimersUseCase: RunningTimersUseCase = RunningTimersUseCaseImpl(repo: runningTimersRepo)
+    private(set) lazy var runningTimersUseCase: RunningTimersUseCase = RunningTimersUseCaseImpl(repo: runningTimersRepo, presetsRepo: presetsRepo)
 }

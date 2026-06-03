@@ -55,15 +55,20 @@ final class TimersViewModel {
         runningUseCase.resume(timer)
     }
 
-    func addPreset(name: String, duration: TimeInterval) {
-        presetsUseCase.addPreset(name: name, duration: duration)
+    func addPreset(name: String, duration: TimeInterval, autoRestartDelaySeconds: TimeInterval? = nil) {
+        presetsUseCase.addPreset(name: name, duration: duration, autoRestartDelaySeconds: autoRestartDelaySeconds)
     }
 
-    func createTimer(name: String, duration: TimeInterval, pinned: Bool) {
+    func createTimer(name: String, duration: TimeInterval, pinned: Bool, autoRestartDelaySeconds: TimeInterval? = nil) {
         if pinned {
-            presetsUseCase.addPreset(name: name, duration: duration)
+            presetsUseCase.addPreset(name: name, duration: duration, autoRestartDelaySeconds: autoRestartDelaySeconds)
         } else {
-            let ephemeral = TimerPreset(name: name, duration: duration, isBuiltIn: false)
+            let ephemeral = TimerPreset(
+                name: name,
+                duration: duration,
+                isBuiltIn: false,
+                autoRestartDelaySeconds: autoRestartDelaySeconds
+            )
             runningUseCase.start(preset: ephemeral)
         }
     }

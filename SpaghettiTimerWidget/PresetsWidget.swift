@@ -26,7 +26,7 @@ struct PresetsProvider: TimelineProvider {
         let presets = PresetsRepoImpl().allPresets()
         let timers = Self.prunedTimers(at: now)
         completion(PresetsEntry(date: now,
-                                presets: Self.ordered(presets, timers: timers, at: now),
+                                presets: presets,
                                 activePresetIDs: Self.activeIDs(in: timers, at: now)))
     }
 
@@ -42,14 +42,14 @@ struct PresetsProvider: TimelineProvider {
 
         var entries: [PresetsEntry] = [
             PresetsEntry(date: now,
-                         presets: Self.ordered(presets, timers: timers, at: now),
+                         presets: presets,
                          activePresetIDs: Self.activeIDs(in: timers, at: now))
         ]
         for date in transitionDates {
             let entryDate = date.addingTimeInterval(0.5)
             entries.append(
                 PresetsEntry(date: entryDate,
-                             presets: Self.ordered(presets, timers: timers, at: entryDate),
+                             presets: presets,
                              activePresetIDs: Self.activeIDs(in: timers, at: entryDate))
             )
         }
@@ -59,24 +59,6 @@ struct PresetsProvider: TimelineProvider {
 
     private static func activeIDs(in timers: [RunningTimer], at date: Date) -> Set<UUID> {
         Set(timers.filter { $0.isPaused || !$0.isFinished(at: date) }.map { $0.presetID })
-    }
-
-    /// Mirrors the in-app ordering: presets with an active timer float to the front
-    /// (earliest start date first), then the remaining presets keep `allPresets()` order.
-    private static func ordered(_ presets: [TimerPreset],
-                                timers: [RunningTimer],
-                                at date: Date) -> [TimerPreset] {
-        var startByPreset: [UUID: Date] = [:]
-        for timer in timers where timer.isPaused || !timer.isFinished(at: date) {
-            startByPreset[timer.presetID] = min(startByPreset[timer.presetID] ?? timer.startDate, timer.startDate)
-        }
-        guard !startByPreset.isEmpty else { return presets }
-
-        let active = presets
-            .filter { startByPreset[$0.id] != nil }
-            .sorted { startByPreset[$0.id]! < startByPreset[$1.id]! }
-        let inactive = presets.filter { startByPreset[$0.id] == nil }
-        return active + inactive
     }
 
     private static func prunedTimers(at now: Date) -> [RunningTimer] {
@@ -179,8 +161,17 @@ struct PresetsWidgetView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(6)
             .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.accentColor.opacity(isActive ? 0.35 : 0.2))
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.accentColor.opacity(isActive ? 0.35 : 0.2))
+                    if preset.autoRestartDelaySeconds != nil {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 40, weight: .semibold))
+                            .foregroundStyle(Color.accentColor.opacity(0.25))
+                            .accessibilityHidden(true)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)

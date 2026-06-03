@@ -48,14 +48,32 @@ struct RunningTimerRow: View {
             Spacer()
 
             HStack(spacing: 8) {
+                if timer.autoRestartDelaySeconds != nil, now >= timer.startDate {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.accentColor)
+                        .accessibilityLabel("Auto-restart")
+                }
                 Text(timer.name)
                     .font(.headline)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
-                Text(TimerFormatting.format(timer.remaining(at: now)))
-                    .font(.system(size: 28, weight: .semibold, design: .rounded))
-                    .monospacedDigit()
-                    .contentTransition(.numericText(countsDown: true))
+                if now < timer.startDate {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text(TimerFormatting.format(timer.startDate.timeIntervalSince(now)))
+                            .font(.system(size: 28, weight: .semibold, design: .rounded))
+                            .monospacedDigit()
+                            .contentTransition(.numericText(countsDown: true))
+                    }
+                    .foregroundStyle(.secondary)
+                } else {
+                    Text(TimerFormatting.format(timer.remaining(at: now)))
+                        .font(.system(size: 28, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
+                        .contentTransition(.numericText(countsDown: true))
+                }
             }
         }
         .padding(.horizontal, 16)

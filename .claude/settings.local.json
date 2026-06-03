@@ -15,7 +15,9 @@
       "mcp__xcode__DocumentationSearch",
       "Read(//Users/slobodanstamenic/Downloads/**)",
       "Bash(sips -s format jpeg /Users/slobodanstamenic/Downloads/IMG_1972.HEIC --out /tmp/wireframe.jpg)",
-      "WebSearch"
+      "WebSearch",
+      "mcp__xcode__XcodeListNavigatorIssues",
+      "mcp__xcode__GetBuildLog"
     ]
   }
 }

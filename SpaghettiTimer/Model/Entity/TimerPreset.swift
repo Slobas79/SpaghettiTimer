@@ -12,12 +12,29 @@ nonisolated struct TimerPreset: Identifiable, Codable, Hashable, Sendable {
     var name: String
     var duration: TimeInterval
     let isBuiltIn: Bool
+    var autoRestartDelaySeconds: TimeInterval?
 
-    init(id: UUID = UUID(), name: String, duration: TimeInterval, isBuiltIn: Bool = false) {
+    init(
+        id: UUID = UUID(),
+        name: String,
+        duration: TimeInterval,
+        isBuiltIn: Bool = false,
+        autoRestartDelaySeconds: TimeInterval? = nil
+    ) {
         self.id = id
         self.name = name
         self.duration = duration
         self.isBuiltIn = isBuiltIn
+        self.autoRestartDelaySeconds = autoRestartDelaySeconds
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        duration = try container.decode(TimeInterval.self, forKey: .duration)
+        isBuiltIn = try container.decodeIfPresent(Bool.self, forKey: .isBuiltIn) ?? false
+        autoRestartDelaySeconds = try container.decodeIfPresent(TimeInterval.self, forKey: .autoRestartDelaySeconds)
     }
 }
 

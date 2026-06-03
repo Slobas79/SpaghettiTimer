@@ -33,8 +33,17 @@ struct TimerLiveActivity: Widget {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.accentColor.opacity(0.18))
+                ZStack {
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(Color.accentColor.opacity(0.18))
+                    if context.attributes.metadata?.autoRestartDelaySeconds != nil {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 80, weight: .semibold))
+                            .foregroundStyle(Color.accentColor.opacity(0.25))
+                            .accessibilityHidden(true)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)

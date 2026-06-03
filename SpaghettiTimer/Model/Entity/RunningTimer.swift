@@ -14,6 +14,7 @@ nonisolated struct RunningTimer: Identifiable, Codable, Hashable, Sendable {
     let startDate: Date
     let duration: TimeInterval
     let pausedAt: Date?
+    let autoRestartDelaySeconds: TimeInterval?
 
     var endDate: Date { startDate.addingTimeInterval(duration) }
 
@@ -27,13 +28,14 @@ nonisolated struct RunningTimer: Identifiable, Codable, Hashable, Sendable {
         date >= endDate
     }
 
-    init(id: UUID, presetID: UUID, name: String, startDate: Date, duration: TimeInterval, pausedAt: Date? = nil) {
+    init(id: UUID, presetID: UUID, name: String, startDate: Date, duration: TimeInterval, pausedAt: Date? = nil, autoRestartDelaySeconds: TimeInterval? = nil) {
         self.id = id
         self.presetID = presetID
         self.name = name
         self.startDate = startDate
         self.duration = duration
         self.pausedAt = pausedAt
+        self.autoRestartDelaySeconds = autoRestartDelaySeconds
     }
 
     init(from decoder: Decoder) throws {
@@ -44,5 +46,6 @@ nonisolated struct RunningTimer: Identifiable, Codable, Hashable, Sendable {
         startDate = try container.decode(Date.self, forKey: .startDate)
         duration = try container.decode(TimeInterval.self, forKey: .duration)
         pausedAt = try container.decodeIfPresent(Date.self, forKey: .pausedAt)
+        autoRestartDelaySeconds = try container.decodeIfPresent(TimeInterval.self, forKey: .autoRestartDelaySeconds)
     }
 }

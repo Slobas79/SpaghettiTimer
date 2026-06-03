@@ -30,12 +30,14 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     var onChange: (() -> Void)?
 
     private let repo: RunningTimersRepo
+    private let presetsRepo: PresetsRepo
 
     private var alarmObservationTask: Task<Void, Never>?
     private var seenAlarmIDs: Set<UUID> = []
 
-    init(repo: RunningTimersRepo) {
+    init(repo: RunningTimersRepo, presetsRepo: PresetsRepo) {
         self.repo = repo
+        self.presetsRepo = presetsRepo
         reload()
         reconcileOnStartup()
         observeAlarmDismissals()
@@ -113,7 +115,8 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
                     name: existing.name,
                     startDate: existing.startDate,
                     duration: existing.duration,
-                    pausedAt: now
+                    pausedAt: now,
+                    autoRestartDelaySeconds: existing.autoRestartDelaySeconds
                 )
                 changed = true
             case .countdown:
@@ -125,7 +128,8 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
                     name: existing.name,
                     startDate: existing.startDate.addingTimeInterval(delta),
                     duration: existing.duration,
-                    pausedAt: nil
+                    pausedAt: nil,
+                    autoRestartDelaySeconds: existing.autoRestartDelaySeconds
                 )
                 changed = true
             default:
@@ -141,15 +145,24 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
 
     private func removeTimers(notIn activeIDs: Set<UUID>) {
         let now = Date()
-        let dismissedIDs = running
+        let dismissed = running
             .filter { !activeIDs.contains($0.id) &&
                       (seenAlarmIDs.contains($0.id) || $0.isFinished(at: now)) }
-            .map(\.id)
-        guard !dismissedIDs.isEmpty else { return }
-        let dismissedSet = Set(dismissedIDs)
+        guard !dismissed.isEmpty else { return }
+
+        // Auto-restart is handled by StopTimerIntent so it works even when this
+        // process isn't running (e.g. timer started from the widget). Consume
+        // the user-cancelled flag here only to clear it from shared storage.
+        for timer in dismissed {
+            _ = UserCancelledTimers.consume(timer.id)
+        }
+
+        let dismissedSet = Set(dismissed.map(\.id))
         running.removeAll { dismissedSet.contains($0.id) }
         seenAlarmIDs.subtract(dismissedSet)
-        repo.save(running)
+        // Reload from disk so any next-iteration timer scheduled by StopTimerIntent
+        // (running in a different process while the app was backgrounded) becomes visible.
+        running = repo.load()
         onChange?()
         WidgetCenter.shared.reloadAllTimelines()
     }
@@ -165,19 +178,21 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             presetID: preset.id,
             name: preset.name,
             startDate: Date(),
-            duration: preset.duration
+            duration: preset.duration,
+            autoRestartDelaySeconds: preset.autoRestartDelaySeconds
         )
         running.append(timer)
         repo.save(running)
         Task {
             await ensureAuthorized()
-            await schedule(timer, presetName: preset.name)
+            await schedule(timer)
         }
         onChange?()
         WidgetCenter.shared.reloadAllTimelines()
     }
 
     func stop(_ timer: RunningTimer) {
+        UserCancelledTimers.mark(timer.id)
         running.removeAll { $0.id == timer.id }
         repo.save(running)
         let timerID = timer.id
@@ -195,7 +210,8 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             name: existing.name,
             startDate: existing.startDate,
             duration: existing.duration,
-            pausedAt: Date()
+            pausedAt: Date(),
+            autoRestartDelaySeconds: existing.autoRestartDelaySeconds
         )
         repo.save(running)
         let timerID = timer.id
@@ -215,7 +231,8 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             name: existing.name,
             startDate: existing.startDate.addingTimeInterval(delta),
             duration: existing.duration,
-            pausedAt: nil
+            pausedAt: nil,
+            autoRestartDelaySeconds: existing.autoRestartDelaySeconds
         )
         repo.save(running)
         let timerID = timer.id
@@ -228,6 +245,9 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         let now = Date()
         let finished = running.filter { $0.isFinished(at: now) }
         guard !finished.isEmpty else { return }
+        for timer in finished {
+            UserCancelledTimers.mark(timer.id)
+        }
         running.removeAll { $0.isFinished(at: now) }
         repo.save(running)
         for timer in finished {
@@ -254,33 +274,8 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         }
     }
 
-    private func schedule(_ timer: RunningTimer, presetName: String) async {
-        let alert = AlarmPresentation.Alert(
-            title: LocalizedStringResource(stringLiteral: presetName),
-            stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill"),
-            secondaryButton: .init(text: "Repeat", textColor: .white, systemImageName: "repeat"),
-            secondaryButtonBehavior: .custom
-        )
-        let countdown = AlarmPresentation.Countdown(
-            title: LocalizedStringResource(stringLiteral: presetName),
-            pauseButton: .init(text: "Pause", textColor: .white, systemImageName: "pause.fill")
-        )
-        let paused = AlarmPresentation.Paused(
-            title: LocalizedStringResource(stringLiteral: presetName),
-            resumeButton: .init(text: "Resume", textColor: .white, systemImageName: "play.fill")
-        )
-        let attributes = AlarmAttributes<SpaghettiTimerMetadata>(
-            presentation: .init(alert: alert, countdown: countdown, paused: paused),
-            metadata: SpaghettiTimerMetadata(presetName: presetName, alarmID: timer.id.uuidString, presetID: timer.presetID.uuidString),
-            tintColor: .accentColor
-        )
-        let configuration = AlarmManager.AlarmConfiguration.timer(
-            duration: timer.duration,
-            attributes: attributes,
-            stopIntent: StopTimerIntent(timerID: timer.id.uuidString),
-            secondaryIntent: RepeatTimerIntent(timerID: timer.id.uuidString, presetID: timer.presetID.uuidString),
-            sound: .default
-        )
+    private func schedule(_ timer: RunningTimer) async {
+        let configuration = AlarmConfigurationFactory.makeConfiguration(for: timer)
         do {
             let scheduled = try await AlarmManager.shared.schedule(id: timer.id, configuration: configuration)
             print("[AlarmKit] scheduled id=\(timer.id) state=\(scheduled.state)")

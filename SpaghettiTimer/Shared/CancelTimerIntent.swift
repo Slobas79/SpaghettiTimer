@@ -26,6 +26,8 @@ struct CancelTimerIntent: AppIntent {
     func perform() async throws -> some IntentResult {
         guard let id = UUID(uuidString: timerID) else { return .result() }
 
+        UserCancelledTimers.mark(id)
+
         let repo = RunningTimersRepoImpl()
         var timers = repo.load()
         timers.removeAll { $0.id == id }

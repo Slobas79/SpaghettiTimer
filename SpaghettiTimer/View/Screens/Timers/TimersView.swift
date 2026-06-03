@@ -48,8 +48,8 @@ struct TimersView: View {
                 }
             }
             .sheet(isPresented: $showingNew) {
-                NewTimerSheet { name, duration, pinned in
-                    viewModel.createTimer(name: name, duration: duration, pinned: pinned)
+                NewTimerSheet { name, duration, pinned, autoRestartDelaySeconds in
+                    viewModel.createTimer(name: name, duration: duration, pinned: pinned, autoRestartDelaySeconds: autoRestartDelaySeconds)
                 }
             }
             .onAppear { viewModel.refresh() }

@@ -33,9 +33,14 @@ struct RepeatTimerIntent: LiveActivityIntent {
         let manager = AlarmManager.shared
 
         var oldDuration: TimeInterval = 60
+        var oldAutoRestartDelay: TimeInterval? = nil
         if let oldID = UUID(uuidString: timerID) {
+            UserCancelledTimers.mark(oldID)
             var timers = runningRepo.load()
-            oldDuration = timers.first(where: { $0.id == oldID })?.duration ?? 60
+            if let existing = timers.first(where: { $0.id == oldID }) {
+                oldDuration = existing.duration
+                oldAutoRestartDelay = existing.autoRestartDelaySeconds
+            }
             timers.removeAll { $0.id == oldID }
             runningRepo.save(timers)
             try? manager.cancel(id: oldID)
@@ -43,14 +48,15 @@ struct RepeatTimerIntent: LiveActivityIntent {
 
         let presetUUID = UUID(uuidString: presetID) ?? UUID()
         let preset = presetsRepo.allPresets().first(where: { $0.id == presetUUID })
-            ?? TimerPreset(id: presetUUID, name: "Timer", duration: oldDuration, isBuiltIn: false)
+            ?? TimerPreset(id: presetUUID, name: "Timer", duration: oldDuration, isBuiltIn: false, autoRestartDelaySeconds: oldAutoRestartDelay)
 
         let running = RunningTimer(
             id: UUID(),
             presetID: preset.id,
             name: preset.name,
             startDate: Date(),
-            duration: preset.duration
+            duration: preset.duration,
+            autoRestartDelaySeconds: preset.autoRestartDelaySeconds ?? oldAutoRestartDelay
         )
 
         var timers = runningRepo.load()
@@ -61,32 +67,7 @@ struct RepeatTimerIntent: LiveActivityIntent {
             _ = try? await manager.requestAuthorization()
         }
 
-        let alert = AlarmPresentation.Alert(
-            title: LocalizedStringResource(stringLiteral: preset.name),
-            stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill"),
-            secondaryButton: .init(text: "Repeat", textColor: .white, systemImageName: "repeat"),
-            secondaryButtonBehavior: .custom
-        )
-        let countdown = AlarmPresentation.Countdown(
-            title: LocalizedStringResource(stringLiteral: preset.name),
-            pauseButton: .init(text: "Pause", textColor: .white, systemImageName: "pause.fill")
-        )
-        let paused = AlarmPresentation.Paused(
-            title: LocalizedStringResource(stringLiteral: preset.name),
-            resumeButton: .init(text: "Resume", textColor: .white, systemImageName: "play.fill")
-        )
-        let attributes = AlarmAttributes<SpaghettiTimerMetadata>(
-            presentation: .init(alert: alert, countdown: countdown, paused: paused),
-            metadata: SpaghettiTimerMetadata(presetName: preset.name, alarmID: running.id.uuidString, presetID: preset.id.uuidString),
-            tintColor: .accentColor
-        )
-        let configuration = AlarmManager.AlarmConfiguration.timer(
-            duration: preset.duration,
-            attributes: attributes,
-            stopIntent: StopTimerIntent(timerID: running.id.uuidString),
-            secondaryIntent: RepeatTimerIntent(timerID: running.id.uuidString, presetID: preset.id.uuidString),
-            sound: .default
-        )
+        let configuration = AlarmConfigurationFactory.makeConfiguration(for: running)
         _ = try? await manager.schedule(id: running.id, configuration: configuration)
 
         WidgetCenter.shared.reloadAllTimelines()

@@ -14,7 +14,7 @@ protocol TimerPresetsUseCase: AnyObject {
     var onChange: (() -> Void)? { get set }
 
     func reload()
-    func addPreset(name: String, duration: TimeInterval)
+    func addPreset(name: String, duration: TimeInterval, autoRestartDelaySeconds: TimeInterval?)
     func pinPreset(_ preset: TimerPreset)
     func deletePreset(_ preset: TimerPreset)
 }
@@ -36,9 +36,16 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
         onChange?()
     }
 
-    func addPreset(name: String, duration: TimeInterval) {
+    func addPreset(name: String, duration: TimeInterval, autoRestartDelaySeconds: TimeInterval? = nil) {
         var user = repo.loadUserPresets()
-        user.append(TimerPreset(name: name, duration: duration, isBuiltIn: false))
+        user.append(
+            TimerPreset(
+                name: name,
+                duration: duration,
+                isBuiltIn: false,
+                autoRestartDelaySeconds: autoRestartDelaySeconds
+            )
+        )
         repo.saveUserPresets(user)
         reload()
         WidgetCenter.shared.reloadAllTimelines()
