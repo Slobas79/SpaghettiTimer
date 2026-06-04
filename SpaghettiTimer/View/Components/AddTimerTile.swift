@@ -13,15 +13,14 @@ struct AddTimerTile: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: "plus")
-                .font(.system(size: 32, weight: .semibold))
-                .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, minHeight: 120)
-            .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
-                    .foregroundStyle(.secondary)
-            )
+                .font(.system(size: 30, weight: .semibold))
+                .foregroundStyle(Theme.addPlus)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .aspectRatio(Theme.cardAspectRatio, contentMode: .fit)
+                .background(
+                    RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                        .strokeBorder(Theme.addDash, style: StrokeStyle(lineWidth: 2, dash: [6, 4]))
+                )
         }
         .buttonStyle(.plain)
     }

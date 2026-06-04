@@ -278,7 +278,7 @@
 				CODE_SIGN_ENTITLEMENTS = SpaghettiTimerWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 77WE72Q47L;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SpaghettiTimerWidget/Info.plist;
@@ -311,7 +311,7 @@
 				CODE_SIGN_ENTITLEMENTS = SpaghettiTimerWidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 77WE72Q47L;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SpaghettiTimerWidget/Info.plist;
@@ -471,7 +471,7 @@
 				CODE_SIGN_ENTITLEMENTS = SpaghettiTimer/SpaghettiTimer.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"SpaghettiTimer/Preview Content\"";
 				DEVELOPMENT_TEAM = 77WE72Q47L;
 				ENABLE_PREVIEWS = YES;
@@ -506,7 +506,7 @@
 				CODE_SIGN_ENTITLEMENTS = SpaghettiTimer/SpaghettiTimer.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"SpaghettiTimer/Preview Content\"";
 				DEVELOPMENT_TEAM = 77WE72Q47L;
 				ENABLE_PREVIEWS = YES;
