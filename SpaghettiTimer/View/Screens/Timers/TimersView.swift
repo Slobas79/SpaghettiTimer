@@ -60,6 +60,8 @@ struct TimersView: View {
             NewTimerSheet { name, duration, pinned, autoRestartDelaySeconds in
                 viewModel.createTimer(name: name, duration: duration, pinned: pinned, autoRestartDelaySeconds: autoRestartDelaySeconds)
             }
+            .presentationBackground(.black)
+            .presentationDragIndicator(.hidden)
         }
         .onAppear { viewModel.refresh() }
     }

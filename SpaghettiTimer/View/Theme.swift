@@ -19,6 +19,20 @@ enum Theme {
     static let addDash = Color.white.opacity(0.28)
     static let addPlus = Color.white.opacity(0.45)
 
+    // New Timer sheet — precomputed color-mix(in srgb, …) blends over black
+    static let surfaceFill = Color.white.opacity(0.02)                                // rgba(255,255,255,.02)
+    static let surfaceBorder = Color(red: 0.230, green: 0.614, blue: 1.0).opacity(0.275)   // mix(accent 22%, white .07)
+    static let nameFieldBorder = Color(red: 0.217, green: 0.607, blue: 1.0).opacity(0.319) // mix(accent 26%, white .08)
+    static let bandFill = accent.opacity(0.22)                                        // mix(accent 22%, transparent)
+    static let bandBorder = accent.opacity(0.30)                                      // mix(accent 30%, transparent)
+    static let unitTint = Color(red: 0.327, green: 0.662, blue: 1.0)                  // mix(accent 70%, #fff)
+    static let cooldownReadout = Color(red: 0.251, green: 0.624, blue: 1.0)           // mix(accent 78%, #fff)
+    static let disabledText = Color(red: 0.420, green: 0.420, blue: 0.439)            // #6B6B70
+    static let lightText = Color(red: 0.847, green: 0.847, blue: 0.863)               // #D8D8DC
+    static let subtleFill = Color.white.opacity(0.07)                                 // rgba(255,255,255,.07)
+    static let disabledFill = Color(red: 0.165, green: 0.165, blue: 0.176)            // #2A2A2D
+    static let hairline = Color.white.opacity(0.09)                                   // rgba(255,255,255,.09)
+
     // Metrics
     static let cornerRadius: CGFloat = 22
     static let gridGap: CGFloat = 16

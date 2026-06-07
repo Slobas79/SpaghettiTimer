@@ -41,7 +41,7 @@ struct StopTimerIntent: LiveActivityIntent {
             repo.save(cleaned)
         }
 
-        if let finished, let delay = finished.autoRestartDelaySeconds, delay > 0 {
+        if let finished, let delay = finished.autoRestartDelaySeconds, delay >= 0 {
             await Self.scheduleNextIteration(after: finished, delay: delay)
         }
 
