@@ -11,44 +11,56 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
+/// Visual constants mirrored from the main app's `Theme.swift` so the
+/// running-timer Live Activity matches `RunningTimerRow` exactly.
+/// `Theme.swift` is not compiled into the widget target, hence the duplication.
+private enum LiveActivityStyle {
+    static let accent = Color(red: 10 / 255, green: 132 / 255, blue: 255 / 255)   // #0A84FF
+    static let bannerFill = Color(red: 2 / 255, green: 21 / 255, blue: 41 / 255)  // #021529
+    static let cornerRadius: CGFloat = 22
+}
+
 struct TimerLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: AlarmAttributes<SpaghettiTimerMetadata>.self) { context in
-            HStack {
-                HStack(spacing: 8) {
+            HStack(spacing: 12) {
+                HStack(spacing: 12) {
                     pauseResumeButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
                     cancelButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
                 }
-                Spacer()
-                HStack( spacing: 4) {
+
+                Spacer(minLength: 12)
+
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    if context.attributes.metadata?.autoRestartDelaySeconds != nil {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(LiveActivityStyle.accent)
+                            .accessibilityLabel("Auto-restart")
+                    }
                     Text(context.attributes.metadata?.presetName ?? "Timer")
-                        .font(.headline)
+                        .font(.system(size: 19, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.85))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                     countdownText(state: context.state)
-                        .font(.system(size: 28, weight: .semibold, design: .rounded))
+                        .font(.system(size: 36, weight: .bold))
                         .monospacedDigit()
-                        .multilineTextAlignment(.trailing)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .foregroundStyle(.white)
                 }
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity)
+            .frame(height: 76)
             .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(Color.accentColor.opacity(0.18))
-                    if context.attributes.metadata?.autoRestartDelaySeconds != nil {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 80, weight: .semibold))
-                            .foregroundStyle(Color.accentColor.opacity(0.25))
-                            .accessibilityHidden(true)
-                    }
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                RoundedRectangle(cornerRadius: LiveActivityStyle.cornerRadius, style: .continuous)
+                    .fill(LiveActivityStyle.bannerFill)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.accentColor, lineWidth: 1.5)
+                RoundedRectangle(cornerRadius: LiveActivityStyle.cornerRadius, style: .continuous)
+                    .stroke(LiveActivityStyle.accent, lineWidth: 2)
             )
+            .shadow(color: LiveActivityStyle.accent.opacity(0.28), radius: 12, y: 6)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding()
             .activityBackgroundTint(Color.black.opacity(0.85))
@@ -58,15 +70,20 @@ struct TimerLiveActivity: Widget {
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     Text(context.attributes.metadata?.presetName ?? "Timer")
-                        .font(.headline)
+                        .font(.system(size: 19, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.85))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     countdownText(state: context.state)
+                        .font(.system(size: 28, weight: .bold))
                         .monospacedDigit()
+                        .foregroundStyle(.white)
                         .multilineTextAlignment(.trailing)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: 12) {
                         pauseResumeButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
                         cancelButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
                     }
@@ -89,21 +106,9 @@ struct TimerLiveActivity: Widget {
         if let alarmID, let id = UUID(uuidString: alarmID) {
             switch state.mode {
             case .countdown:
-                Button(intent: PauseTimerIntent(timerID: id.uuidString)) {
-                    Image(systemName: "pause.circle.fill")
-                        .font(.title)
-                        .symbolRenderingMode(.palette)
-                        .foregroundStyle(.white, Color.accentColor)
-                }
-                .buttonStyle(.plain)
+                IntentCircleButton(systemName: "pause.fill", intent: PauseTimerIntent(timerID: id.uuidString))
             case .paused:
-                Button(intent: ResumeTimerIntent(timerID: id.uuidString)) {
-                    Image(systemName: "play.circle.fill")
-                        .font(.title)
-                        .symbolRenderingMode(.palette)
-                        .foregroundStyle(.white, Color.accentColor)
-                }
-                .buttonStyle(.plain)
+                IntentCircleButton(systemName: "play.fill", intent: ResumeTimerIntent(timerID: id.uuidString))
             default:
                 EmptyView()
             }
@@ -115,13 +120,7 @@ struct TimerLiveActivity: Widget {
         if let alarmID, let id = UUID(uuidString: alarmID) {
             switch state.mode {
             case .countdown, .paused:
-                Button(intent: CancelTimerIntent(timerID: id.uuidString)) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title)
-                        .symbolRenderingMode(.palette)
-                        .foregroundStyle(.white, Color.accentColor)
-                }
-                .buttonStyle(.plain)
+                IntentCircleButton(systemName: "xmark", intent: CancelTimerIntent(timerID: id.uuidString))
             default:
                 EmptyView()
             }
@@ -150,5 +149,26 @@ struct TimerLiveActivity: Widget {
         return hours > 0
             ? String(format: "%d:%02d:%02d", hours, minutes, secs)
             : String(format: "%02d:%02d", minutes, secs)
+    }
+}
+
+/// Filled accent circle button driven by an AppIntent — mirrors the in-app
+/// `CircleButton` used in `RunningTimerRow`.
+private struct IntentCircleButton<I: AppIntent>: View {
+    let systemName: String
+    let intent: I
+
+    var body: some View {
+        Button(intent: intent) {
+            Circle()
+                .fill(LiveActivityStyle.accent)
+                .frame(width: 40, height: 40)
+                .overlay(
+                    Image(systemName: systemName)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
+                )
+        }
+        .buttonStyle(.plain)
     }
 }
