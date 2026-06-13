@@ -1,0 +1,161 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "SpaghettiTimer"
+          }
+        }
+      }
+    },
+    "NSAlarmKitUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم SpaghettiTimer المنبّهات للرنين عند انتهاء مؤقّتاتك."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer използва аларми, за да звъни, когато таймерите ви приключат."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer používá budíky, aby zazvonil, když vaše časovače skončí."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer bruger alarmer til at ringe, når dine timere er færdige."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer verwendet Wecker, um zu klingeln, wenn deine Timer ablaufen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το SpaghettiTimer χρησιμοποιεί ξυπνητήρια για να ηχήσει όταν λήγουν τα χρονόμετρά σας."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer uses alarms to ring when your timers finish."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer usa alarmas para sonar cuando tus temporizadores terminan."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer käyttää hälytyksiä soittaakseen, kun ajastimesi päättyvät."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer utilise des alarmes pour sonner à la fin de vos minuteurs."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A SpaghettiTimer riasztásokat használ, hogy jelezzen, amikor az időzítőid lejárnak."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer usa le sveglie per suonare quando i tuoi timer terminano."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer はタイマー終了時に鳴らすためアラームを使用します。"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer bruker alarmer for å ringe når tidtakerne dine er ferdige."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer gebruikt wekkers om af te gaan wanneer je timers aflopen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer używa alarmów, aby dzwonić po zakończeniu Twoich minutników."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O SpaghettiTimer usa alarmes para tocar quando os seus temporizadores terminam."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer folosește alarme pentru a suna când temporizatoarele tale se termină."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer использует будильники, чтобы звонить по завершении таймеров."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer používa budíky, aby zazvonil, keď vaše časovače skončia."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer uporablja budilke, da zazvoni, ko se vaši časovniki iztečejo."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer користи аларме да зазвони када се ваши тајмери заврше."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SpaghettiTimer använder larm för att ringa när dina timers är klara."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

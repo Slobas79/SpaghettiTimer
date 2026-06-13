@@ -38,7 +38,7 @@ struct TimerLiveActivity: Widget {
                             .foregroundStyle(LiveActivityStyle.accent)
                             .accessibilityLabel("Auto-restart")
                     }
-                    Text(context.attributes.metadata?.presetName ?? "Timer")
+                    Text(context.attributes.metadata?.presetName ?? String(localized: "Timer"))
                         .font(.system(size: 19, weight: .medium))
                         .foregroundStyle(.white.opacity(0.85))
                         .lineLimit(1)
@@ -69,7 +69,7 @@ struct TimerLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Text(context.attributes.metadata?.presetName ?? "Timer")
+                    Text(context.attributes.metadata?.presetName ?? String(localized: "Timer"))
                         .font(.system(size: 19, weight: .medium))
                         .foregroundStyle(.white.opacity(0.85))
                         .lineLimit(1)

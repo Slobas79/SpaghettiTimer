@@ -111,9 +111,9 @@ struct NewTimerSheet: View {
     // MARK: - Field group scaffold
 
     @ViewBuilder
-    private func fieldGroup<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
+    private func fieldGroup<Content: View>(_ label: LocalizedStringResource, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 9) {
-            Text(label.uppercased())
+            Text(String(localized: label).uppercased())
                 .font(.system(size: 13, weight: .semibold))
                 .tracking(0.4)
                 .foregroundStyle(Theme.mutedTime)
@@ -174,7 +174,7 @@ struct NewTimerSheet: View {
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
-    private func optionRow(icon: String, title: String, description: String, isOn: Binding<Bool>) -> some View {
+    private func optionRow(icon: String, title: LocalizedStringKey, description: LocalizedStringKey, isOn: Binding<Bool>) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
                 .font(.system(size: 22))
@@ -208,7 +208,7 @@ struct NewTimerSheet: View {
                     .font(.system(size: 15))
                     .foregroundStyle(Theme.mutedTime)
                 Spacer(minLength: 8)
-                Text(cooldownTotal == 0 ? "Immediately" : Self.fmtClock(cooldownTotal))
+                Text(cooldownTotal == 0 ? String(localized: "Immediately") : Self.fmtClock(cooldownTotal))
                     .font(.system(size: 16, weight: .semibold))
                     .monospacedDigit()
                     .foregroundStyle(Theme.cooldownReadout)

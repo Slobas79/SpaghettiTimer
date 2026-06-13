@@ -258,7 +258,7 @@ struct PresetsWidgetView: View {
                 // Sub line — duration, or "Running" when active.
                 // Hidden for an unnamed one-shot (duration already promoted to the label row).
                 if !unnamedOneShot {
-                    Text(isActive ? "Running" : format(preset.duration))
+                    Text(isActive ? String(localized: "Running") : format(preset.duration))
                         .font(.system(size: subSize, weight: isActive ? .semibold : .medium))
                         .foregroundStyle(isActive ? Color.white.opacity(0.9) : WidgetStyle.muted)
                         .monospacedDigit()
