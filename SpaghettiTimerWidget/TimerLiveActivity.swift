@@ -172,3 +172,100 @@ private struct IntentCircleButton<I: AppIntent>: View {
         .buttonStyle(.plain)
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+/// Sample data so the Live Activity / Dynamic Island can be inspected in Xcode
+/// previews without AlarmKit scheduling a real alarm (which doesn't work on the
+/// Simulator). Build the attributes + content states the same shapes the system
+/// hands `TimerLiveActivity` at runtime.
+private enum LiveActivityPreviewData {
+    /// Attributes mirror `AlarmConfigurationFactory.makeConfiguration` so the
+    /// preview metadata (name, auto-restart glyph) matches production.
+    static func attributes(name: String, autoRestart: Bool = false) -> AlarmAttributes<SpaghettiTimerMetadata> {
+        let alert = AlarmPresentation.Alert(
+            title: LocalizedStringResource(stringLiteral: name),
+            stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill")
+        )
+        let countdown = AlarmPresentation.Countdown(
+            title: LocalizedStringResource(stringLiteral: name),
+            pauseButton: .init(text: "Pause", textColor: .white, systemImageName: "pause.fill")
+        )
+        let paused = AlarmPresentation.Paused(
+            title: LocalizedStringResource(stringLiteral: name),
+            resumeButton: .init(text: "Resume", textColor: .white, systemImageName: "play.fill")
+        )
+        return AlarmAttributes<SpaghettiTimerMetadata>(
+            presentation: .init(alert: alert, countdown: countdown, paused: paused),
+            metadata: SpaghettiTimerMetadata(
+                presetName: name,
+                alarmID: UUID().uuidString,
+                presetID: UUID().uuidString,
+                autoRestartDelaySeconds: autoRestart ? 5 : nil
+            ),
+            tintColor: .accentColor
+        )
+    }
+
+    /// Live countdown — `remaining` seconds left of a `total`-second timer.
+    static func countdown(remaining: TimeInterval, total: TimeInterval = 300) -> AlarmPresentationState {
+        let now = Date()
+        return AlarmPresentationState(
+            alarmID: UUID(),
+            mode: .countdown(.init(
+                totalCountdownDuration: total,
+                previouslyElapsedDuration: total - remaining,
+                startDate: now,
+                fireDate: now.addingTimeInterval(remaining)
+            ))
+        )
+    }
+
+    /// Paused with `remaining` seconds frozen on the clock.
+    static func paused(remaining: TimeInterval, total: TimeInterval = 300) -> AlarmPresentationState {
+        AlarmPresentationState(
+            alarmID: UUID(),
+            mode: .paused(.init(
+                totalCountdownDuration: total,
+                previouslyElapsedDuration: total - remaining
+            ))
+        )
+    }
+
+    /// Fired — shows the "Done" state.
+    static var alert: AlarmPresentationState {
+        AlarmPresentationState(alarmID: UUID(), mode: .alert(.init(time: .init(hour: 0, minute: 0))))
+    }
+}
+
+#Preview("Lock Screen", as: .content, using: LiveActivityPreviewData.attributes(name: "Pasta")) {
+    TimerLiveActivity()
+} contentStates: {
+    LiveActivityPreviewData.countdown(remaining: 125)
+    LiveActivityPreviewData.paused(remaining: 125)
+    LiveActivityPreviewData.alert
+}
+
+#Preview("DI Expanded", as: .dynamicIsland(.expanded), using: LiveActivityPreviewData.attributes(name: "Pasta")) {
+    TimerLiveActivity()
+} contentStates: {
+    LiveActivityPreviewData.countdown(remaining: 125)
+    LiveActivityPreviewData.paused(remaining: 125)
+    LiveActivityPreviewData.alert
+}
+
+#Preview("DI Compact", as: .dynamicIsland(.compact), using: LiveActivityPreviewData.attributes(name: "Pasta")) {
+    TimerLiveActivity()
+} contentStates: {
+    LiveActivityPreviewData.countdown(remaining: 125)
+    LiveActivityPreviewData.paused(remaining: 125)
+    LiveActivityPreviewData.alert
+}
+
+#Preview("DI Minimal", as: .dynamicIsland(.minimal), using: LiveActivityPreviewData.attributes(name: "Pasta")) {
+    TimerLiveActivity()
+} contentStates: {
+    LiveActivityPreviewData.countdown(remaining: 125)
+}
+#endif
