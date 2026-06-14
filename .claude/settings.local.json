@@ -17,7 +17,9 @@
       "Bash(sips -s format jpeg /Users/slobodanstamenic/Downloads/IMG_1972.HEIC --out /tmp/wireframe.jpg)",
       "WebSearch",
       "mcp__xcode__XcodeListNavigatorIssues",
-      "mcp__xcode__GetBuildLog"
+      "mcp__xcode__GetBuildLog",
+      "Bash(xcrun simctl *)",
+      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -derivedDataPath /tmp/spaghetti-dd build)"
     ]
   }
 }

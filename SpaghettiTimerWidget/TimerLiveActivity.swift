@@ -67,48 +67,89 @@ struct TimerLiveActivity: Widget {
             .activitySystemActionForegroundColor(.white)
             .environment(\.colorScheme, .dark)
         } dynamicIsland: { context in
-            DynamicIsland {
+            let metadata = context.attributes.metadata
+            let isRepeating = metadata?.autoRestartDelaySeconds != nil
+            let paused = isPaused(state: context.state)
+
+            return DynamicIsland {
+                // Header: app mark + "Spaghetti Timer" (leading) · label + loop glyph (trailing).
                 DynamicIslandExpandedRegion(.leading) {
-                    Text(context.attributes.metadata?.presetName ?? String(localized: "Timer"))
-                        .font(.system(size: 19, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.85))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
+                    HStack(spacing: 8) {
+                        Image("AppMark")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 28, height: 28)
+                            .clipShape(RoundedRectangle(cornerRadius: 28 * 0.2237, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 28 * 0.2237, style: .continuous)
+                                    .stroke(.white.opacity(0.08), lineWidth: 1)
+                            )
+                        Text("Spaghetti Timer")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                            .fixedSize(horizontal: true, vertical: false)
+                    }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    countdownText(state: context.state)
-                        .font(.system(size: 28, weight: .bold))
-                        .monospacedDigit()
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.trailing)
-                }
-                DynamicIslandExpandedRegion(.bottom) {
-                    HStack(spacing: 12) {
-                        pauseResumeButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
-                        cancelButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
+                    HStack(spacing: 6) {
+                        if isRepeating {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(LiveActivityStyle.accent)
+                        }
+                        Text(metadata?.presetName ?? String(localized: "Timer"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.55))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                     }
-                    .frame(maxWidth: .infinity)
+                }
+                // Body: ring · big countdown · pause/resume · dismiss.
+                DynamicIslandExpandedRegion(.bottom) {
+                    HStack(spacing: 14) {
+                        progressRing(state: context.state, isRepeating: isRepeating,
+                                     diameter: 66, stroke: 6, glyphPointSize: 24)
+                        countdownText(state: context.state)
+                            .font(.system(size: 44, weight: .semibold))
+                            .monospacedDigit()
+                            .foregroundStyle(.white)
+                            .opacity(paused ? 0.55 : 1)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                        Spacer(minLength: 8)
+                        pauseResumeButton(alarmID: metadata?.alarmID, state: context.state, size: 52)
+                        cancelButton(alarmID: metadata?.alarmID, state: context.state, size: 52)
+                    }
+                    .padding(.top, 8)
                 }
             } compactLeading: {
-                Image(systemName: "timer")
+                progressRing(state: context.state, isRepeating: isRepeating,
+                             diameter: 22, stroke: 3.2, glyphPointSize: 11)
+                    .padding(.leading, 2)
             } compactTrailing: {
                 countdownText(state: context.state)
+                    .font(.system(size: 16, weight: .semibold))
                     .monospacedDigit()
-                    .frame(maxWidth: 56)
+                    .foregroundStyle(paused ? .white.opacity(0.6) : .white)
+                    .frame(maxWidth: 60)
             } minimal: {
-                Image(systemName: "timer")
+                progressRing(state: context.state, isRepeating: isRepeating,
+                             diameter: 22, stroke: 3, glyphPointSize: 10, glyphOnlyWhenRepeating: true)
             }
+            .keylineTint(LiveActivityStyle.accent)
         }
     }
 
     @ViewBuilder
-    private func pauseResumeButton(alarmID: String?, state: AlarmPresentationState) -> some View {
+    private func pauseResumeButton(alarmID: String?, state: AlarmPresentationState, size: CGFloat = 40) -> some View {
         if let alarmID, let id = UUID(uuidString: alarmID) {
             switch state.mode {
             case .countdown:
-                IntentCircleButton(systemName: "pause.fill", intent: PauseTimerIntent(timerID: id.uuidString))
+                IntentCircleButton(systemName: "pause.fill", intent: PauseTimerIntent(timerID: id.uuidString), size: size)
             case .paused:
-                IntentCircleButton(systemName: "play.fill", intent: ResumeTimerIntent(timerID: id.uuidString))
+                IntentCircleButton(systemName: "play.fill", intent: ResumeTimerIntent(timerID: id.uuidString), size: size)
             default:
                 EmptyView()
             }
@@ -116,15 +157,70 @@ struct TimerLiveActivity: Widget {
     }
 
     @ViewBuilder
-    private func cancelButton(alarmID: String?, state: AlarmPresentationState) -> some View {
+    private func cancelButton(alarmID: String?, state: AlarmPresentationState, size: CGFloat = 40) -> some View {
         if let alarmID, let id = UUID(uuidString: alarmID) {
             switch state.mode {
             case .countdown, .paused:
-                IntentCircleButton(systemName: "xmark", intent: CancelTimerIntent(timerID: id.uuidString))
+                IntentCircleButton(systemName: "xmark", intent: CancelTimerIntent(timerID: id.uuidString),
+                                   style: .secondary, size: size)
             default:
                 EmptyView()
             }
         }
+    }
+
+    /// Accent progress ring with a glyph at its center, mirroring the design's `Ring`.
+    /// Uses `ProgressView(timerInterval:)` so the ring depletes live (system-updated) while
+    /// running, and a static fraction while paused. The glyph is the stopwatch normally, or
+    /// the loop glyph when the timer auto-repeats.
+    @ViewBuilder
+    private func progressRing(
+        state: AlarmPresentationState,
+        isRepeating: Bool,
+        diameter: CGFloat,
+        stroke: CGFloat,
+        glyphPointSize: CGFloat,
+        glyphOnlyWhenRepeating: Bool = false
+    ) -> some View {
+        ZStack {
+            Circle()
+                .stroke(Color.white.opacity(0.16), lineWidth: stroke)
+
+            switch state.mode {
+            case .countdown(let countdown):
+                // System-updated depleting ring — counts the elapsed fraction down to 0.
+                ProgressView(timerInterval: countdown.startDate...countdown.fireDate, countsDown: true) {
+                    EmptyView()
+                } currentValueLabel: {
+                    EmptyView()
+                }
+                .progressViewStyle(.circular)
+                .tint(LiveActivityStyle.accent)
+            case .paused(let paused):
+                let fraction = paused.totalCountdownDuration > 0
+                    ? max(0, min(1, (paused.totalCountdownDuration - paused.previouslyElapsedDuration) / paused.totalCountdownDuration))
+                    : 0
+                Circle()
+                    .trim(from: 0, to: fraction)
+                    .stroke(LiveActivityStyle.accent.opacity(0.7),
+                            style: StrokeStyle(lineWidth: stroke, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+            default:
+                EmptyView()
+            }
+
+            if !(glyphOnlyWhenRepeating && !isRepeating) {
+                Image(systemName: isRepeating ? "arrow.clockwise" : "stopwatch")
+                    .font(.system(size: glyphPointSize, weight: .semibold))
+                    .foregroundStyle(LiveActivityStyle.accent)
+            }
+        }
+        .frame(width: diameter, height: diameter)
+    }
+
+    private func isPaused(state: AlarmPresentationState) -> Bool {
+        if case .paused = state.mode { return true }
+        return false
     }
 
     @ViewBuilder
@@ -148,24 +244,28 @@ struct TimerLiveActivity: Widget {
         let secs = total % 60
         return hours > 0
             ? String(format: "%d:%02d:%02d", hours, minutes, secs)
-            : String(format: "%02d:%02d", minutes, secs)
+            : String(format: "%d:%02d", minutes, secs)
     }
 }
 
 /// Filled accent circle button driven by an AppIntent — mirrors the in-app
 /// `CircleButton` used in `RunningTimerRow`.
 private struct IntentCircleButton<I: AppIntent>: View {
+    enum Style { case accent, secondary }
+
     let systemName: String
     let intent: I
+    var style: Style = .accent
+    var size: CGFloat = 40
 
     var body: some View {
         Button(intent: intent) {
             Circle()
-                .fill(LiveActivityStyle.accent)
-                .frame(width: 40, height: 40)
+                .fill(style == .accent ? AnyShapeStyle(LiveActivityStyle.accent) : AnyShapeStyle(.white.opacity(0.14)))
+                .frame(width: size, height: size)
                 .overlay(
                     Image(systemName: systemName)
-                        .font(.system(size: 16, weight: .bold))
+                        .font(.system(size: size * 0.4, weight: .bold))
                         .foregroundStyle(.white)
                 )
         }
@@ -267,5 +367,23 @@ private enum LiveActivityPreviewData {
     TimerLiveActivity()
 } contentStates: {
     LiveActivityPreviewData.countdown(remaining: 125)
+}
+
+#Preview("DI Expanded · Paused", as: .dynamicIsland(.expanded), using: LiveActivityPreviewData.attributes(name: "Pasta")) {
+    TimerLiveActivity()
+} contentStates: {
+    LiveActivityPreviewData.paused(remaining: 125)
+}
+
+#Preview("DI Expanded · Repeat", as: .dynamicIsland(.expanded), using: LiveActivityPreviewData.attributes(name: "1 min", autoRestart: true)) {
+    TimerLiveActivity()
+} contentStates: {
+    LiveActivityPreviewData.countdown(remaining: 51, total: 60)
+}
+
+#Preview("DI Minimal · Repeat", as: .dynamicIsland(.minimal), using: LiveActivityPreviewData.attributes(name: "1 min", autoRestart: true)) {
+    TimerLiveActivity()
+} contentStates: {
+    LiveActivityPreviewData.countdown(remaining: 51, total: 60)
 }
 #endif

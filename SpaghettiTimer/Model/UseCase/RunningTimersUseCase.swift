@@ -5,7 +5,6 @@
 //  Created by Slobodan Stamenic on 23. 4. 2026..
 //
 
-import ActivityKit
 import AlarmKit
 import Foundation
 import WidgetKit
@@ -21,7 +20,7 @@ protocol RunningTimersUseCase: AnyObject {
     func pause(_ timer: RunningTimer)
     func resume(_ timer: RunningTimer)
     func pruneFinished()
-    func reconcileWithLiveActivities()
+    func reconcileOnForeground()
 }
 
 @MainActor
@@ -51,8 +50,10 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         } else {
             return
         }
-        let now = Date()
-        let dismissed = running.filter { !liveIDs.contains($0.id) && !$0.isFinished(at: now) }
+        // A timer absent from AlarmKit's live list has been stopped/cancelled, including a
+        // fired-then-stopped one. An alarm still alerting is present in the list (so kept here);
+        // at cold start nothing has been freshly scheduled yet, so there's no race to guard.
+        let dismissed = running.filter { !liveIDs.contains($0.id) }
         guard !dismissed.isEmpty else { return }
         let dismissedSet = Set(dismissed.map(\.id))
         running.removeAll { dismissedSet.contains($0.id) }
@@ -77,27 +78,51 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         }
     }
 
-    func reconcileWithLiveActivities() {
-        let liveIDs = Set(
-            Activity<AlarmAttributes<SpaghettiTimerMetadata>>.activities.compactMap { activity -> UUID? in
-                guard let idString = activity.attributes.metadata?.alarmID else { return nil }
-                return UUID(uuidString: idString)
+    func reconcileOnForeground() {
+        // AppIntents (Stop / Repeat / Start) run in other processes and write directly to the
+        // shared repo while the app is backgrounded. Re-load it on foreground so out-of-process
+        // additions (auto-restart's next iteration) and removals are reflected — the in-memory
+        // `running` array is otherwise never told about them.
+        let previousIDs = Set(running.map(\.id))
+        running = repo.load()
+
+        // AlarmKit is the source of truth for which alarms are still alive: countdown, paused
+        // and alerting alarms are all present in `AlarmManager.shared.alarms` and disappear only
+        // once stopped or cancelled. So a timer that's gone from this list has been dismissed —
+        // including a fired-then-stopped one (`isFinished`). We can't depend on the custom
+        // StopTimerIntent for this: it doesn't run in every context (e.g. the Simulator) and can
+        // fail on device. Keying off the alarm list self-heals regardless.
+        guard let alarms = try? AlarmManager.shared.alarms else {
+            // Couldn't verify liveness — just publish the repo reload.
+            if Set(running.map(\.id)) != previousIDs {
+                onChange?()
+                WidgetCenter.shared.reloadAllTimelines()
             }
-        )
-        let now = Date()
-        let dismissedIDs = running
-            .filter { !liveIDs.contains($0.id) && !$0.isFinished(at: now) && seenAlarmIDs.contains($0.id) }
-            .map(\.id)
-        guard !dismissedIDs.isEmpty else { return }
-        for id in dismissedIDs {
-            Task { try? AlarmManager.shared.cancel(id: id) }
+            return
         }
-        let dismissedSet = Set(dismissedIDs)
-        running.removeAll { dismissedSet.contains($0.id) }
-        seenAlarmIDs.subtract(dismissedSet)
-        repo.save(running)
-        onChange?()
-        WidgetCenter.shared.reloadAllTimelines()
+        let liveIDs = Set(alarms.map(\.id))
+
+        // Prune a timer when its alarm is gone from AlarmKit AND either we've already observed it
+        // live or it has finished. The `isFinished` arm catches the case the `seenAlarmIDs` guard
+        // alone misses: a timer started and then fired while the app was suspended is never
+        // recorded in `seenAlarmIDs` (the alarmUpdates observer didn't run), yet it's clearly
+        // done. A *freshly* started timer whose alarm is still scheduling is neither finished nor
+        // seen, so it's preserved; an actively ringing alarm is still in `liveIDs`, so it's kept.
+        // (Mirrors `removeTimers(notIn:)`.)
+        let now = Date()
+        let dismissedSet = Set(
+            running.filter { !liveIDs.contains($0.id) && (seenAlarmIDs.contains($0.id) || $0.isFinished(at: now)) }.map(\.id)
+        )
+        if !dismissedSet.isEmpty {
+            running.removeAll { dismissedSet.contains($0.id) }
+            seenAlarmIDs.subtract(dismissedSet)
+            repo.save(running)
+        }
+
+        if Set(running.map(\.id)) != previousIDs {
+            onChange?()
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 
     private func syncPauseState(from alarms: [Alarm]) {

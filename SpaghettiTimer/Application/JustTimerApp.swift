@@ -27,7 +27,7 @@ struct SpaghettiTimerApp: App {
             HomeView(viewModel: viewModel)
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
-                        runningUseCase.reconcileWithLiveActivities()
+                        runningUseCase.reconcileOnForeground()
                     }
                 }
         }
