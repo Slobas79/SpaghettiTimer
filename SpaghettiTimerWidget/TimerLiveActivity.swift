@@ -238,7 +238,9 @@ struct TimerLiveActivity: Widget {
     }
 
     private func formatRemaining(_ seconds: TimeInterval) -> String {
-        let total = max(0, Int(seconds.rounded()))
+        guard seconds.isFinite else { return "0:00" }
+        // Cap well below Int range (~273 years) so the Int() conversion can never trap.
+        let total = Int(min(max(0, seconds.rounded()), 8.64e9))
         let hours = total / 3600
         let minutes = (total % 3600) / 60
         let secs = total % 60

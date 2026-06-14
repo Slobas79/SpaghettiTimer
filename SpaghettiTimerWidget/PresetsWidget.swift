@@ -312,7 +312,9 @@ struct PresetsWidgetView: View {
     }
 
     private func format(_ interval: TimeInterval) -> String {
-        let total = Int(interval.rounded(.up))
+        guard interval.isFinite, interval > 0 else { return "00:00" }
+        // Cap well below Int range (~273 years) so the Int() conversion can never trap.
+        let total = Int(min(interval.rounded(.up), 8.64e9))
         let h = total / 3600
         let m = (total % 3600) / 60
         let s = total % 60
