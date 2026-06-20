@@ -33,6 +33,15 @@ enum Theme {
     static let disabledFill = Color(red: 0.165, green: 0.165, blue: 0.176)            // #2A2A2D
     static let hairline = Color.white.opacity(0.09)                                   // rgba(255,255,255,.09)
 
+    // New Timer sheet — "End time" mode (segmented control + readout)
+    static let segTrackFill = Color.white.opacity(0.03)                               // rgba(255,255,255,.03)
+    static let segTrackBorder = Color(red: 0.827, green: 0.913, blue: 1.0).opacity(0.237) // mix(accent 18%, white .07)
+    static let segSelectedFill = Color(red: 72 / 255, green: 72 / 255, blue: 74 / 255)    // #48484A
+    static let dayTodayBG = accent.opacity(0.20)                                      // mix(accent 20%, transparent)
+    static let dayTodayText = Color(red: 0.308, green: 0.653, blue: 1.0)              // mix(accent 72%, #fff)
+    static let dayTomorrowBG = Color.white.opacity(0.08)                              // rgba(255,255,255,.08)
+    static let durMutedText = Color(red: 0.78, green: 0.78, blue: 0.80)               // #C7C7CC
+
     // Metrics
     static let cornerRadius: CGFloat = 22
     static let gridGap: CGFloat = 16

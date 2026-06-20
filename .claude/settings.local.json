@@ -19,7 +19,12 @@
       "mcp__xcode__XcodeListNavigatorIssues",
       "mcp__xcode__GetBuildLog",
       "Bash(xcrun simctl *)",
-      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -derivedDataPath /tmp/spaghetti-dd build)"
+      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -derivedDataPath /tmp/spaghetti-dd build)",
+      "mcp__xcode__RenderPreview",
+      "Bash(python3 *)",
+      "Read(//Users/slobodanstamenic/Library/Developer/Xcode/DerivedData/SpaghettiTimer-hffybqlnwfjylmbuegblbufzaelm/Build/Products/Debug-iphonesimulator/SpaghettiTimer.app/**)",
+      "Bash(plutil -p fr.lproj/Localizable.strings)",
+      "Bash(plutil -p ja.lproj/Localizable.strings)"
     ]
   }
 }

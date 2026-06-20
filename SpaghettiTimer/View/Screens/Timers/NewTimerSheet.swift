@@ -14,10 +14,17 @@ import SwiftUI
 struct NewTimerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
+    /// The two ways to create a timer: dial a duration, or pick a clock time.
+    enum CreationMode: Hashable { case duration, endTime }
+
     @State private var name: String = ""
+    @State private var mode: CreationMode = .duration
     @State private var hours: Int = 0
     @State private var minutes: Int = 5
     @State private var seconds: Int = 0
+    /// End-time mode source of truth: minutes-since-midnight of the target clock time (0...1439).
+    @State private var endMinutes: Int = 11 * 60
+    @State private var didInitEndTime = false
     @State private var isPinned: Bool = false
     @State private var autoRestart: Bool = false
     @State private var cooldownHours: Int = 0
@@ -34,11 +41,23 @@ struct NewTimerSheet: View {
     @ScaledMetric(relativeTo: .caption) private var optionDescSize: CGFloat = 13
     @ScaledMetric(relativeTo: .subheadline) private var cooldownLabelSize: CGFloat = 15
     @ScaledMetric(relativeTo: .callout) private var cooldownReadoutSize: CGFloat = 16
+    @ScaledMetric(relativeTo: .caption) private var eyebrowSize: CGFloat = 12
+    @ScaledMetric(relativeTo: .largeTitle) private var targetTimeSize: CGFloat = 56
+    @ScaledMetric(relativeTo: .title2) private var ampmSize: CGFloat = 22
+    @ScaledMetric(relativeTo: .footnote) private var dayBadgeSize: CGFloat = 13
+    @ScaledMetric(relativeTo: .subheadline) private var durReadoutSize: CGFloat = 15
+    @ScaledMetric(relativeTo: .subheadline) private var segLabelSize: CGFloat = 15
 
     let onSave: (String, TimeInterval, Bool, TimeInterval?) -> Void
 
     private var duration: TimeInterval {
         TimeInterval(hours * 3600 + minutes * 60 + seconds)
+    }
+
+    /// Whether the device locale uses a 24-hour clock (no AM/PM).
+    private var uses24Hour: Bool {
+        let template = DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .current) ?? "h"
+        return !template.contains("a")
     }
 
     private var cooldownTotal: Int {
@@ -49,7 +68,37 @@ struct NewTimerSheet: View {
         autoRestart ? TimeInterval(cooldownTotal) : nil
     }
 
-    private var canSave: Bool { duration > 0 }
+    /// Duration mode disables Start at 0; End-time mode is always valid.
+    private var canSave: Bool {
+        switch mode {
+        case .duration: return duration > 0
+        case .endTime: return true
+        }
+    }
+
+    /// Seconds from `now` until the picked clock time, rolling to tomorrow when the
+    /// target is at or before the current time. The end instant lands on HH:MM:00.
+    private func endTimeDuration(now: Date) -> TimeInterval {
+        let cal = Calendar.current
+        let startOfDay = cal.startOfDay(for: now)
+        var target = cal.date(byAdding: .minute, value: endMinutes, to: startOfDay) ?? now
+        if target <= now {
+            target = cal.date(byAdding: .day, value: 1, to: target) ?? target
+        }
+        return target.timeIntervalSince(now)
+    }
+
+    private func save() {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        switch mode {
+        case .duration:
+            onSave(trimmed, duration, isPinned, restartDelay)
+        case .endTime:
+            // Auto-restart is meaningless for a fixed clock target, so it's always nil.
+            onSave(trimmed, endTimeDuration(now: Date()), isPinned, nil)
+        }
+        dismiss()
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -59,11 +108,22 @@ struct NewTimerSheet: View {
                     fieldGroup("Name") {
                         nameField
                     }
-                    fieldGroup("Duration") {
-                        WheelPicker(hours: $hours, minutes: $minutes, seconds: $seconds)
+                    fieldGroup("Set timer by") {
+                        modePicker
+                    }
+                    fieldGroup(mode == .endTime ? "End time" : "Duration") {
+                        if mode == .endTime {
+                            endTimeSurface
+                        } else {
+                            WheelPicker(hours: $hours, minutes: $minutes, seconds: $seconds)
+                        }
                     }
                     fieldGroup("Options") {
-                        optionsList
+                        if mode == .endTime {
+                            pinOnlyOptions
+                        } else {
+                            optionsList
+                        }
                     }
                 }
                 .padding(.top, 4)
@@ -72,6 +132,13 @@ struct NewTimerSheet: View {
             }
         }
         .background(Color.black.ignoresSafeArea())
+        .onAppear {
+            // Default the clock picker to the top of the next hour the first time.
+            guard !didInitEndTime else { return }
+            let hour = Calendar.current.component(.hour, from: Date())
+            endMinutes = ((hour + 1) % 24) * 60
+            didInitEndTime = true
+        }
     }
 
     // MARK: - Nav bar
@@ -99,8 +166,7 @@ struct NewTimerSheet: View {
                 Spacer()
 
                 Button {
-                    onSave(name.trimmingCharacters(in: .whitespacesAndNewlines), duration, isPinned, restartDelay)
-                    dismiss()
+                    save()
                 } label: {
                     Text("Start")
                         .font(.system(size: buttonSize, weight: .semibold))
@@ -254,6 +320,321 @@ struct NewTimerSheet: View {
         Rectangle()
             .fill(Theme.hairline)
             .frame(height: 0.5)
+    }
+
+    // MARK: - Mode picker (Duration | End time)
+
+    private var modePicker: some View {
+        HStack(spacing: 3) {
+            segButton(.duration, icon: "hourglass", title: "Duration")
+            segButton(.endTime, icon: "clock", title: "End time")
+        }
+        .padding(3)
+        .background(RoundedRectangle(cornerRadius: 13, style: .continuous).fill(Theme.segTrackFill))
+        .overlay(
+            RoundedRectangle(cornerRadius: 13, style: .continuous)
+                .strokeBorder(Theme.segTrackBorder, lineWidth: 1)
+        )
+    }
+
+    private func segButton(_ target: CreationMode, icon: String, title: LocalizedStringKey) -> some View {
+        let selected = mode == target
+        return Button {
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.16)) { mode = target }
+        } label: {
+            HStack(spacing: 7) {
+                Image(systemName: icon)
+                    .font(.system(size: segLabelSize, weight: .semibold))
+                Text(title)
+                    .font(.system(size: segLabelSize, weight: .semibold))
+            }
+            .foregroundStyle(selected ? .white : Theme.mutedTime)
+            .frame(maxWidth: .infinity)
+            .frame(height: 38)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(selected ? Theme.segSelectedFill : Color.clear)
+                    .shadow(color: selected ? .black.opacity(0.35) : .clear, radius: 3, y: 1)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? [.isSelected] : [])
+    }
+
+    // MARK: - End-time mode
+
+    private var endTimeSurface: some View {
+        VStack(spacing: 0) {
+            // The readout depends on "now", so refresh it every second.
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                endReadout(endInfo(now: context.date))
+            }
+            hairline
+            clockWheel
+        }
+        .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surfaceFill))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .strokeBorder(Theme.surfaceBorder, lineWidth: 1.5)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+    }
+
+    private struct EndInfo {
+        let timeText: String
+        let ampm: String?
+        let isTomorrow: Bool
+        let durationText: String
+    }
+
+    private func endInfo(now: Date) -> EndInfo {
+        let h24 = endMinutes / 60, minute = endMinutes % 60
+        let timeText: String
+        let ampm: String?
+        if uses24Hour {
+            timeText = String(format: "%02d:%02d", h24, minute)
+            ampm = nil
+        } else {
+            let pm = h24 >= 12
+            let h12 = ((h24 + 11) % 12) + 1
+            timeText = "\(h12):" + String(format: "%02d", minute)
+            let df = DateFormatter()
+            ampm = pm ? df.pmSymbol : df.amSymbol
+        }
+
+        let cal = Calendar.current
+        let comps = cal.dateComponents([.hour, .minute], from: now)
+        let nowMins = (comps.hour ?? 0) * 60 + (comps.minute ?? 0)
+        var delta = ((endMinutes - nowMins) % 1440 + 1440) % 1440
+        let isTomorrow = endMinutes <= nowMins
+        if delta == 0 { delta = 1440 }   // same clock time = 24h from now
+        let h = delta / 60, m = delta % 60
+
+        var parts: [String] = []
+        if h > 0 { parts.append(String(localized: "\(h) hr")) }
+        if m > 0 { parts.append(String(localized: "\(m) min")) }
+        let durationText = parts.isEmpty ? String(localized: "0 min") : parts.joined(separator: " ")
+
+        return EndInfo(timeText: timeText, ampm: ampm, isTomorrow: isTomorrow, durationText: durationText)
+    }
+
+    private func endReadout(_ info: EndInfo) -> some View {
+        VStack(spacing: 0) {
+            Text(String(localized: "Timer ends").uppercased())
+                .font(.system(size: eyebrowSize, weight: .semibold))
+                .tracking(0.6)
+                .foregroundStyle(Theme.mutedTime)
+
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(info.timeText)
+                    .font(.system(size: targetTimeSize, weight: .bold))
+                    .monospacedDigit()
+                    .foregroundStyle(.white)
+                if let ampm = info.ampm {
+                    Text(ampm)
+                        .font(.system(size: ampmSize, weight: .bold))
+                        .foregroundStyle(Theme.accent)
+                }
+            }
+            .padding(.top, 8)
+
+            HStack(spacing: 10) {
+                Text(info.isTomorrow ? "Tomorrow" : "Today")
+                    .font(.system(size: dayBadgeSize, weight: .semibold))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(info.isTomorrow ? Theme.dayTomorrowBG : Theme.dayTodayBG))
+                    .foregroundStyle(info.isTomorrow ? Theme.lightText : Theme.dayTodayText)
+
+                (Text(info.durationText)
+                    .font(.system(size: durReadoutSize, weight: .bold))
+                    .foregroundColor(.white)
+                 + Text(verbatim: " ")
+                 + Text("from now")
+                    .font(.system(size: durReadoutSize, weight: .medium))
+                    .foregroundColor(Theme.durMutedText))
+            }
+            .padding(.top, 14)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 20)
+        .padding(.bottom, 16)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var clockWheel: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Theme.bandFill)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .strokeBorder(Theme.bandBorder, lineWidth: 1)
+                )
+                .frame(height: 46)
+                .padding(.horizontal, 12)
+                .allowsHitTesting(false)
+
+            HStack(spacing: 0) {
+                if uses24Hour {
+                    ClockColumn(labels: Self.hours24Labels, value: hour24Binding, accLabel: "Hours")
+                    clockColon
+                    ClockColumn(labels: Self.minuteLabels, value: minuteBinding, accLabel: "Minutes")
+                } else {
+                    ClockColumn(labels: Self.hours12Labels, value: hour12IndexBinding, accLabel: "Hours")
+                    clockColon
+                    ClockColumn(labels: Self.minuteLabels, value: minuteBinding, accLabel: "Minutes")
+                    ClockColumn(labels: ampmLabels, value: ampmBinding, accLabel: "AM/PM", fontSize: 24, weight: .semibold)
+                }
+            }
+        }
+        .frame(height: 220)
+        .padding(.horizontal, 12)
+    }
+
+    private var clockColon: some View {
+        Text(verbatim: ":")
+            .font(.system(size: 30, weight: .medium))
+            .foregroundStyle(Theme.disabledText)
+            .frame(width: 14)
+            .padding(.bottom, 2)
+            .accessibilityHidden(true)
+    }
+
+    private static let hours24Labels = (0..<24).map { String(format: "%02d", $0) }
+    private static let hours12Labels = (1...12).map { String($0) }
+    private static let minuteLabels = (0..<60).map { String(format: "%02d", $0) }
+    private var ampmLabels: [String] {
+        let df = DateFormatter()
+        return [df.amSymbol ?? "AM", df.pmSymbol ?? "PM"]
+    }
+
+    // Each column reads/writes a slice of `endMinutes`, the single source of truth.
+    private var hour24Binding: Binding<Int> {
+        Binding(get: { endMinutes / 60 },
+                set: { endMinutes = $0 * 60 + endMinutes % 60 })
+    }
+    private var minuteBinding: Binding<Int> {
+        Binding(get: { endMinutes % 60 },
+                set: { endMinutes = (endMinutes / 60) * 60 + $0 })
+    }
+    private var hour12IndexBinding: Binding<Int> {
+        Binding(
+            get: { let h24 = endMinutes / 60; return (h24 + 11) % 12 },   // 0...11 → "1".."12"
+            set: { idx in
+                let nh12 = idx + 1
+                let pm = (endMinutes / 60) >= 12
+                let nh24 = (nh12 % 12) + (pm ? 12 : 0)
+                endMinutes = nh24 * 60 + endMinutes % 60
+            }
+        )
+    }
+    private var ampmBinding: Binding<Int> {
+        Binding(
+            get: { (endMinutes / 60) >= 12 ? 1 : 0 },
+            set: { sel in
+                let h24 = endMinutes / 60
+                let h12 = ((h24 + 11) % 12) + 1
+                let nh24 = (h12 % 12) + (sel == 1 ? 12 : 0)
+                endMinutes = nh24 * 60 + endMinutes % 60
+            }
+        )
+    }
+
+    private var pinOnlyOptions: some View {
+        VStack(spacing: 0) {
+            optionRow(
+                icon: "pin",
+                title: "Pin timer",
+                description: "Keep this timer permanently available.",
+                isOn: $isPinned
+            )
+        }
+        .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surfaceFill))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .strokeBorder(Theme.surfaceBorder, lineWidth: 1.5)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+    }
+}
+
+// MARK: - Clock wheel column
+
+/// A snap-scroll wheel column driven by an array of string labels, sharing the
+/// duration wheel's mechanics (commit-on-settle, mount-scroll-to-value, VoiceOver
+/// adjustable). `value` is the selected index into `labels`.
+private struct ClockColumn: View {
+    let labels: [String]
+    @Binding var value: Int
+    let accLabel: LocalizedStringResource
+    var fontSize: CGFloat = 30
+    var weight: Font.Weight = .medium
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var scrollID: Int?
+
+    private let itemHeight: CGFloat = 46
+    private let wheelHeight: CGFloat = 220
+    private var count: Int { labels.count }
+    private var spacer: CGFloat { (wheelHeight - itemHeight) / 2 }
+    private var clamped: Int { max(0, min(count - 1, value)) }
+
+    var body: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            LazyVStack(spacing: 0) {
+                ForEach(0..<count, id: \.self) { i in
+                    Text(labels[i])
+                        .font(.system(size: fontSize, weight: weight))
+                        .monospacedDigit()
+                        .foregroundStyle(i == value ? .white : Theme.mutedTime)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: itemHeight)
+                        .id(i)
+                }
+            }
+            .scrollTargetLayout()
+        }
+        .safeAreaPadding(.vertical, spacer)
+        .scrollTargetBehavior(.viewAligned)
+        .scrollPosition(id: $scrollID, anchor: .center)
+        .frame(maxWidth: .infinity)
+        .mask(
+            LinearGradient(
+                stops: [
+                    .init(color: .clear, location: 0),
+                    .init(color: .black, location: 0.32),
+                    .init(color: .black, location: 0.68),
+                    .init(color: .clear, location: 1)
+                ],
+                startPoint: .top, endPoint: .bottom
+            )
+        )
+        .sensoryFeedback(.selection, trigger: value)
+        .onAppear { scrollID = clamped }
+        .onChange(of: scrollID) { _, newValue in
+            guard let newValue else { return }
+            let c = max(0, min(count - 1, newValue))
+            if c != value { value = c }
+        }
+        .onChange(of: value) { _, newValue in
+            guard scrollID != newValue else { return }
+            if reduceMotion {
+                scrollID = newValue
+            } else {
+                withAnimation { scrollID = newValue }
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(accLabel))
+        .accessibilityValue(Text(labels[clamped]))
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: value = min(count - 1, value + 1)
+            case .decrement: value = max(0, value - 1)
+            @unknown default: break
+            }
+        }
     }
 }
 
@@ -409,11 +790,24 @@ private struct WheelColumn: View {
         .seededAutoRestart()
 }
 
+#Preview("End time") {
+    NewTimerSheet { _, _, _, _ in }
+        .seededEndTime()
+}
+
 private extension NewTimerSheet {
     /// Renders the sheet with the cooldown reveal open so the compact wheel shows.
     func seededAutoRestart() -> some View {
         var copy = self
         copy._autoRestart = State(initialValue: true)
+        return copy
+    }
+
+    /// Renders the sheet pre-switched to the End-time mode.
+    func seededEndTime() -> some View {
+        var copy = self
+        copy._mode = State(initialValue: .endTime)
+        copy._didInitEndTime = State(initialValue: true)
         return copy
     }
 }
