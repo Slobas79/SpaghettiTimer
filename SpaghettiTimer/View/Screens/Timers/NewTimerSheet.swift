@@ -345,6 +345,7 @@ struct NewTimerSheet: View {
             HStack(spacing: 7) {
                 Image(systemName: icon)
                     .font(.system(size: segLabelSize, weight: .semibold))
+                    .accessibilityHidden(true)
                 Text(title)
                     .font(.system(size: segLabelSize, weight: .semibold))
             }
@@ -359,7 +360,9 @@ struct NewTimerSheet: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityAddTraits(selected ? [.isSelected] : [])
+        // Behaves like a segmented control: the chosen option reads as "selected".
+        .accessibilityAddTraits(selected ? [.isSelected, .isButton] : [.isButton])
+        .accessibilityHint("Choose how to set the timer")
     }
 
     // MARK: - End-time mode
@@ -431,10 +434,14 @@ struct NewTimerSheet: View {
                     .font(.system(size: targetTimeSize, weight: .bold))
                     .monospacedDigit()
                     .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                 if let ampm = info.ampm {
                     Text(ampm)
                         .font(.system(size: ampmSize, weight: .bold))
                         .foregroundStyle(Theme.accent)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
                 }
             }
             .padding(.top, 8)
@@ -460,7 +467,19 @@ struct NewTimerSheet: View {
         .frame(maxWidth: .infinity)
         .padding(.top, 20)
         .padding(.bottom, 16)
-        .accessibilityElement(children: .combine)
+        // Read as one clean sentence instead of the fragmented, all-caps pieces.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(readoutAccessibilityLabel(info))
+    }
+
+    /// e.g. "Timer ends 11:00 AM, Tomorrow, 21 hr 49 min from now" — composed from
+    /// the same localized fragments shown on screen.
+    private func readoutAccessibilityLabel(_ info: EndInfo) -> String {
+        let time = info.ampm.map { "\(info.timeText) \($0)" } ?? info.timeText
+        let day = info.isTomorrow ? String(localized: "Tomorrow") : String(localized: "Today")
+        let ends = String(localized: "Timer ends")
+        let fromNow = String(localized: "from now")
+        return "\(ends) \(time), \(day), \(info.durationText) \(fromNow)"
     }
 
     private var clockWheel: some View {
