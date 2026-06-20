@@ -11,6 +11,8 @@ struct TimersView: View {
     @State var viewModel: TimersViewModel
     @State private var showingNew = false
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private let columns = [
         GridItem(.flexible(), spacing: Theme.gridGap),
         GridItem(.flexible(), spacing: Theme.gridGap)
@@ -33,7 +35,7 @@ struct TimersView: View {
                                         onResume: { viewModel.resume(timer) },
                                         onCancel: { viewModel.stop(timer) }
                                     )
-                                    .transition(.move(edge: .top).combined(with: .opacity))
+                                    .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
                                 }
                             }
                         }
@@ -50,9 +52,12 @@ struct TimersView: View {
                             AddTimerTile(action: { showingNew = true })
                         }
                     }
+                    // Cap text growth on the fixed-aspect tiles / fixed-height
+                    // rows so very large Dynamic Type sizes can't break the layout.
+                    .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                     .padding(.horizontal, Theme.screenPadding)
                     .padding(.top, 6)
-                    .animation(.easeInOut(duration: 0.25), value: viewModel.runningRows)
+                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.25), value: viewModel.runningRows)
                 }
             }
         }

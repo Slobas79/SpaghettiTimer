@@ -25,6 +25,16 @@ struct NewTimerSheet: View {
     @State private var cooldownSeconds: Int = 0
     @FocusState private var nameFocused: Bool
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @ScaledMetric(relativeTo: .headline) private var titleSize: CGFloat = 18
+    @ScaledMetric(relativeTo: .body) private var buttonSize: CGFloat = 17
+    @ScaledMetric(relativeTo: .caption) private var groupLabelSize: CGFloat = 13
+    @ScaledMetric(relativeTo: .body) private var nameSize: CGFloat = 19
+    @ScaledMetric(relativeTo: .body) private var optionTitleSize: CGFloat = 17
+    @ScaledMetric(relativeTo: .caption) private var optionDescSize: CGFloat = 13
+    @ScaledMetric(relativeTo: .subheadline) private var cooldownLabelSize: CGFloat = 15
+    @ScaledMetric(relativeTo: .callout) private var cooldownReadoutSize: CGFloat = 16
+
     let onSave: (String, TimeInterval, Bool, TimeInterval?) -> Void
 
     private var duration: TimeInterval {
@@ -69,15 +79,16 @@ struct NewTimerSheet: View {
     private var navBar: some View {
         ZStack {
             Text("New Timer")
-                .font(.system(size: 18, weight: .bold))
+                .font(.system(size: titleSize, weight: .bold))
                 .foregroundStyle(.white)
+                .accessibilityAddTraits(.isHeader)
 
             HStack {
                 Button {
                     dismiss()
                 } label: {
                     Text("Cancel")
-                        .font(.system(size: 17))
+                        .font(.system(size: buttonSize))
                         .foregroundStyle(Theme.lightText)
                         .padding(.vertical, 9)
                         .padding(.horizontal, 18)
@@ -92,7 +103,7 @@ struct NewTimerSheet: View {
                     dismiss()
                 } label: {
                     Text("Start")
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.system(size: buttonSize, weight: .semibold))
                         .foregroundStyle(canSave ? .white : Theme.disabledText)
                         .padding(.vertical, 9)
                         .padding(.horizontal, 20)
@@ -102,6 +113,7 @@ struct NewTimerSheet: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(!canSave)
+                .accessibilityHint("Starts the timer with these settings")
             }
         }
         .frame(height: 56)
@@ -114,10 +126,11 @@ struct NewTimerSheet: View {
     private func fieldGroup<Content: View>(_ label: LocalizedStringResource, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 9) {
             Text(String(localized: label).uppercased())
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: groupLabelSize, weight: .semibold))
                 .tracking(0.4)
                 .foregroundStyle(Theme.mutedTime)
                 .padding(.leading, 4)
+                .accessibilityAddTraits(.isHeader)
             content()
         }
     }
@@ -128,7 +141,8 @@ struct NewTimerSheet: View {
         TextField("", text: $name, prompt: Text("e.g. Pasta").foregroundColor(Theme.disabledText))
             .focused($nameFocused)
             .textInputAutocapitalization(.words)
-            .font(.system(size: 19, weight: .medium))
+            .accessibilityLabel("Timer name")
+            .font(.system(size: nameSize, weight: .medium))
             .foregroundStyle(.white)
             .tint(Theme.accent)
             .frame(height: 54)
@@ -149,7 +163,7 @@ struct NewTimerSheet: View {
                 icon: "arrow.clockwise",
                 title: "Auto-restart after finish",
                 description: "Re-run this timer automatically after a cooldown delay.",
-                isOn: $autoRestart.animation(.easeInOut(duration: 0.2))
+                isOn: $autoRestart.animation(reduceMotion ? nil : .easeInOut(duration: 0.2))
             )
 
             if autoRestart {
@@ -180,23 +194,29 @@ struct NewTimerSheet: View {
                 .font(.system(size: 22))
                 .foregroundStyle(Theme.accent)
                 .frame(width: 30, height: 30)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: optionTitleSize, weight: .semibold))
                     .foregroundStyle(.white)
                 Text(description)
-                    .font(.system(size: 13))
+                    .font(.system(size: optionDescSize))
                     .foregroundStyle(Theme.mutedTime)
-                    .lineSpacing(13 * 0.35)
+                    .lineSpacing(optionDescSize * 0.35)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            // The toggle below carries the title as its label and the
+            // description as its hint, so the visual text is redundant to VO.
+            .accessibilityHidden(true)
 
             Spacer(minLength: 0)
 
             Toggle("", isOn: isOn)
                 .labelsHidden()
                 .tint(Theme.accent)
+                .accessibilityLabel(title)
+                .accessibilityHint(description)
         }
         .padding(16)
     }
@@ -205,16 +225,17 @@ struct NewTimerSheet: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .lastTextBaseline) {
                 Text("Cooldown delay")
-                    .font(.system(size: 15))
+                    .font(.system(size: cooldownLabelSize))
                     .foregroundStyle(Theme.mutedTime)
                 Spacer(minLength: 8)
                 Text(cooldownTotal == 0 ? String(localized: "Immediately") : Self.fmtClock(cooldownTotal))
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: cooldownReadoutSize, weight: .semibold))
                     .monospacedDigit()
                     .foregroundStyle(Theme.cooldownReadout)
             }
             .padding(.top, 12)
             .padding(.horizontal, 18)
+            .accessibilityElement(children: .combine)
 
             Wheel(hours: $cooldownHours, minutes: $cooldownMinutes, seconds: $cooldownSeconds, compact: true)
         }
@@ -280,11 +301,11 @@ private struct Wheel: View {
                 .allowsHitTesting(false)
 
             HStack(spacing: 0) {
-                WheelColumn(count: 24, value: $hours, itemHeight: itemHeight, wheelHeight: wheelHeight, fontSize: fontSize)
+                WheelColumn(count: 24, value: $hours, label: "Hours", itemHeight: itemHeight, wheelHeight: wheelHeight, fontSize: fontSize)
                 unitLabel("h")
-                WheelColumn(count: 60, value: $minutes, itemHeight: itemHeight, wheelHeight: wheelHeight, fontSize: fontSize)
+                WheelColumn(count: 60, value: $minutes, label: "Minutes", itemHeight: itemHeight, wheelHeight: wheelHeight, fontSize: fontSize)
                 unitLabel("m")
-                WheelColumn(count: 60, value: $seconds, itemHeight: itemHeight, wheelHeight: wheelHeight, fontSize: fontSize)
+                WheelColumn(count: 60, value: $seconds, label: "Seconds", itemHeight: itemHeight, wheelHeight: wheelHeight, fontSize: fontSize)
                 unitLabel("s")
             }
         }
@@ -297,16 +318,19 @@ private struct Wheel: View {
             .font(.system(size: 17, weight: .semibold))
             .foregroundStyle(Theme.unitTint)
             .frame(width: 28)
+            .accessibilityHidden(true)
     }
 }
 
 private struct WheelColumn: View {
     let count: Int
     @Binding var value: Int
+    let label: LocalizedStringResource
     let itemHeight: CGFloat
     let wheelHeight: CGFloat
     let fontSize: CGFloat
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var scrollID: Int?
 
     private var spacer: CGFloat { (wheelHeight - itemHeight) / 2 }
@@ -351,6 +375,29 @@ private struct WheelColumn: View {
             guard let newValue else { return }
             let clamped = max(0, min(count - 1, newValue))
             if clamped != value { value = clamped }
+        }
+        // Drive the visible wheel when `value` is changed by the VoiceOver
+        // adjustable action (or an external binding update). Guarded so it
+        // never fights the scroll → value sync above.
+        .onChange(of: value) { _, newValue in
+            guard scrollID != newValue else { return }
+            if reduceMotion {
+                scrollID = newValue
+            } else {
+                withAnimation { scrollID = newValue }
+            }
+        }
+        // One adjustable VoiceOver element per column: swipe up/down to change
+        // the value; the unit ("Hours"/…) is announced as the label.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(label))
+        .accessibilityValue(Text(verbatim: "\(value)"))
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: value = min(count - 1, value + 1)
+            case .decrement: value = max(0, value - 1)
+            @unknown default: break
+            }
         }
     }
 }

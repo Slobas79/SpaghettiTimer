@@ -118,6 +118,7 @@ struct PresetsWidgetView: View {
     let entry: PresetsEntry
 
     @Environment(\.widgetFamily) private var family
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
 
     private var isSmall: Bool { family == .systemSmall }
     private var isLarge: Bool { family == .systemLarge }
@@ -198,6 +199,7 @@ struct PresetsWidgetView: View {
                     Circle()
                         .fill(WidgetStyle.accent)
                         .frame(width: 7, height: 7)
+                        .accessibilityHidden(true)
                     Text("\(activeLabel) running")
                 } else {
                     Text("Quick start")
@@ -238,6 +240,7 @@ struct PresetsWidgetView: View {
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: iconOnly ? (isSmall ? 22 : 26) : 18, weight: .semibold))
                             .foregroundStyle(isActive ? Color.white : WidgetStyle.accent)
+                            .accessibilityHidden(true)
                     }
                     if !name.isEmpty {
                         Text(name)
@@ -287,6 +290,13 @@ struct PresetsWidgetView: View {
                             lineWidth: 1)
                 }
             }
+            .overlay {
+                // Non-color cue: the active tile is otherwise only a blue gradient.
+                if isActive && differentiateWithoutColor {
+                    RoundedRectangle(cornerRadius: WidgetStyle.tileRadius, style: .continuous)
+                        .strokeBorder(Color.white, lineWidth: 2)
+                }
+            }
             .overlay(alignment: .topTrailing) {
                 if isActive { liveDot }
             }
@@ -295,6 +305,19 @@ struct PresetsWidgetView: View {
                     radius: isActive ? 8 : 0, x: 0, y: isActive ? 6 : 0)
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(name.isEmpty ? Text("Timer") : Text(name))
+        .accessibilityValue(tileAccessibilityValue(preset: preset, isActive: isActive, isRepeat: isRepeat))
+        .accessibilityHint("Starts the timer")
+        .accessibilityAddTraits(.isButton)
+    }
+
+    /// Spoken duration plus running / repeats state for a preset tile.
+    private func tileAccessibilityValue(preset: TimerPreset, isActive: Bool, isRepeat: Bool) -> Text {
+        var parts = [spoken(preset.duration)]
+        if isActive { parts.append(String(localized: "Running")) }
+        if isRepeat { parts.append(String(localized: "Repeats")) }
+        return Text(parts.joined(separator: ", "))
     }
 
     private var liveDot: some View {
@@ -308,7 +331,15 @@ struct PresetsWidgetView: View {
                     .fill(WidgetStyle.accent.opacity(0.55))
                     .frame(width: dot + 6, height: dot + 6)
             )
+            // Non-color cue: ring the dot so it's not a pure color blob.
+            .overlay(
+                Circle()
+                    .strokeBorder(Color.white.opacity(differentiateWithoutColor ? 0.9 : 0),
+                                  lineWidth: 1.5)
+                    .frame(width: dot + 6, height: dot + 6)
+            )
             .padding(inset)
+            .accessibilityHidden(true)
     }
 
     private func format(_ interval: TimeInterval) -> String {
@@ -321,6 +352,14 @@ struct PresetsWidgetView: View {
         return h > 0
             ? String(format: "%d:%02d:%02d", h, m, s)
             : String(format: "%02d:%02d", m, s)
+    }
+
+    /// Human-readable, localized duration for VoiceOver — mirrors
+    /// `TimerFormatting.spoken` in the app target (not compiled into the widget).
+    private func spoken(_ interval: TimeInterval) -> String {
+        let total = Int(min(max(0, interval.rounded()), 8.64e9))
+        return Duration.seconds(total)
+            .formatted(.units(allowed: [.hours, .minutes, .seconds], width: .wide))
     }
 }
 

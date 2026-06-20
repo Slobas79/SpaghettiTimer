@@ -111,13 +111,23 @@ struct TimerLiveActivity: Widget {
                     HStack(spacing: 14) {
                         progressRing(state: context.state, isRepeating: isRepeating,
                                      diameter: 66, stroke: 6, glyphPointSize: 24)
-                        countdownText(state: context.state)
-                            .font(.system(size: 44, weight: .semibold))
-                            .monospacedDigit()
-                            .foregroundStyle(.white)
-                            .opacity(paused ? 0.55 : 1)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            if paused {
+                                // Non-color cue: paused was previously shown only by
+                                // dimming. The glyph reads for everyone and VoiceOver.
+                                Image(systemName: "pause.fill")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundStyle(.white.opacity(0.55))
+                                    .accessibilityLabel("Paused")
+                            }
+                            countdownText(state: context.state)
+                                .font(.system(size: 44, weight: .semibold))
+                                .monospacedDigit()
+                                .foregroundStyle(.white)
+                                .opacity(paused ? 0.55 : 1)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.6)
+                        }
                         Spacer(minLength: 8)
                         pauseResumeButton(alarmID: metadata?.alarmID, state: context.state, size: 52)
                         cancelButton(alarmID: metadata?.alarmID, state: context.state, size: 52)
@@ -148,8 +158,10 @@ struct TimerLiveActivity: Widget {
             switch state.mode {
             case .countdown:
                 IntentCircleButton(systemName: "pause.fill", intent: PauseTimerIntent(timerID: id.uuidString), size: size)
+                    .accessibilityLabel("Pause timer")
             case .paused:
                 IntentCircleButton(systemName: "play.fill", intent: ResumeTimerIntent(timerID: id.uuidString), size: size)
+                    .accessibilityLabel("Resume timer")
             default:
                 EmptyView()
             }
@@ -163,6 +175,7 @@ struct TimerLiveActivity: Widget {
             case .countdown, .paused:
                 IntentCircleButton(systemName: "xmark", intent: CancelTimerIntent(timerID: id.uuidString),
                                    style: .secondary, size: size)
+                    .accessibilityLabel("Cancel timer")
             default:
                 EmptyView()
             }
@@ -213,14 +226,34 @@ struct TimerLiveActivity: Widget {
                 Image(systemName: isRepeating ? "arrow.clockwise" : "stopwatch")
                     .font(.system(size: glyphPointSize, weight: .semibold))
                     .foregroundStyle(LiveActivityStyle.accent)
+                    .accessibilityHidden(true)
             }
         }
         .frame(width: diameter, height: diameter)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Time remaining")
+        .accessibilityValue(spokenRemaining(state: state))
     }
 
     private func isPaused(state: AlarmPresentationState) -> Bool {
         if case .paused = state.mode { return true }
         return false
+    }
+
+    /// Human-readable remaining time for VoiceOver — "5 minutes", "1 hour, 30 seconds".
+    private func spokenRemaining(state: AlarmPresentationState) -> String {
+        let seconds: TimeInterval
+        switch state.mode {
+        case .countdown(let countdown):
+            seconds = max(0, countdown.fireDate.timeIntervalSinceNow)
+        case .paused(let paused):
+            seconds = max(0, paused.totalCountdownDuration - paused.previouslyElapsedDuration)
+        default:
+            return String(localized: "Done")
+        }
+        let total = Int(min(seconds.rounded(), 8.64e9))
+        return Duration.seconds(total)
+            .formatted(.units(allowed: [.hours, .minutes, .seconds], width: .wide))
     }
 
     @ViewBuilder
