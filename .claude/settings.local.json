@@ -24,7 +24,14 @@
       "Bash(python3 *)",
       "Read(//Users/slobodanstamenic/Library/Developer/Xcode/DerivedData/SpaghettiTimer-hffybqlnwfjylmbuegblbufzaelm/Build/Products/Debug-iphonesimulator/SpaghettiTimer.app/**)",
       "Bash(plutil -p fr.lproj/Localizable.strings)",
-      "Bash(plutil -p ja.lproj/Localizable.strings)"
+      "Bash(plutil -p ja.lproj/Localizable.strings)",
+      "Bash(osascript -e 'tell application \"Simulator\" to activate' -e 'tell application \"System Events\" to get position of window 1 of process \"Simulator\"' -e 'tell application \"System Events\" to get size of window 1 of process \"Simulator\"')",
+      "Bash(osascript *)",
+      "Bash(open -a Simulator)",
+      "Bash(screencapture -x -R1152,30,440,940 /private/tmp/claude-501/-Users-slobodanstamenic-Projects-SpaghettiTimer/a4f1b3a8-3625-4e90-bf30-cc62e21c9c74/scratchpad/simwin.png)",
+      "Bash(sips -g pixelWidth -g pixelHeight /private/tmp/claude-501/-Users-slobodanstamenic-Projects-SpaghettiTimer/a4f1b3a8-3625-4e90-bf30-cc62e21c9c74/scratchpad/simwin.png)",
+      "Bash(screencapture -x -R 1152,30,440,940 /private/tmp/claude-501/-Users-slobodanstamenic-Projects-SpaghettiTimer/a4f1b3a8-3625-4e90-bf30-cc62e21c9c74/scratchpad/simwin.png)",
+      "Bash(awk -F' = ' '/ TARGET_BUILD_DIR/{print $2}')"
     ]
   }
 }

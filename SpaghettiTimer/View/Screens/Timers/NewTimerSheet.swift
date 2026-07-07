@@ -25,6 +25,10 @@ struct NewTimerSheet: View {
     /// End-time mode source of truth: minutes-since-midnight of the target clock time (0...1439).
     @State private var endMinutes: Int = 11 * 60
     @State private var didInitEndTime = false
+    /// Earliest pickable end time (one minute out). The clock wheel wraps forward
+    /// from this instant so the user can never scroll into the past. Using now+60s
+    /// also handles hh:59 cleanly: the wheel then starts at the next hour.
+    @State private var earliest = Date().addingTimeInterval(60)
     @State private var isPinned: Bool = false
     @State private var autoRestart: Bool = false
     @State private var cooldownHours: Int = 0
@@ -135,7 +139,9 @@ struct NewTimerSheet: View {
         .onAppear {
             // Default the clock picker to the top of the next hour the first time.
             guard !didInitEndTime else { return }
-            let hour = Calendar.current.component(.hour, from: Date())
+            let now = Date()
+            earliest = now.addingTimeInterval(60)
+            let hour = Calendar.current.component(.hour, from: now)
             endMinutes = ((hour + 1) % 24) * 60
             didInitEndTime = true
         }
@@ -496,13 +502,13 @@ struct NewTimerSheet: View {
 
             HStack(spacing: 0) {
                 if uses24Hour {
-                    ClockColumn(labels: Self.hours24Labels, value: hour24Binding, accLabel: "Hours")
+                    ClockColumn(labels: hours24Labels, value: hour24Binding, accLabel: "Hours")
                     clockColon
-                    ClockColumn(labels: Self.minuteLabels, value: minuteBinding, accLabel: "Minutes")
+                    ClockColumn(labels: minuteLabels, value: minuteBinding, accLabel: "Minutes")
                 } else {
-                    ClockColumn(labels: Self.hours12Labels, value: hour12IndexBinding, accLabel: "Hours")
+                    ClockColumn(labels: hours12Labels, value: hour12IndexBinding, accLabel: "Hours")
                     clockColon
-                    ClockColumn(labels: Self.minuteLabels, value: minuteBinding, accLabel: "Minutes")
+                    ClockColumn(labels: minuteLabels, value: minuteBinding, accLabel: "Minutes")
                     ClockColumn(labels: ampmLabels, value: ampmBinding, accLabel: "AM/PM", fontSize: 24, weight: .semibold)
                 }
             }
@@ -520,31 +526,66 @@ struct NewTimerSheet: View {
             .accessibilityHidden(true)
     }
 
-    private static let hours24Labels = (0..<24).map { String(format: "%02d", $0) }
-    private static let hours12Labels = (1...12).map { String($0) }
-    private static let minuteLabels = (0..<60).map { String(format: "%02d", $0) }
+    /// Hour/minute of `earliest` — the wheel's "no past" boundary.
+    private var firstHour: Int { Calendar.current.component(.hour, from: earliest) }
+    private var firstMinute: Int { Calendar.current.component(.minute, from: earliest) }
+    /// 0-based index of `firstHour`'s 12-hour label ("1"..."12" → 0...11).
+    private var first12Base: Int { (firstHour + 11) % 12 }
+
+    /// Hours wrap forward from the current hour (e.g. 20, 21 … 23, 00 … 19), so
+    /// scrolling down past "now" is impossible while tomorrow stays reachable.
+    private var hours24Labels: [String] {
+        (0..<24).map { String(format: "%02d", (firstHour + $0) % 24) }
+    }
+    private var hours12Labels: [String] {
+        (0..<12).map { String(((first12Base + $0) % 12) + 1) }
+    }
+    /// With the current hour selected, only future minutes are offered.
+    private var minuteLabels: [String] {
+        let from = endMinutes / 60 == firstHour ? firstMinute : 0
+        return (from..<60).map { String(format: "%02d", $0) }
+    }
     private var ampmLabels: [String] {
         let df = DateFormatter()
         return [df.amSymbol ?? "AM", df.pmSymbol ?? "PM"]
     }
 
+    /// Writes the selected hour, clamping the minute forward when the selection
+    /// lands on the current hour so `endMinutes` never encodes a past time.
+    private func setHour24(_ h24: Int) {
+        var minute = endMinutes % 60
+        if h24 == firstHour, minute < firstMinute { minute = firstMinute }
+        endMinutes = h24 * 60 + minute
+    }
+
     // Each column reads/writes a slice of `endMinutes`, the single source of truth.
+    // Values are indices into the wrapped/restricted label arrays above.
     private var hour24Binding: Binding<Int> {
-        Binding(get: { endMinutes / 60 },
-                set: { endMinutes = $0 * 60 + endMinutes % 60 })
+        Binding(get: { (endMinutes / 60 - firstHour + 24) % 24 },
+                set: { setHour24((firstHour + $0) % 24) })
     }
     private var minuteBinding: Binding<Int> {
-        Binding(get: { endMinutes % 60 },
-                set: { endMinutes = (endMinutes / 60) * 60 + $0 })
+        Binding(
+            get: {
+                let offset = endMinutes / 60 == firstHour ? firstMinute : 0
+                return endMinutes % 60 - offset
+            },
+            set: {
+                let offset = endMinutes / 60 == firstHour ? firstMinute : 0
+                endMinutes = (endMinutes / 60) * 60 + offset + $0
+            }
+        )
     }
     private var hour12IndexBinding: Binding<Int> {
         Binding(
-            get: { let h24 = endMinutes / 60; return (h24 + 11) % 12 },   // 0...11 → "1".."12"
+            get: {
+                let h24 = endMinutes / 60
+                return ((h24 + 11) % 12 - first12Base + 12) % 12
+            },
             set: { idx in
-                let nh12 = idx + 1
+                let nh12 = ((first12Base + idx) % 12) + 1
                 let pm = (endMinutes / 60) >= 12
-                let nh24 = (nh12 % 12) + (pm ? 12 : 0)
-                endMinutes = nh24 * 60 + endMinutes % 60
+                setHour24((nh12 % 12) + (pm ? 12 : 0))
             }
         )
     }
@@ -554,8 +595,7 @@ struct NewTimerSheet: View {
             set: { sel in
                 let h24 = endMinutes / 60
                 let h12 = ((h24 + 11) % 12) + 1
-                let nh24 = (h12 % 12) + (sel == 1 ? 12 : 0)
-                endMinutes = nh24 * 60 + endMinutes % 60
+                setHour24((h12 % 12) + (sel == 1 ? 12 : 0))
             }
         )
     }
@@ -593,30 +633,60 @@ private struct ClockColumn: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var scrollID: Int?
 
+    // Mount alignment: the wheel must come to rest with the selected row in
+    // the selection band, but every one-shot mount scroll (seeded initial
+    // `scrollPosition`, onAppear assignment, onAppear proxy.scrollTo) is
+    // unreliable while the column is inserted by the animated Duration/End-time
+    // mode switch — the wheel then rests rows away from the band. So the
+    // column verifies its own offset after mount and re-centers until the
+    // exact rest offset holds (see `mountAlignment`).
+    init(labels: [String], value: Binding<Int>, accLabel: LocalizedStringResource,
+         fontSize: CGFloat = 30, weight: Font.Weight = .medium) {
+        self.labels = labels
+        self._value = value
+        self.accLabel = accLabel
+        self.fontSize = fontSize
+        self.weight = weight
+        self._scrollID = State(initialValue: max(0, min(labels.count - 1, value.wrappedValue)))
+    }
+
     private let itemHeight: CGFloat = 46
     private let wheelHeight: CGFloat = 220
     private var count: Int { labels.count }
     private var spacer: CGFloat { (wheelHeight - itemHeight) / 2 }
     private var clamped: Int { max(0, min(count - 1, value)) }
 
+    @State private var restOffset: CGFloat = .nan
+    @State private var mountAligned = false
+
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            LazyVStack(spacing: 0) {
-                ForEach(0..<count, id: \.self) { i in
-                    Text(labels[i])
-                        .font(.system(size: fontSize, weight: weight))
-                        .monospacedDigit()
-                        .foregroundStyle(i == value ? .white : Theme.mutedTime)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: itemHeight)
-                        .id(i)
+        ScrollViewReader { proxy in
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    ForEach(0..<count, id: \.self) { i in
+                        Text(labels[i])
+                            .font(.system(size: fontSize, weight: weight))
+                            .monospacedDigit()
+                            .foregroundStyle(i == value ? .white : Theme.mutedTime)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: itemHeight)
+                            .id(i)
+                    }
                 }
+                .scrollTargetLayout()
             }
-            .scrollTargetLayout()
+            .safeAreaPadding(.vertical, spacer)
+            .scrollTargetBehavior(.viewAligned)
+            .scrollPosition(id: $scrollID, anchor: .center)
+            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y } action: { _, y in
+                restOffset = y
+            }
+            .onScrollPhaseChange { _, newPhase in
+                // The user took over — never fight their gesture.
+                if newPhase == .interacting { mountAligned = true }
+            }
+            .task { await mountAlignment(proxy) }
         }
-        .safeAreaPadding(.vertical, spacer)
-        .scrollTargetBehavior(.viewAligned)
-        .scrollPosition(id: $scrollID, anchor: .center)
         .frame(maxWidth: .infinity)
         .mask(
             LinearGradient(
@@ -630,7 +700,11 @@ private struct ClockColumn: View {
             )
         )
         .sensoryFeedback(.selection, trigger: value)
-        .onAppear { scrollID = clamped }
+        // The minute column's label list shrinks/grows as the hour moves onto or
+        // off the current hour — keep the scroll position inside the new bounds.
+        .onChange(of: labels.count) {
+            scrollID = clamped
+        }
         .onChange(of: scrollID) { _, newValue in
             guard let newValue else { return }
             let c = max(0, min(count - 1, newValue))
@@ -654,6 +728,27 @@ private struct ClockColumn: View {
             @unknown default: break
             }
         }
+    }
+
+    /// Re-centers the selection until the wheel's observed offset equals the
+    /// exact rest offset for the selected row (`index * itemHeight - spacer`),
+    /// retrying past the 0.16 s mode-switch transition that swallows scrolls.
+    private func mountAlignment(_ proxy: ScrollViewProxy) async {
+        for delay in [50, 200, 400, 800] {
+            try? await Task.sleep(for: .milliseconds(delay))
+            guard !mountAligned else { return }
+            let expected = CGFloat(clamped) * itemHeight - spacer
+            if abs(restOffset - expected) < 1 {
+                mountAligned = true
+                return
+            }
+            var instant = Transaction()
+            instant.disablesAnimations = true
+            withTransaction(instant) {
+                proxy.scrollTo(clamped, anchor: .center)
+            }
+        }
+        mountAligned = true
     }
 }
 
@@ -733,28 +828,54 @@ private struct WheelColumn: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var scrollID: Int?
 
+    // Same mount-alignment self-check as ClockColumn: one-shot mount scrolls
+    // are dropped when the wheel is inserted by the animated mode switch.
+    init(count: Int, value: Binding<Int>, label: LocalizedStringResource,
+         itemHeight: CGFloat, wheelHeight: CGFloat, fontSize: CGFloat) {
+        self.count = count
+        self._value = value
+        self.label = label
+        self.itemHeight = itemHeight
+        self.wheelHeight = wheelHeight
+        self.fontSize = fontSize
+        self._scrollID = State(initialValue: max(0, min(count - 1, value.wrappedValue)))
+    }
+
     private var spacer: CGFloat { (wheelHeight - itemHeight) / 2 }
+    private var clamped: Int { max(0, min(count - 1, value)) }
+
+    @State private var restOffset: CGFloat = .nan
+    @State private var mountAligned = false
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            LazyVStack(spacing: 0) {
-                ForEach(0..<count, id: \.self) { i in
-                    Text(String(format: "%02d", i))
-                        .font(.system(size: fontSize, weight: .medium))
-                        .monospacedDigit()
-                        .foregroundStyle(i == value ? .white : Theme.mutedTime)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: itemHeight)
-                        .id(i)
+        ScrollViewReader { proxy in
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    ForEach(0..<count, id: \.self) { i in
+                        Text(String(format: "%02d", i))
+                            .font(.system(size: fontSize, weight: .medium))
+                            .monospacedDigit()
+                            .foregroundStyle(i == value ? .white : Theme.mutedTime)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: itemHeight)
+                            .id(i)
+                    }
                 }
+                .scrollTargetLayout()
             }
-            .scrollTargetLayout()
+            // Inset lives OUTSIDE the snap targets so every settle centers a number,
+            // never an empty spacer.
+            .safeAreaPadding(.vertical, spacer)
+            .scrollTargetBehavior(.viewAligned)
+            .scrollPosition(id: $scrollID, anchor: .center)
+            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y } action: { _, y in
+                restOffset = y
+            }
+            .onScrollPhaseChange { _, newPhase in
+                if newPhase == .interacting { mountAligned = true }
+            }
+            .task { await mountAlignment(proxy) }
         }
-        // Inset lives OUTSIDE the snap targets so every settle centers a number,
-        // never an empty spacer.
-        .safeAreaPadding(.vertical, spacer)
-        .scrollTargetBehavior(.viewAligned)
-        .scrollPosition(id: $scrollID, anchor: .center)
         .frame(maxWidth: .infinity)
         .mask(
             LinearGradient(
@@ -768,9 +889,6 @@ private struct WheelColumn: View {
             )
         )
         .sensoryFeedback(.selection, trigger: value)
-        .onAppear {
-            scrollID = value
-        }
         .onChange(of: scrollID) { _, newValue in
             guard let newValue else { return }
             let clamped = max(0, min(count - 1, newValue))
@@ -799,6 +917,25 @@ private struct WheelColumn: View {
             @unknown default: break
             }
         }
+    }
+
+    /// See `ClockColumn.mountAlignment` — identical self-healing mount scroll.
+    private func mountAlignment(_ proxy: ScrollViewProxy) async {
+        for delay in [50, 200, 400, 800] {
+            try? await Task.sleep(for: .milliseconds(delay))
+            guard !mountAligned else { return }
+            let expected = CGFloat(clamped) * itemHeight - spacer
+            if abs(restOffset - expected) < 1 {
+                mountAligned = true
+                return
+            }
+            var instant = Transaction()
+            instant.disablesAnimations = true
+            withTransaction(instant) {
+                proxy.scrollTo(clamped, anchor: .center)
+            }
+        }
+        mountAligned = true
     }
 }
 
