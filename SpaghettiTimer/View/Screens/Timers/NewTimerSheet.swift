@@ -34,6 +34,10 @@ struct NewTimerSheet: View {
     @State private var cooldownHours: Int = 0
     @State private var cooldownMinutes: Int = 0
     @State private var cooldownSeconds: Int = 0
+    /// Bumped whenever the system locale/region format (e.g. the 24-hour
+    /// time toggle) changes mid-session, so `body` re-runs and the
+    /// end-time wheel can't get stuck showing a stale hour format.
+    @State private var localeChangeTick = 0
     @FocusState private var nameFocused: Bool
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -60,7 +64,7 @@ struct NewTimerSheet: View {
 
     /// Whether the device locale uses a 24-hour clock (no AM/PM).
     private var uses24Hour: Bool {
-        let template = DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .current) ?? "h"
+        let template = DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .autoupdatingCurrent) ?? "h"
         return !template.contains("a")
     }
 
@@ -118,6 +122,7 @@ struct NewTimerSheet: View {
                     fieldGroup(mode == .endTime ? "End time" : "Duration") {
                         if mode == .endTime {
                             endTimeSurface
+                                .id(localeChangeTick)
                         } else {
                             WheelPicker(hours: $hours, minutes: $minutes, seconds: $seconds)
                         }
@@ -144,6 +149,13 @@ struct NewTimerSheet: View {
             let hour = Calendar.current.component(.hour, from: now)
             endMinutes = ((hour + 1) % 24) * 60
             didInitEndTime = true
+        }
+        .onReceive(
+            NotificationCenter.default
+                .publisher(for: NSLocale.currentLocaleDidChangeNotification)
+                .receive(on: DispatchQueue.main)
+        ) { _ in
+            localeChangeTick += 1
         }
     }
 
@@ -409,6 +421,7 @@ struct NewTimerSheet: View {
             let h12 = ((h24 + 11) % 12) + 1
             timeText = "\(h12):" + String(format: "%02d", minute)
             let df = DateFormatter()
+            df.locale = .autoupdatingCurrent
             ampm = pm ? df.pmSymbol : df.amSymbol
         }
 
@@ -547,6 +560,7 @@ struct NewTimerSheet: View {
     }
     private var ampmLabels: [String] {
         let df = DateFormatter()
+        df.locale = .autoupdatingCurrent
         return [df.amSymbol ?? "AM", df.pmSymbol ?? "PM"]
     }
 
