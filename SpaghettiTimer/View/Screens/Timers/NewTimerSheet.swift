@@ -25,10 +25,12 @@ struct NewTimerSheet: View {
     /// End-time mode source of truth: minutes-since-midnight of the target clock time (0...1439).
     @State private var endMinutes: Int = 11 * 60
     @State private var didInitEndTime = false
-    /// Earliest pickable end time (one minute out). The clock wheel wraps forward
-    /// from this instant so the user can never scroll into the past. Using now+60s
-    /// also handles hh:59 cleanly: the wheel then starts at the next hour.
-    @State private var earliest = Date().addingTimeInterval(60)
+    /// Earliest pickable end time — always the next whole-minute mark after
+    /// now, computed by `earliestBoundary(now:)`. The clock wheel wraps
+    /// forward from this instant so the user can never scroll into the past.
+    /// Refreshed roughly once a minute by `refreshEndTimeBoundary`, so the
+    /// wheel can't drift into the past if the sheet is left open.
+    @State private var earliest = NewTimerSheet.earliestBoundary(now: Date())
     @State private var isPinned: Bool = false
     @State private var autoRestart: Bool = false
     @State private var cooldownHours: Int = 0
@@ -145,7 +147,7 @@ struct NewTimerSheet: View {
             // Default the clock picker to the top of the next hour the first time.
             guard !didInitEndTime else { return }
             let now = Date()
-            earliest = now.addingTimeInterval(60)
+            earliest = Self.earliestBoundary(now: now)
             let hour = Calendar.current.component(.hour, from: now)
             endMinutes = ((hour + 1) % 24) * 60
             didInitEndTime = true
@@ -390,6 +392,9 @@ struct NewTimerSheet: View {
             // The readout depends on "now", so refresh it every second.
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 endReadout(endInfo(now: context.date))
+                    .onChange(of: candidateBoundaryMinuteOfDay(now: context.date)) {
+                        refreshEndTimeBoundary(now: context.date)
+                    }
             }
             hairline
             clockWheel
@@ -545,6 +550,28 @@ struct NewTimerSheet: View {
     /// 0-based index of `firstHour`'s 12-hour label ("1"..."12" → 0...11).
     private var first12Base: Int { (firstHour + 11) % 12 }
 
+    /// The earliest pickable clock-minute boundary: the start of the very next
+    /// whole minute after `now`. This is always strictly in the future (real
+    /// buffer of 1-60s) while reading as exactly "current minute + 1" in the
+    /// HH:MM wheel/readout — a consistent 1-minute gap no matter what second
+    /// within the current minute `now` falls on. `dateInterval(of: .minute:)`
+    /// handles hour/day rollover (e.g. hh:59) for free.
+    private static func earliestBoundary(now: Date) -> Date {
+        let cal = Calendar.current
+        let startOfCurrentMinute = cal.dateInterval(of: .minute, for: now)?.start ?? now
+        return startOfCurrentMinute.addingTimeInterval(60)
+    }
+
+    /// The minute-of-day `earliest` would adopt if refreshed right now. Purely a
+    /// function of `now` — used only as an `.onChange` trigger key so the wheel
+    /// re-renders roughly once a minute (when this actually changes) rather than
+    /// every second.
+    private func candidateBoundaryMinuteOfDay(now: Date) -> Int {
+        let candidate = Self.earliestBoundary(now: now)
+        let cal = Calendar.current
+        return cal.component(.hour, from: candidate) * 60 + cal.component(.minute, from: candidate)
+    }
+
     /// Hours wrap forward from the current hour (e.g. 20, 21 … 23, 00 … 19), so
     /// scrolling down past "now" is impossible while tomorrow stays reachable.
     private var hours24Labels: [String] {
@@ -570,6 +597,24 @@ struct NewTimerSheet: View {
         var minute = endMinutes % 60
         if h24 == firstHour, minute < firstMinute { minute = firstMinute }
         endMinutes = h24 * 60 + minute
+    }
+
+    /// Advances the wheel's "no past" boundary as real time passes, and
+    /// re-clamps `endMinutes` the same way `setHour24` does for a manual pick,
+    /// so a previously-selected minute can never point at a now-past minute.
+    /// Only called from a side-effect context (`.onChange`), never from `body`.
+    private func refreshEndTimeBoundary(now: Date) {
+        let newEarliest = Self.earliestBoundary(now: now)
+        let cal = Calendar.current
+        let newFirstHour = cal.component(.hour, from: newEarliest)
+        let newFirstMinute = cal.component(.minute, from: newEarliest)
+
+        guard newFirstHour != firstHour || newFirstMinute != firstMinute else { return }
+
+        if endMinutes / 60 == newFirstHour, endMinutes % 60 < newFirstMinute {
+            endMinutes = newFirstHour * 60 + newFirstMinute
+        }
+        earliest = newEarliest
     }
 
     // Each column reads/writes a slice of `endMinutes`, the single source of truth.
