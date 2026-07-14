@@ -63,6 +63,13 @@ struct RepeatTimerIntent: LiveActivityIntent {
         timers.append(running)
         runningRepo.save(timers)
 
+        PendingAnalyticsQueueRepoImpl().log(.timerRepeat(
+            presetID: running.presetID,
+            name: running.name,
+            durationSeconds: Int(running.duration),
+            source: .alarmAlert
+        ))
+
         if manager.authorizationState == .notDetermined {
             _ = try? await manager.requestAuthorization()
         }

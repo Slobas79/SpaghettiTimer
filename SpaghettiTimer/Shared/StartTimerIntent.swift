@@ -46,6 +46,15 @@ struct StartTimerIntent: AppIntent {
         timers.append(running)
         runningRepo.save(timers)
 
+        PendingAnalyticsQueueRepoImpl().log(.timerStart(
+            presetID: preset.id,
+            name: preset.name,
+            durationSeconds: Int(preset.duration),
+            isEphemeral: false,
+            autoRestart: preset.autoRestartDelaySeconds != nil,
+            source: .widget
+        ))
+
         let manager = AlarmManager.shared
         if manager.authorizationState == .notDetermined {
             _ = try? await manager.requestAuthorization()

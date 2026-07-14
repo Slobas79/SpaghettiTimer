@@ -30,13 +30,15 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
 
     private let repo: RunningTimersRepo
     private let presetsRepo: PresetsRepo
+    private let analytics: AnalyticsRepo
 
     private var alarmObservationTask: Task<Void, Never>?
     private var seenAlarmIDs: Set<UUID> = []
 
-    init(repo: RunningTimersRepo, presetsRepo: PresetsRepo) {
+    init(repo: RunningTimersRepo, presetsRepo: PresetsRepo, analytics: AnalyticsRepo = NoOpAnalyticsRepo()) {
         self.repo = repo
         self.presetsRepo = presetsRepo
+        self.analytics = analytics
         reload()
         reconcileOnStartup()
         observeAlarmDismissals()
@@ -55,6 +57,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         // at cold start nothing has been freshly scheduled yet, so there's no race to guard.
         let dismissed = running.filter { !liveIDs.contains($0.id) }
         guard !dismissed.isEmpty else { return }
+        logCompletions(for: dismissed)
         let dismissedSet = Set(dismissed.map(\.id))
         running.removeAll { dismissedSet.contains($0.id) }
         repo.save(running)
@@ -110,10 +113,10 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         // seen, so it's preserved; an actively ringing alarm is still in `liveIDs`, so it's kept.
         // (Mirrors `removeTimers(notIn:)`.)
         let now = Date()
-        let dismissedSet = Set(
-            running.filter { !liveIDs.contains($0.id) && (seenAlarmIDs.contains($0.id) || $0.isFinished(at: now)) }.map(\.id)
-        )
-        if !dismissedSet.isEmpty {
+        let dismissed = running.filter { !liveIDs.contains($0.id) && (seenAlarmIDs.contains($0.id) || $0.isFinished(at: now)) }
+        if !dismissed.isEmpty {
+            logCompletions(for: dismissed)
+            let dismissedSet = Set(dismissed.map(\.id))
             running.removeAll { dismissedSet.contains($0.id) }
             seenAlarmIDs.subtract(dismissedSet)
             repo.save(running)
@@ -176,11 +179,10 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         guard !dismissed.isEmpty else { return }
 
         // Auto-restart is handled by StopTimerIntent so it works even when this
-        // process isn't running (e.g. timer started from the widget). Consume
-        // the user-cancelled flag here only to clear it from shared storage.
-        for timer in dismissed {
-            _ = UserCancelledTimers.consume(timer.id)
-        }
+        // process isn't running (e.g. timer started from the widget). Consuming
+        // the user-cancelled flag clears it from shared storage and tells us
+        // whether the timer completed vs. was cancelled (for analytics).
+        logCompletions(for: dismissed)
 
         let dismissedSet = Set(dismissed.map(\.id))
         running.removeAll { dismissedSet.contains($0.id) }
@@ -190,6 +192,25 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         running = repo.load()
         onChange?()
         WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    /// A timer gone from AlarmKit that was never explicitly cancelled ran to
+    /// completion. `UserCancelledTimers.consume` returns true for timers already
+    /// accounted for by `stop()` / CancelTimerIntent / StopTimerIntent (all of
+    /// which mark the flag), so those are skipped here to avoid double-counting a
+    /// `timer_cancel`/acknowledged `timer_complete` that was already logged.
+    private func logCompletions(for dismissed: [RunningTimer]) {
+        for timer in dismissed {
+            let wasCancelled = UserCancelledTimers.consume(timer.id)
+            guard !wasCancelled else { continue }
+            analytics.log(.timerComplete(
+                presetID: timer.presetID,
+                name: timer.name,
+                durationSeconds: Int(timer.duration),
+                acknowledged: false,
+                source: .app
+            ))
+        }
     }
 
     func reload() {
@@ -208,6 +229,15 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         )
         running.append(timer)
         repo.save(running)
+        let isEphemeral = !presetsRepo.allPresets().contains { $0.id == preset.id }
+        analytics.log(.timerStart(
+            presetID: preset.id,
+            name: preset.name,
+            durationSeconds: Int(preset.duration),
+            isEphemeral: isEphemeral,
+            autoRestart: preset.autoRestartDelaySeconds != nil,
+            source: .app
+        ))
         Task {
             await ensureAuthorized()
             await schedule(timer)
@@ -220,6 +250,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         UserCancelledTimers.mark(timer.id)
         running.removeAll { $0.id == timer.id }
         repo.save(running)
+        analytics.log(.timerCancel(presetID: timer.presetID, name: timer.name, durationSeconds: Int(timer.duration), source: .app))
         let timerID = timer.id
         Task { try? AlarmManager.shared.cancel(id: timerID) }
         onChange?()
@@ -239,6 +270,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             autoRestartDelaySeconds: existing.autoRestartDelaySeconds
         )
         repo.save(running)
+        analytics.log(.timerPause(presetID: existing.presetID, name: existing.name, durationSeconds: Int(existing.duration), source: .app))
         let timerID = timer.id
         Task { try? AlarmManager.shared.pause(id: timerID) }
         onChange?()
@@ -260,6 +292,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             autoRestartDelaySeconds: existing.autoRestartDelaySeconds
         )
         repo.save(running)
+        analytics.log(.timerResume(presetID: existing.presetID, name: existing.name, durationSeconds: Int(existing.duration), source: .app))
         let timerID = timer.id
         Task { try? AlarmManager.shared.resume(id: timerID) }
         onChange?()

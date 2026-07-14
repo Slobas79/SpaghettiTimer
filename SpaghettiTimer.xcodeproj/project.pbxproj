@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7B6E4F2B3000E6B2004414BE /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7B6E4F2A3000E6B2004414BE /* FirebaseAnalyticsCore */; };
 		7BA8A9AE2FAA7B2200DD2D1C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA8A9AD2FAA7B2200DD2D1C /* WidgetKit.framework */; };
 		7BA8A9B02FAA7B2200DD2D1C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BA8A9AF2FAA7B2200DD2D1C /* SwiftUI.framework */; };
 		7BA8A9C12FAA7B2300DD2D1C /* SpaghettiTimerWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7BA8A9AB2FAA7B2200DD2D1C /* SpaghettiTimerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -59,6 +60,7 @@
 				Model/Entity/TimerPreset.swift,
 				Repository/Disc/PresetsRepo.swift,
 				Repository/Disc/RunningTimersRepo.swift,
+				Shared/Analytics.swift,
 				Shared/AppGroup.swift,
 				Shared/CancelTimerIntent.swift,
 				Shared/PauseTimerIntent.swift,
@@ -105,6 +107,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7B6E4F2B3000E6B2004414BE /* FirebaseAnalyticsCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,6 +187,7 @@
 			);
 			name = SpaghettiTimer;
 			packageProductDependencies = (
+				7B6E4F2A3000E6B2004414BE /* FirebaseAnalyticsCore */,
 			);
 			productName = SpaghettiTimer;
 			productReference = 7BB56A602E3A2E54006CE2CC /* SpaghettiTimer.app */;
@@ -238,6 +242,9 @@
 			);
 			mainGroup = 7BB56A572E3A2E54006CE2CC;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				7B6E4F293000E6B2004414BE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7BB56A612E3A2E54006CE2CC /* Products */;
 			projectDirPath = "";
@@ -586,6 +593,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7B6E4F293000E6B2004414BE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.16.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7B6E4F2A3000E6B2004414BE /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7B6E4F293000E6B2004414BE /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7BB56A582E3A2E54006CE2CC /* Project object */;
 }

@@ -39,6 +39,12 @@ struct PauseTimerIntent: AppIntent {
                 pausedAt: Date()
             )
             repo.save(timers)
+            PendingAnalyticsQueueRepoImpl().log(.timerPause(
+                presetID: existing.presetID,
+                name: existing.name,
+                durationSeconds: Int(existing.duration),
+                source: .liveActivity
+            ))
         }
 
         try? AlarmManager.shared.pause(id: id)

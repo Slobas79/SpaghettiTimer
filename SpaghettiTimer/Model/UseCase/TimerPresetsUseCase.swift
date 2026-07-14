@@ -25,9 +25,11 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
     var onChange: (() -> Void)?
 
     private let repo: PresetsRepo
+    private let analytics: AnalyticsRepo
 
-    init(repo: PresetsRepo) {
+    init(repo: PresetsRepo, analytics: AnalyticsRepo = NoOpAnalyticsRepo()) {
         self.repo = repo
+        self.analytics = analytics
         reload()
     }
 
@@ -47,6 +49,7 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
             )
         )
         repo.saveUserPresets(user)
+        analytics.log(.presetCreate(durationSeconds: Int(duration), autoRestart: autoRestartDelaySeconds != nil))
         reload()
         WidgetCenter.shared.reloadAllTimelines()
     }
@@ -58,6 +61,7 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
             TimerPreset(id: preset.id, name: preset.name, duration: preset.duration, isBuiltIn: false)
         )
         repo.saveUserPresets(user)
+        analytics.log(.presetPin())
         reload()
         WidgetCenter.shared.reloadAllTimelines()
     }
@@ -72,6 +76,7 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
             user.removeAll { $0.id == preset.id }
             repo.saveUserPresets(user)
         }
+        analytics.log(.presetDelete(isBuiltIn: preset.isBuiltIn))
         reload()
         WidgetCenter.shared.reloadAllTimelines()
     }

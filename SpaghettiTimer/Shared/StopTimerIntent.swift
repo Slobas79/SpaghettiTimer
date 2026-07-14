@@ -32,6 +32,16 @@ struct StopTimerIntent: LiveActivityIntent {
         timers.removeAll { $0.id == id }
         repo.save(timers)
 
+        if let finished {
+            PendingAnalyticsQueueRepoImpl().log(.timerComplete(
+                presetID: finished.presetID,
+                name: finished.name,
+                durationSeconds: Int(finished.duration),
+                acknowledged: true,
+                source: .alarmAlert
+            ))
+        }
+
         await Self.cancelAlarm(id: id)
 
         let after = repo.load()
@@ -70,6 +80,16 @@ struct StopTimerIntent: LiveActivityIntent {
         var timers = repo.load()
         timers.append(next)
         repo.save(timers)
+
+        PendingAnalyticsQueueRepoImpl().log(.timerStart(
+            presetID: next.presetID,
+            name: next.name,
+            durationSeconds: Int(next.duration),
+            isEphemeral: false,
+            autoRestart: next.autoRestartDelaySeconds != nil,
+            source: .alarmAlert,
+            autoRestartIteration: true
+        ))
 
         let manager = AlarmManager.shared
         if manager.authorizationState == .notDetermined {

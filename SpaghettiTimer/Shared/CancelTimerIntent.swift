@@ -30,8 +30,18 @@ struct CancelTimerIntent: AppIntent {
 
         let repo = RunningTimersRepoImpl()
         var timers = repo.load()
+        let cancelled = timers.first { $0.id == id }
         timers.removeAll { $0.id == id }
         repo.save(timers)
+
+        if let cancelled {
+            PendingAnalyticsQueueRepoImpl().log(.timerCancel(
+                presetID: cancelled.presetID,
+                name: cancelled.name,
+                durationSeconds: Int(cancelled.duration),
+                source: .liveActivity
+            ))
+        }
 
         try? AlarmManager.shared.cancel(id: id)
         WidgetCenter.shared.reloadAllTimelines()

@@ -41,6 +41,12 @@ struct ResumeTimerIntent: AppIntent {
                 pausedAt: nil
             )
             repo.save(timers)
+            PendingAnalyticsQueueRepoImpl().log(.timerResume(
+                presetID: existing.presetID,
+                name: existing.name,
+                durationSeconds: Int(existing.duration),
+                source: .liveActivity
+            ))
         }
 
         try? AlarmManager.shared.resume(id: id)
