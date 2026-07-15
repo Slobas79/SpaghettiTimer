@@ -121,15 +121,26 @@ private struct CoachMarksOverlay: View {
         card(step: step, index: i, count: count, spot: spot, below: below)
     }
 
-    /// Artwork tip: plain full scrim (no cutout) with a vertically-centered
-    /// card that embeds a rendering of an off-screen feature above the eyebrow.
+    /// Artwork tip: plain full scrim (no cutout) with a card that embeds a
+    /// rendering of an off-screen feature above the eyebrow. Most artwork tips
+    /// centre the card; the running-banner tip pins it to the top so its
+    /// embedded row sits roughly where a real running timer appears — at the
+    /// top of the grid, just under the safe area.
     private func artworkLayer(step: TutorialStep, index i: Int, count: Int) -> some View {
-        ZStack {
+        // Real banner lives at safe-area top + 6pt content padding. The card's
+        // own 16pt inner top inset sits above the art, so offset the card up by
+        // that much to line the art up with where the banner appears.
+        let pinnedToTop = step.art == .runningBanner
+        let topInset = max(0, geo.safeAreaInsets.top + 6 - 16)
+
+        return ZStack {
             Theme.tourScrim
                 .padding(-200) // reach under the status bar / home indicator
 
             cardBody(step: step, index: i, count: count, art: step.art)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity, maxHeight: .infinity,
+                       alignment: pinnedToTop ? .top : .center)
+                .padding(.top, pinnedToTop ? topInset : 0)
                 .padding(.horizontal, 20)
         }
     }
