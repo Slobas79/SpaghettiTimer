@@ -42,6 +42,19 @@ enum Theme {
     static let dayTomorrowBG = Color.white.opacity(0.08)                              // rgba(255,255,255,.08)
     static let durMutedText = Color(red: 0.78, green: 0.78, blue: 0.80)               // #C7C7CC
 
+    // First-run tutorial (coach marks)
+    static let tourScrim = Color.black.opacity(0.72)                                  // rgba(0,0,0,.72)
+    static let tourCardBG = Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255)     // #1C1C1E
+    static let tourCardBorder = Color(red: 0.142, green: 0.569, blue: 1.0).opacity(0.448) // mix(accent 40%, white .08)
+    static let tourBody = Color(red: 185 / 255, green: 185 / 255, blue: 192 / 255)    // #B9B9C0
+    static let tourEyebrow = Color(red: 0.279, green: 0.638, blue: 1.0)               // mix(accent 75%, #fff)
+    static let tourBackFill = Color.white.opacity(0.10)                               // rgba(255,255,255,.10)
+    static let tourLightText = Color(red: 233 / 255, green: 233 / 255, blue: 238 / 255) // #E9E9EE
+    static let tourDot = Color.white.opacity(0.22)                                    // rgba(255,255,255,.22)
+    static let toastBG = Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255).opacity(0.92) // rgba(28,28,30,.92)
+    static let toastBorder = Color.white.opacity(0.12)                                // rgba(255,255,255,.12)
+    static let success = Color(red: 48 / 255, green: 209 / 255, blue: 88 / 255)       // #30D158
+
     // Metrics
     static let cornerRadius: CGFloat = 22
     static let gridGap: CGFloat = 16

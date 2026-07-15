@@ -40,6 +40,7 @@ struct NewTimerSheet: View {
     /// time toggle) changes mid-session, so `body` re-runs and the
     /// end-time wheel can't get stuck showing a stale hour format.
     @State private var localeChangeTick = 0
+    @State private var showingTour = false
     @FocusState private var nameFocused: Bool
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -120,6 +121,7 @@ struct NewTimerSheet: View {
                     }
                     fieldGroup("Set timer by") {
                         modePicker
+                            .tutorialTarget(.modePicker)
                     }
                     fieldGroup(mode == .endTime ? "End time" : "Duration") {
                         if mode == .endTime {
@@ -127,6 +129,7 @@ struct NewTimerSheet: View {
                                 .id(localeChangeTick)
                         } else {
                             WheelPicker(hours: $hours, minutes: $minutes, seconds: $seconds)
+                                .tutorialTarget(.durationWheel)
                         }
                     }
                     fieldGroup("Options") {
@@ -143,7 +146,11 @@ struct NewTimerSheet: View {
             }
         }
         .background(Color.black.ignoresSafeArea())
+        .coachMarks(.newTimer, isActive: $showingTour, steps: TutorialTour.newTimer)
         .onAppear {
+            if !TutorialFlags.isDone(.newTimer) {
+                showingTour = true
+            }
             // Default the clock picker to the top of the next hour the first time.
             guard !didInitEndTime else { return }
             let now = Date()
@@ -169,6 +176,14 @@ struct NewTimerSheet: View {
                 .font(.system(size: titleSize, weight: .bold))
                 .foregroundStyle(.white)
                 .accessibilityAddTraits(.isHeader)
+                // Quiet replay affordance: long-press the title.
+                .contextMenu {
+                    Button {
+                        showingTour = true
+                    } label: {
+                        Label("Replay tips", systemImage: "questionmark.circle")
+                    }
+                }
 
             HStack {
                 Button {
@@ -239,6 +254,7 @@ struct NewTimerSheet: View {
                     .strokeBorder(nameFocused ? Theme.accent : Theme.nameFieldBorder,
                                   lineWidth: nameFocused ? 2 : 1.5)
             )
+            .tutorialTarget(.nameField)
     }
 
     // MARK: - Options
@@ -251,6 +267,7 @@ struct NewTimerSheet: View {
                 description: "Re-run this timer automatically after a cooldown delay.",
                 isOn: $autoRestart.animation(reduceMotion ? nil : .easeInOut(duration: 0.2))
             )
+            .tutorialTarget(.autoRestartRow)
 
             if autoRestart {
                 hairline

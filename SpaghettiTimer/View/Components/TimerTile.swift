@@ -115,6 +115,7 @@ struct TimerTile: View {
                 .frame(width: 30, height: 30)
         }
         .buttonStyle(.plain)
+        .tutorialTarget(.pinBadge)
         .padding(14)
         .accessibilityHidden(true)
     }

@@ -10,6 +10,7 @@ import SwiftUI
 struct TimersView: View {
     @State var viewModel: TimersViewModel
     @State private var showingNew = false
+    @State private var showingTour = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -36,6 +37,7 @@ struct TimersView: View {
                                         onCancel: { viewModel.stop(timer) }
                                     )
                                     .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
+                                    .tutorialTarget(.runningBanner)
                                 }
                             }
                         }
@@ -48,8 +50,17 @@ struct TimersView: View {
                                     onUnpin: { viewModel.deletePreset(item.preset) },
                                     onPin: nil
                                 )
+                                .tutorialTarget(.presetTile)
                             }
                             AddTimerTile(action: { showingNew = true })
+                                .tutorialTarget(.addTile)
+                                .contextMenu {
+                                    Button {
+                                        showingTour = true
+                                    } label: {
+                                        Label("Replay tips", systemImage: "questionmark.circle")
+                                    }
+                                }
                         }
                     }
                     // Cap text growth on the fixed-aspect tiles / fixed-height
@@ -61,6 +72,7 @@ struct TimersView: View {
                 }
             }
         }
+        .coachMarks(.home, isActive: $showingTour, steps: TutorialTour.home)
         .sheet(isPresented: $showingNew) {
             NewTimerSheet { name, duration, pinned, autoRestartDelaySeconds in
                 viewModel.createTimer(name: name, duration: duration, pinned: pinned, autoRestartDelaySeconds: autoRestartDelaySeconds)
@@ -68,7 +80,12 @@ struct TimersView: View {
             .presentationBackground(.black)
             .presentationDragIndicator(.hidden)
         }
-        .onAppear { viewModel.refresh() }
+        .onAppear {
+            viewModel.refresh()
+            if !TutorialFlags.isDone(.home) {
+                showingTour = true
+            }
+        }
     }
 }
 
@@ -78,6 +95,10 @@ struct TimersView: View {
 /// (one running "5 min" timer + the four built-in presets + add card)
 /// using the real components, without the AlarmKit-backed view model.
 private struct TimersPreviewHarness: View {
+    /// Set true to render the coach-mark tour over the harness.
+    var tour = false
+    @State private var showingTour = false
+
     private let columns = [
         GridItem(.flexible(), spacing: Theme.gridGap),
         GridItem(.flexible(), spacing: Theme.gridGap)
@@ -101,20 +122,29 @@ private struct TimersPreviewHarness: View {
                         now: Date(),
                         onPause: {}, onResume: {}, onCancel: {}
                     )
+                    .tutorialTarget(.runningBanner)
                     LazyVGrid(columns: columns, spacing: Theme.gridGap) {
                         ForEach(TimerPreset.builtIns) { preset in
                             TimerTile(preset: preset, onStart: {}, onUnpin: {}, onPin: nil)
+                                .tutorialTarget(.presetTile)
                         }
                         AddTimerTile(action: {})
+                            .tutorialTarget(.addTile)
                     }
                 }
                 .padding(.horizontal, Theme.screenPadding)
                 .padding(.top, 6)
             }
         }
+        .coachMarks(.home, isActive: $showingTour, steps: TutorialTour.home)
+        .onAppear { showingTour = tour }
     }
 }
 
 #Preview {
     TimersPreviewHarness()
+}
+
+#Preview("Home tour") {
+    TimersPreviewHarness(tour: true)
 }
