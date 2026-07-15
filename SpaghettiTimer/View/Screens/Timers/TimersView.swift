@@ -37,7 +37,6 @@ struct TimersView: View {
                                         onCancel: { viewModel.stop(timer) }
                                     )
                                     .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
-                                    .tutorialTarget(.runningBanner)
                                 }
                             }
                         }
@@ -122,7 +121,6 @@ private struct TimersPreviewHarness: View {
                         now: Date(),
                         onPause: {}, onResume: {}, onCancel: {}
                     )
-                    .tutorialTarget(.runningBanner)
                     LazyVGrid(columns: columns, spacing: Theme.gridGap) {
                         ForEach(TimerPreset.builtIns) { preset in
                             TimerTile(preset: preset, onStart: {}, onUnpin: {}, onPin: nil)

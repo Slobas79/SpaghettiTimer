@@ -35,11 +35,17 @@ nonisolated enum TutorialTargetID: Hashable, Sendable {
     case presetTile
     case pinBadge
     case addTile
-    case runningBanner
     case durationWheel
     case modePicker
     case nameField
     case autoRestartRow
+}
+
+/// A feature that isn't on screen during the tour, rendered as artwork inside
+/// a centered hint card instead of being spotlighted (no cutout/connector).
+nonisolated enum TutorialArt: Sendable {
+    case runningBanner
+    case widget
 }
 
 /// Collects target bounds anchors from marked views. When several views mark
@@ -69,7 +75,10 @@ extension View {
 // MARK: - Steps & scripts
 
 nonisolated struct TutorialStep: Sendable {
-    let target: TutorialTargetID
+    /// A spotlight step points at an on-screen `target`; an artwork step has no
+    /// target and renders `art` in a centered card instead. Exactly one is set.
+    var target: TutorialTargetID? = nil
+    var art: TutorialArt? = nil
     let title: LocalizedStringResource
     let body: LocalizedStringResource
     /// Breathing room between the target's bounds and the cutout edge.
@@ -101,11 +110,14 @@ enum TutorialTour {
             cornerRadius: 22
         ),
         TutorialStep(
-            target: .runningBanner,
+            art: .runningBanner,
             title: "Always in reach",
-            body: "A running timer lives up here. Pause or dismiss it without leaving the grid.",
-            padding: 8,
-            cornerRadius: 22
+            body: "A running timer lives at the top of this screen. Pause or dismiss it without leaving the grid."
+        ),
+        TutorialStep(
+            art: .widget,
+            title: "Add the widget",
+            body: "Your pinned timers on the home screen — tap a tile to start it without opening the app. Long-press your home screen and add Spaghetti Timer."
         )
     ]
 

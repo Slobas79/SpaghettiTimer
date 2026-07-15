@@ -72,32 +72,65 @@ private struct CoachMarksOverlay: View {
     @State private var index = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// Stable id for the sample timer shown in the running-banner artwork.
+    private static let artBannerID = UUID()
+
     @ScaledMetric(relativeTo: .caption2) private var eyebrowSize: CGFloat = 11
     @ScaledMetric(relativeTo: .headline) private var titleSize: CGFloat = 18
     @ScaledMetric(relativeTo: .subheadline) private var bodySize: CGFloat = 14
     @ScaledMetric(relativeTo: .subheadline) private var controlSize: CGFloat = 15
 
     var body: some View {
-        // Steps whose target isn't on screen (e.g. the running banner on a
-        // fresh install) are skipped rather than spotlighting empty space.
-        let steps = steps.filter { anchors[$0.target] != nil }
+        // Spotlight steps whose target isn't on screen (e.g. a target removed
+        // from a screen) are skipped rather than spotlighting empty space.
+        // Artwork steps have no target and are always shown.
+        let steps = steps.filter { step in
+            if step.art != nil { return true }
+            if let target = step.target { return anchors[target] != nil }
+            return false
+        }
         if !steps.isEmpty {
             let i = min(index, steps.count - 1)
             let step = steps[i]
-            let spot = geo[anchors[step.target]!].insetBy(dx: -step.padding, dy: -step.padding)
-            // Card goes below the spotlight when there's room (mock: target
-            // bottom < 520 on an 844pt frame), above otherwise.
-            let below = spot.maxY < geo.size.height - 324
 
             ZStack {
-                scrim(spot: spot, cornerRadius: step.cornerRadius)
-                spotlight(spot: spot, cornerRadius: step.cornerRadius)
-                connector(spot: spot, below: below)
-                card(step: step, index: i, count: steps.count, spot: spot, below: below)
+                if step.art != nil {
+                    artworkLayer(step: step, index: i, count: steps.count)
+                } else {
+                    spotlightLayer(step: step, index: i, count: steps.count)
+                }
             }
             .contentShape(Rectangle())
             .animation(reduceMotion ? nil : .timingCurve(0.3, 0.9, 0.3, 1, duration: 0.34), value: i)
             .accessibilityAddTraits(.isModal)
+        }
+    }
+
+    /// Spotlight tip: dimmed scrim with a cutout + halo + connector on the
+    /// step's on-screen target, and the hint card below/above the cutout.
+    @ViewBuilder
+    private func spotlightLayer(step: TutorialStep, index i: Int, count: Int) -> some View {
+        let spot = geo[anchors[step.target!]!].insetBy(dx: -step.padding, dy: -step.padding)
+        // Card goes below the spotlight when there's room (mock: target
+        // bottom < 520 on an 844pt frame), above otherwise.
+        let below = spot.maxY < geo.size.height - 324
+
+        scrim(spot: spot, cornerRadius: step.cornerRadius)
+        spotlight(spot: spot, cornerRadius: step.cornerRadius)
+        connector(spot: spot, below: below)
+        card(step: step, index: i, count: count, spot: spot, below: below)
+    }
+
+    /// Artwork tip: plain full scrim (no cutout) with a vertically-centered
+    /// card that embeds a rendering of an off-screen feature above the eyebrow.
+    private func artworkLayer(step: TutorialStep, index i: Int, count: Int) -> some View {
+        ZStack {
+            Theme.tourScrim
+                .padding(-200) // reach under the status bar / home indicator
+
+            cardBody(step: step, index: i, count: count, art: step.art)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                .padding(.horizontal, 20)
         }
     }
 
@@ -134,8 +167,25 @@ private struct CoachMarksOverlay: View {
             .accessibilityHidden(true)
     }
 
+    /// Spotlight card: shared card body positioned below/above the cutout.
     private func card(step: TutorialStep, index i: Int, count: Int, spot: CGRect, below: Bool) -> some View {
+        cardBody(step: step, index: i, count: count, art: nil)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: below ? .top : .bottom)
+            .padding(.top, below ? spot.maxY + 30 : 0)
+            .padding(.bottom, below ? 0 : geo.size.height - spot.minY + 30)
+            .padding(.horizontal, 20)
+    }
+
+    /// The hint card itself — optional artwork, eyebrow, title, body, footer.
+    /// Shared by spotlight tips (`art == nil`) and artwork tips.
+    private func cardBody(step: TutorialStep, index i: Int, count: Int, art: TutorialArt?) -> some View {
         VStack(alignment: .leading, spacing: 0) {
+            if let art {
+                artBlock(art)
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 12)
+            }
+
             Text(String(localized: "Tip \(i + 1) of \(count)").uppercased())
                 .font(.system(size: eyebrowSize, weight: .bold))
                 .tracking(1)
@@ -175,10 +225,36 @@ private struct CoachMarksOverlay: View {
         // Cap text growth so huge Dynamic Type sizes can't push the card
         // off screen (same cap as the tile grid).
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: below ? .top : .bottom)
-        .padding(.top, below ? spot.maxY + 30 : 0)
-        .padding(.bottom, below ? 0 : geo.size.height - spot.minY + 30)
-        .padding(.horizontal, 20)
+    }
+
+    /// The feature rendering embedded at the top of an artwork card. Both
+    /// inherit the app accent and are non-interactive.
+    @ViewBuilder
+    private func artBlock(_ art: TutorialArt) -> some View {
+        switch art {
+        case .runningBanner:
+            // The classic running banner as it looks mid-countdown ("5 min · 04:59").
+            RunningTimerRow(
+                timer: RunningTimer(
+                    id: Self.artBannerID,
+                    presetID: Self.artBannerID,
+                    name: "5 min",
+                    startDate: Date().addingTimeInterval(-1),
+                    duration: 300
+                ),
+                now: Date(),
+                onPause: {}, onResume: {}, onCancel: {}
+            )
+            .scaleEffect(0.92)
+            .allowsHitTesting(false)
+            .padding(.bottom, -4) // soak up the scale gap (mock: margin-bottom: -4)
+            .accessibilityHidden(true)
+
+        case .widget:
+            TutorialWidgetArt()
+                .scaleEffect(0.87)
+                .frame(height: 170 * 0.87)
+        }
     }
 
     private func dots(index i: Int, count: Int) -> some View {
