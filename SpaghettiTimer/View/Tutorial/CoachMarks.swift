@@ -251,9 +251,18 @@ private struct CoachMarksOverlay: View {
             .accessibilityHidden(true)
 
         case .widget:
+            // TutorialWidgetArt is a fixed 364×170 design. scaleEffect is a
+            // render-only transform, so we must also pin the layout frame to the
+            // scaled size — otherwise the art keeps its 364pt layout width and
+            // pushes the card off screen. Cap at the design scale (0.87) but
+            // shrink further on narrow screens so it always fits the card, whose
+            // content width is the screen minus the artwork (20·2) and card
+            // (16·2) horizontal insets.
+            let available = geo.size.width - 72
+            let scale = min(0.87, available / 364)
             TutorialWidgetArt()
-                .scaleEffect(0.87)
-                .frame(height: 170 * 0.87)
+                .scaleEffect(scale)
+                .frame(width: 364 * scale, height: 170 * scale)
         }
     }
 

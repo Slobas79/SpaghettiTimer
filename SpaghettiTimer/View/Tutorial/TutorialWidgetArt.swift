@@ -23,12 +23,13 @@ struct TutorialWidgetArt: View {
         var isRepeat = false
     }
 
-    // The handoff `QUAD`: three named one-shots + one unnamed repeat tile.
+    // Mirrors the shipped default widget: the four built-in one-shot presets
+    // (`TimerPreset.builtIns`) a fresh install shows on the Home Screen.
     private let tiles: [Tile] = [
         Tile(name: "1 min", time: "01:00"),
         Tile(name: "5 min", time: "05:00"),
         Tile(name: "10 min", time: "10:00"),
-        Tile(isRepeat: true)
+        Tile(name: "25 min", time: "25:00")
     ]
 
     // Widget styling mirrored from `PresetsWidget.swift`'s `WidgetStyle`
@@ -43,15 +44,24 @@ struct TutorialWidgetArt: View {
                  Color(red: 20 / 255, green: 23 / 255, blue: 29 / 255)],
         startPoint: .top, endPoint: .bottom)
 
-    private let columns = [GridItem(.flexible(), spacing: 10),
-                           GridItem(.flexible(), spacing: 10)]
+    private static let gridGap: CGFloat = 10
 
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 10) {
-            ForEach(tiles) { tile in
-                tileView(tile)
+        // Fixed 2×2 grid so tiles stretch to fill the widget's height, exactly
+        // like `PresetsWidgetView` (a LazyVGrid would hug content and leave the
+        // bottom half empty).
+        VStack(spacing: Self.gridGap) {
+            ForEach(0..<2, id: \.self) { row in
+                HStack(spacing: Self.gridGap) {
+                    ForEach(0..<2, id: \.self) { col in
+                        tileView(tiles[row * 2 + col])
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(14)
         .frame(width: 364, height: 170)
         .background(
