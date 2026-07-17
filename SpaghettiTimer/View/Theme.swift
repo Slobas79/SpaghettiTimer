@@ -55,6 +55,10 @@ enum Theme {
     static let toastBorder = Color.white.opacity(0.12)                                // rgba(255,255,255,.12)
     static let success = Color(red: 48 / 255, green: 209 / 255, blue: 88 / 255)       // #30D158
 
+    // First-launch splash (seven-segment 3·2·1 countdown, styled like the icon)
+    static let splashCaption = Color(red: 154 / 255, green: 154 / 255, blue: 163 / 255) // #9A9AA3
+    static let segUnlit = Color(red: 0.00884, green: 0.09946, blue: 0.19392)          // mix(accent 14%, #010810)
+
     // Metrics
     static let cornerRadius: CGFloat = 22
     static let gridGap: CGFloat = 16

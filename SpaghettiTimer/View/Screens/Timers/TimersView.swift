@@ -10,6 +10,7 @@ import SwiftUI
 struct TimersView: View {
     @State var viewModel: TimersViewModel
     @State private var showingNew = false
+    @State private var showingSplash = false
     @State private var showingTour = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -72,6 +73,20 @@ struct TimersView: View {
             }
         }
         .coachMarks(.home, isActive: $showingTour, steps: TutorialTour.home)
+        .overlay {
+            if showingSplash {
+                TutorialSplash(
+                    onFinish: {
+                        showingSplash = false
+                        showingTour = true
+                    },
+                    onSkip: {
+                        showingSplash = false
+                        TutorialFlags.markDone(.home)
+                    }
+                )
+            }
+        }
         .sheet(isPresented: $showingNew) {
             NewTimerSheet { name, duration, pinned, autoRestartDelaySeconds in
                 viewModel.createTimer(name: name, duration: duration, pinned: pinned, autoRestartDelaySeconds: autoRestartDelaySeconds)
@@ -81,8 +96,10 @@ struct TimersView: View {
         }
         .onAppear {
             viewModel.refresh()
-            if !TutorialFlags.isDone(.home) {
-                showingTour = true
+            // First launch: play the intro splash, which then hands off to the
+            // Home tour. Once the tour is marked done, neither shows again.
+            if !TutorialFlags.isDone(.home) && !showingTour {
+                showingSplash = true
             }
         }
     }
