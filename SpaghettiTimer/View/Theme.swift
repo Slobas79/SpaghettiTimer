@@ -54,6 +54,10 @@ enum Theme {
     static let toastBG = Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255).opacity(0.92) // rgba(28,28,30,.92)
     static let toastBorder = Color.white.opacity(0.12)                                // rgba(255,255,255,.12)
     static let success = Color(red: 48 / 255, green: 209 / 255, blue: 88 / 255)       // #30D158
+    static let tourHelpBG = Color(red: 0.059, green: 0.136, blue: 0.219)              // mix(accent 16%, #101012)
+    static let tourHelpRing = accent.opacity(0.32)                                    // mix(accent 32%, transparent)
+    static let tourHelpGlyph = Color(red: 0.231, green: 0.614, blue: 1.0)             // mix(accent 80%, #fff)
+    static let tourHelpNavBG = Color.white.opacity(0.08)                              // rgba(255,255,255,.08)
 
     // First-launch splash (seven-segment 3·2·1 countdown, styled like the icon)
     static let splashCaption = Color(red: 154 / 255, green: 154 / 255, blue: 163 / 255) // #9A9AA3

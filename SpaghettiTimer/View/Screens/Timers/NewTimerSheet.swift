@@ -146,11 +146,14 @@ struct NewTimerSheet: View {
             }
         }
         .background(Color.black.ignoresSafeArea())
-        .coachMarks(.newTimer, isActive: $showingTour, steps: TutorialTour.newTimer)
-        .onAppear {
-            if !TutorialFlags.isDone(.newTimer) {
-                showingTour = true
+        .coachMarks(.newTimer, isActive: $showingTour, steps: TutorialTour.newTimer) { tab in
+            // Tour steps drive the sheet: tip 2 spotlights the selected End
+            // time segment, the others need the Duration surface back.
+            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.16)) {
+                mode = tab == .endTime ? .endTime : .duration
             }
+        }
+        .onAppear {
             // Default the clock picker to the top of the next hour the first time.
             guard !didInitEndTime else { return }
             let now = Date()
@@ -176,27 +179,25 @@ struct NewTimerSheet: View {
                 .font(.system(size: titleSize, weight: .bold))
                 .foregroundStyle(.white)
                 .accessibilityAddTraits(.isHeader)
-                // Quiet replay affordance: long-press the title.
-                .contextMenu {
-                    Button {
-                        showingTour = true
-                    } label: {
-                        Label("Replay tips", systemImage: "questionmark.circle")
-                    }
-                }
 
             HStack {
                 Button {
                     dismiss()
                 } label: {
-                    Text("Cancel")
-                        .font(.system(size: buttonSize))
+                    Image(systemName: "xmark")
+                        .font(.system(size: buttonSize - 3, weight: .semibold))
                         .foregroundStyle(Theme.lightText)
-                        .padding(.vertical, 9)
-                        .padding(.horizontal, 18)
-                        .background(Capsule().fill(Theme.subtleFill))
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(Theme.subtleFill))
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Cancel")
+
+                // Persistent Help trigger — replays the tour anytime.
+                TutorialHelpButton(style: .nav) {
+                    showingTour = true
+                }
+                .padding(.leading, 14)
 
                 Spacer()
 

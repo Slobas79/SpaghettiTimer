@@ -3,21 +3,21 @@
 //  SpaghettiTimer
 //
 //  First-launch splash: a big seven-segment digit counting 3 → 2 → 1, styled
-//  exactly like the app icon, that plays before the first-run Home tour so the
-//  coach marks don't appear out of nowhere. Reads as the app "booting up" in
-//  its own brand language. Mirrors the "First-launch splash" design delta.
+//  exactly like the app icon, that plays once on the very first app run and
+//  lands on the normal Home screen (where the Help button offers the tour).
+//  Reads as the app "booting up" in its own brand language. Mirrors the
+//  "First-launch splash" design delta + the session-3 rework.
 //
 
 import SwiftUI
 
 /// The full-screen intro splash. Fades in, ticks the digit 3 → 2 → 1 on a
-/// 900ms cadence (each tick replays the pop), then fades out and hands off to
-/// the Home tour via `onFinish`. "Skip intro" calls `onSkip`, which skips the
-/// splash **and** the tour.
+/// 900ms cadence (each tick replays the pop), then fades out via `onFinish`.
+/// "Skip intro" calls `onSkip` — it skips only the splash, never the tour.
 struct TutorialSplash: View {
-    /// The countdown finished — start the Home tour.
+    /// The countdown finished.
     let onFinish: () -> Void
-    /// The user tapped "Skip intro" — skip the splash and the tour.
+    /// The user tapped "Skip intro".
     let onSkip: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion

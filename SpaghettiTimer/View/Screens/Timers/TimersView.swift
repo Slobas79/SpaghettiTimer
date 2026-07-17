@@ -72,17 +72,30 @@ struct TimersView: View {
                 }
             }
         }
+        // One-shot Help trigger: starts the Home tour on demand and is gone
+        // for good once the tour is finished or skipped. Sits beneath the
+        // coach-mark/splash overlays so the tour scrim covers it.
+        .overlay(alignment: .bottom) {
+            if !showingSplash && !showingTour && !TutorialFlags.isDone(.home) {
+                TutorialHelpButton(style: .bottom) {
+                    showingTour = true
+                }
+                .padding(.bottom, 40)
+            }
+        }
         .coachMarks(.home, isActive: $showingTour, steps: TutorialTour.home)
         .overlay {
             if showingSplash {
+                // "Skip intro" skips only the splash — the Home tour stays
+                // available behind the Help button either way.
                 TutorialSplash(
                     onFinish: {
                         showingSplash = false
-                        showingTour = true
+                        TutorialFlags.markDone(.splash)
                     },
                     onSkip: {
                         showingSplash = false
-                        TutorialFlags.markDone(.home)
+                        TutorialFlags.markDone(.splash)
                     }
                 )
             }
@@ -96,9 +109,10 @@ struct TimersView: View {
         }
         .onAppear {
             viewModel.refresh()
-            // First launch: play the intro splash, which then hands off to the
-            // Home tour. Once the tour is marked done, neither shows again.
-            if !TutorialFlags.isDone(.home) && !showingTour {
+            // First app run only: play the intro splash, then land on the
+            // normal Home screen (with the Help button). The splash never
+            // consumes the Home tour — that's the Help button's job.
+            if !TutorialFlags.isDone(.splash) {
                 showingSplash = true
             }
         }

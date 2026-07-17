@@ -12,9 +12,12 @@ import SwiftUI
 // MARK: - Screens & persistence
 
 /// Screens that own a coach-mark tour. The raw value is the UserDefaults key.
+/// `.splash` is not a tour — it's the first-launch 3·2·1 intro, gated by its
+/// own flag so skipping/finishing it never consumes the Home tour.
 nonisolated enum TutorialScreen: String, Sendable {
     case home = "tutorial.home.done"
     case newTimer = "tutorial.newTimer.done"
+    case splash = "tutorial.splash.done"
 }
 
 /// Once-per-screen gate — set on Done **or** Skip.
@@ -46,6 +49,20 @@ nonisolated enum TutorialTargetID: Hashable, Sendable {
 nonisolated enum TutorialArt: Sendable {
     case runningBanner
     case widget
+}
+
+/// The New Timer sheet state a step needs before its target can be
+/// spotlighted (mirrors the mock's `step.tab`). The tour host maps this onto
+/// the sheet's Duration/End-time mode binding.
+nonisolated enum TutorialSheetTab: Sendable {
+    case duration
+    case endTime
+}
+
+/// Per-step override of the automatic below-if-room hint-card placement.
+nonisolated enum TutorialCardPlacement: Sendable {
+    case above
+    case below
 }
 
 /// Collects target bounds anchors from marked views. When several views mark
@@ -85,6 +102,13 @@ nonisolated struct TutorialStep: Sendable {
     var padding: CGFloat = 6
     /// Cutout corner radius ≈ the target's own radius.
     var cornerRadius: CGFloat = 20
+    /// Sheet state to force before spotlighting (e.g. the End time tab). A
+    /// step with a tab keeps its place in the tour even while its target is
+    /// off screen — the host guarantees the target by applying the tab.
+    var tab: TutorialSheetTab? = nil
+    /// Forces the hint card above/below the spotlight, overriding the
+    /// automatic below-if-room rule.
+    var place: TutorialCardPlacement? = nil
 }
 
 /// The per-screen tour scripts. New tips for future features: append a step.
@@ -126,27 +150,34 @@ enum TutorialTour {
             target: .durationWheel,
             title: "Dial the duration",
             body: "Scroll hours, minutes and seconds. Start lights up as soon as it’s not zero.",
-            cornerRadius: 22
+            cornerRadius: 22,
+            tab: .duration
         ),
+        // Spotlights the SELECTED End time segment; the card sits above so the
+        // readout + clock wheel below stay fully visible.
         TutorialStep(
             target: .modePicker,
             title: "Or pick an end time",
             body: "Switch to End time and choose when the timer should finish — like 11:00 AM. The duration is set for you.",
             padding: 4,
-            cornerRadius: 13
+            cornerRadius: 13,
+            tab: .endTime,
+            place: .above
         ),
         TutorialStep(
             target: .nameField,
             title: "Name it (optional)",
             body: "A name like “Pasta” shows on the timer card, the widget and the Dynamic Island.",
-            cornerRadius: 16
+            cornerRadius: 16,
+            tab: .duration
         ),
         TutorialStep(
             target: .autoRestartRow,
             title: "Auto-restart",
             body: "Great for intervals — the timer restarts itself after a cooldown you choose.",
             padding: 2,
-            cornerRadius: 18
+            cornerRadius: 18,
+            tab: .duration
         )
     ]
 }

@@ -13,15 +13,21 @@ import SwiftUI
 extension View {
     /// Hosts the coach-mark tour for `screen`: renders the overlay while
     /// `isActive` is true, persists the once-per-screen flag on Skip/Done,
-    /// and shows the "You're all set" toast after Done.
-    func coachMarks(_ screen: TutorialScreen, isActive: Binding<Bool>, steps: [TutorialStep]) -> some View {
-        modifier(CoachMarksHost(screen: screen, steps: steps, isActive: isActive))
+    /// and shows the "You're all set" toast after Done. `onTab` is called
+    /// when the shown step declares a sheet tab, so the host screen can put
+    /// itself in the state the step spotlights (e.g. switch to End time).
+    func coachMarks(_ screen: TutorialScreen,
+                    isActive: Binding<Bool>,
+                    steps: [TutorialStep],
+                    onTab: ((TutorialSheetTab) -> Void)? = nil) -> some View {
+        modifier(CoachMarksHost(screen: screen, steps: steps, onTab: onTab, isActive: isActive))
     }
 }
 
 private struct CoachMarksHost: ViewModifier {
     let screen: TutorialScreen
     let steps: [TutorialStep]
+    let onTab: ((TutorialSheetTab) -> Void)?
     @Binding var isActive: Bool
     @State private var showToast = false
 
@@ -32,7 +38,7 @@ private struct CoachMarksHost: ViewModifier {
             .overlayPreferenceValue(TutorialTargetPreferenceKey.self) { anchors in
                 if isActive {
                     GeometryReader { geo in
-                        CoachMarksOverlay(steps: steps, anchors: anchors, geo: geo) { completed in
+                        CoachMarksOverlay(steps: steps, anchors: anchors, geo: geo, onTab: onTab) { completed in
                             TutorialFlags.markDone(screen)
                             isActive = false
                             if completed {
@@ -66,6 +72,8 @@ private struct CoachMarksOverlay: View {
     let steps: [TutorialStep]
     let anchors: [TutorialTargetID: Anchor<CGRect>]
     let geo: GeometryProxy
+    /// Applies a step's required sheet tab on the host screen.
+    let onTab: ((TutorialSheetTab) -> Void)?
     /// `completed` is true for Done (shows the toast), false for Skip.
     let onFinish: (_ completed: Bool) -> Void
 
@@ -83,9 +91,12 @@ private struct CoachMarksOverlay: View {
     var body: some View {
         // Spotlight steps whose target isn't on screen (e.g. a target removed
         // from a screen) are skipped rather than spotlighting empty space.
-        // Artwork steps have no target and are always shown.
+        // Artwork steps have no target and are always shown. Steps that
+        // declare a tab also always stay: their target may be off screen right
+        // now (the sheet is in the other mode), but applying the tab brings it
+        // back — filtering them out would collapse the step count mid-tour.
         let steps = steps.filter { step in
-            if step.art != nil { return true }
+            if step.art != nil || step.tab != nil { return true }
             if let target = step.target { return anchors[target] != nil }
             return false
         }
@@ -103,6 +114,14 @@ private struct CoachMarksOverlay: View {
             .contentShape(Rectangle())
             .animation(reduceMotion ? nil : .timingCurve(0.3, 0.9, 0.3, 1, duration: 0.34), value: i)
             .accessibilityAddTraits(.isModal)
+            // Put the screen into the state the step spotlights — on entry
+            // and on every Next/Back move (state follows whatever step shows).
+            .onAppear {
+                if let tab = step.tab { onTab?(tab) }
+            }
+            .onChange(of: i) { _, newIndex in
+                if let tab = steps[min(newIndex, steps.count - 1)].tab { onTab?(tab) }
+            }
         }
     }
 
@@ -110,15 +129,27 @@ private struct CoachMarksOverlay: View {
     /// step's on-screen target, and the hint card below/above the cutout.
     @ViewBuilder
     private func spotlightLayer(step: TutorialStep, index i: Int, count: Int) -> some View {
-        let spot = geo[anchors[step.target!]!].insetBy(dx: -step.padding, dy: -step.padding)
-        // Card goes below the spotlight when there's room (mock: target
-        // bottom < 520 on an 844pt frame), above otherwise.
-        let below = spot.maxY < geo.size.height - 324
+        if let anchor = step.target.flatMap({ anchors[$0] }) {
+            let spot = geo[anchor].insetBy(dx: -step.padding, dy: -step.padding)
+            // Card placement: per-step override, else below the spotlight when
+            // there's room (mock: target bottom < 520 on an 844pt frame).
+            let below = switch step.place {
+            case .below: true
+            case .above: false
+            case nil: spot.maxY < geo.size.height - 324
+            }
 
-        scrim(spot: spot, cornerRadius: step.cornerRadius)
-        spotlight(spot: spot, cornerRadius: step.cornerRadius)
-        connector(spot: spot, below: below)
-        card(step: step, index: i, count: count, spot: spot, below: below)
+            scrim(spot: spot, cornerRadius: step.cornerRadius)
+            spotlight(spot: spot, cornerRadius: step.cornerRadius)
+            connector(spot: spot, below: below)
+            card(step: step, index: i, count: count, spot: spot, below: below)
+        } else {
+            // The target is momentarily off screen — the sheet is still
+            // switching into the state `onTab` asked for. Hold the plain scrim
+            // until the anchor arrives on the next preference update.
+            Theme.tourScrim
+                .padding(-200)
+        }
     }
 
     /// Artwork tip: plain full scrim (no cutout) with a card that embeds a
@@ -214,13 +245,13 @@ private struct CoachMarksOverlay: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 4)
 
+            // Footer order: step dots · Skip (always) · ‹ Back (tip ≥ 2) · Next/Done.
             HStack(spacing: 12) {
                 dots(index: i, count: count)
                 Spacer(minLength: 0)
+                skipButton
                 if i > 0 {
                     backButton(from: i)
-                } else {
-                    skipButton
                 }
                 nextButton(from: i, isLast: i == count - 1)
             }

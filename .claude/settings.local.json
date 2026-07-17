@@ -34,7 +34,8 @@
       "Bash(awk -F' = ' '/ TARGET_BUILD_DIR/{print $2}')",
       "Bash(git status *)",
       "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath /private/tmp/claude-501/-Users-slobodanstamenic-Projects-SpaghettiTimer/f634c304-5ccd-42c2-90e6-b3910b3bc4a3/scratchpad/dd build)",
-      "Bash(plutil -p \"/Users/slobodanstamenic/Library/Developer/CoreSimulator/Devices/0592300E-4A81-495B-926D-E26127AA21AB/data/Containers/Shared/AppGroup/C57B61A0-2FAF-4317-8223-398535193D8E/Library/Preferences/group.sloba.SpaghettiTimer.plist\")"
+      "Bash(plutil -p \"/Users/slobodanstamenic/Library/Developer/CoreSimulator/Devices/0592300E-4A81-495B-926D-E26127AA21AB/data/Containers/Shared/AppGroup/C57B61A0-2FAF-4317-8223-398535193D8E/Library/Preferences/group.sloba.SpaghettiTimer.plist\")",
+      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,id=5454ADD8-CACF-4EA9-9437-D0470B7DCFC8' build)"
     ]
   }
 }
