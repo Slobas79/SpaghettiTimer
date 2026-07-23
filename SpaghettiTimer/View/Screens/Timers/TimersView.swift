@@ -52,15 +52,6 @@ struct TimersView: View {
                                 )
                                 .tutorialTarget(.presetTile)
                             }
-                            AddTimerTile(action: { showingNew = true })
-                                .tutorialTarget(.addTile)
-                                .contextMenu {
-                                    Button {
-                                        showingTour = true
-                                    } label: {
-                                        Label("Replay tips", systemImage: "questionmark.circle")
-                                    }
-                                }
                         }
                     }
                     // Cap text growth on the fixed-aspect tiles / fixed-height
@@ -68,19 +59,39 @@ struct TimersView: View {
                     .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                     .padding(.horizontal, Theme.screenPadding)
                     .padding(.top, 6)
+                    // Clear the floating + FAB so the last grid row never hides beneath it.
+                    .padding(.bottom, 96)
                     .animation(reduceMotion ? nil : .easeInOut(duration: 0.25), value: viewModel.runningRows)
                 }
             }
         }
-        // One-shot Help trigger: starts the Home tour on demand and is gone
-        // for good once the tour is finished or skipped. Sits beneath the
-        // coach-mark/splash overlays so the tour scrim covers it.
+        // Floating + FAB, pinned bottom-centre. Sits beneath the coach-mark/
+        // splash overlays so the tour scrim covers it — and so tip 3 can
+        // spotlight it through the scrim's cutout. A quiet long-press replays
+        // the tips (the one-shot Help button is gone once the tour is done).
         .overlay(alignment: .bottom) {
+            AddTimerFAB(action: { showingNew = true })
+                .tutorialTarget(.addTile)
+                .padding(.bottom, 34)
+                .contextMenu {
+                    Button {
+                        showingTour = true
+                    } label: {
+                        Label("Replay tips", systemImage: "questionmark.circle")
+                    }
+                }
+        }
+        // One-shot Help trigger in the bottom-right corner: starts the Home
+        // tour on demand and is gone for good once the tour is finished or
+        // skipped. Clear of the running banner (top) and the centre FAB.
+        // Beneath the coach-mark/splash overlays so the tour scrim covers it.
+        .overlay(alignment: .bottomTrailing) {
             if !showingSplash && !showingTour && !TutorialFlags.isDone(.home) {
-                TutorialHelpButton(style: .bottom) {
+                TutorialHelpButton(style: .corner) {
                     showingTour = true
                 }
-                .padding(.bottom, 40)
+                .padding(.trailing, 20)
+                .padding(.bottom, 45)
             }
         }
         .coachMarks(.home, isActive: $showingTour, steps: TutorialTour.home)
@@ -116,6 +127,51 @@ struct TimersView: View {
                 showingSplash = true
             }
         }
+    }
+}
+
+// MARK: - Add-timer FAB
+
+/// The floating "New timer" action button — a 60pt accent circle pinned to the
+/// bottom-centre of the Home screen (`.add-fab` in the handoff). Replaces the
+/// old in-grid dashed add tile.
+private struct AddTimerFAB: View {
+    let action: () -> Void
+
+    @ScaledMetric(relativeTo: .title) private var plusSize: CGFloat = 30
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "plus")
+                .font(.system(size: plusSize, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 60, height: 60)
+                .background(Circle().fill(Theme.accent))
+                // 1px top inset highlight (`inset 0 1px 0 rgba(255,255,255,0.25)`).
+                .overlay(
+                    Circle().strokeBorder(
+                        LinearGradient(colors: [.white.opacity(0.25), .clear],
+                                       startPoint: .top, endPoint: .center),
+                        lineWidth: 1
+                    )
+                )
+                .shadow(color: .black.opacity(0.5), radius: 14, y: 10)
+                .shadow(color: .black.opacity(0.4), radius: 3, y: 2)
+        }
+        .buttonStyle(FABPressStyle())
+        .accessibilityLabel("Add timer")
+        .accessibilityHint("Creates a new timer")
+    }
+}
+
+/// Presses the FAB down to 0.95 scale, matching `.add-fab:active`.
+private struct FABPressStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.95 : 1)
+            .animation(.easeOut(duration: 0.08), value: configuration.isPressed)
     }
 }
 
@@ -157,13 +213,17 @@ private struct TimersPreviewHarness: View {
                             TimerTile(preset: preset, onStart: {}, onUnpin: {}, onPin: nil)
                                 .tutorialTarget(.presetTile)
                         }
-                        AddTimerTile(action: {})
-                            .tutorialTarget(.addTile)
                     }
                 }
                 .padding(.horizontal, Theme.screenPadding)
                 .padding(.top, 6)
+                .padding(.bottom, 96)
             }
+        }
+        .overlay(alignment: .bottom) {
+            AddTimerFAB(action: {})
+                .tutorialTarget(.addTile)
+                .padding(.bottom, 34)
         }
         .coachMarks(.home, isActive: $showingTour, steps: TutorialTour.home)
         .onAppear { showingTour = tour }

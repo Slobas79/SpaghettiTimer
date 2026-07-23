@@ -16,8 +16,6 @@ enum Theme {
     static let cardFill = Color.white.opacity(0.02)
     static let cardBorder = Color(red: 45 / 255, green: 150 / 255, blue: 255 / 255).opacity(0.30) // #2D96FF @ 30%
     static let mutedTime = Color(red: 138 / 255, green: 138 / 255, blue: 142 / 255)   // #8A8A8E
-    static let addDash = Color.white.opacity(0.28)
-    static let addPlus = Color.white.opacity(0.45)
 
     // New Timer sheet — precomputed color-mix(in srgb, …) blends over black
     static let surfaceFill = Color.white.opacity(0.02)                                // rgba(255,255,255,.02)

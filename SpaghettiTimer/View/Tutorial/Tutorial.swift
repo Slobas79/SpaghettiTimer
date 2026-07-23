@@ -131,7 +131,8 @@ enum TutorialTour {
             target: .addTile,
             title: "New timer",
             body: "Create your own — set a duration, or pick the clock time it should end at.",
-            cornerRadius: 22
+            padding: 8,
+            cornerRadius: 30
         ),
         TutorialStep(
             art: .runningBanner,

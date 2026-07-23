@@ -3,8 +3,8 @@
 //  SpaghettiTimer
 //
 //  The Help (?) trigger from the tutorial design handoff: a round button
-//  that starts a screen's coach-mark tour on demand. Two styles — the
-//  44pt accent-tinted floating button at the bottom of the Home grid, and
+//  that starts a screen's coach-mark tour on demand. Three styles — the
+//  38pt accent-tinted button in the Home screen's bottom-right corner, and
 //  the 34pt nav-bar button next to Start on the New Timer sheet.
 //
 
@@ -12,8 +12,10 @@ import SwiftUI
 
 struct TutorialHelpButton: View {
     enum Style {
-        /// Home: 44pt, accent-tinted dark fill, accent ring, drop shadow.
-        case bottom
+        /// Home bottom-right corner: 38pt, accent-tinted dark fill, accent
+        /// ring, drop shadow. Sits clear of the running banner (top) and the
+        /// centre + FAB (bottom-centre).
+        case corner
         /// New Timer nav bar: 34pt, plain white 8% fill.
         case nav
     }
@@ -21,23 +23,23 @@ struct TutorialHelpButton: View {
     let style: Style
     let action: () -> Void
 
-    private var diameter: CGFloat { style == .bottom ? 44 : 34 }
+    private var diameter: CGFloat { style == .corner ? 38 : 34 }
 
     var body: some View {
         Button(action: action) {
             Image(systemName: "questionmark")
-                .font(.system(size: style == .bottom ? 17 : 14, weight: .semibold))
+                .font(.system(size: style == .corner ? 15 : 14, weight: .semibold))
                 .foregroundStyle(Theme.tourHelpGlyph)
                 .frame(width: diameter, height: diameter)
                 .background(
-                    Circle().fill(style == .bottom ? Theme.tourHelpBG : Theme.tourHelpNavBG)
+                    Circle().fill(style == .corner ? Theme.tourHelpBG : Theme.tourHelpNavBG)
                 )
                 .overlay {
-                    if style == .bottom {
+                    if style == .corner {
                         Circle().strokeBorder(Theme.tourHelpRing, lineWidth: 1)
                     }
                 }
-                .shadow(color: style == .bottom ? .black.opacity(0.45) : .clear,
+                .shadow(color: style == .corner ? .black.opacity(0.45) : .clear,
                         radius: 12, y: 8)
         }
         .buttonStyle(.plain)
@@ -51,7 +53,7 @@ struct TutorialHelpButton: View {
     ZStack {
         Color.black.ignoresSafeArea()
         HStack(spacing: 30) {
-            TutorialHelpButton(style: .bottom) {}
+            TutorialHelpButton(style: .corner) {}
             TutorialHelpButton(style: .nav) {}
         }
     }
