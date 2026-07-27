@@ -15,4 +15,5 @@ final class DependencyInjectionContainer {
     // Use cases
     private(set) lazy var presetsUseCase: TimerPresetsUseCase = TimerPresetsUseCaseImpl(repo: presetsRepo, analytics: analyticsRepo)
     private(set) lazy var runningTimersUseCase: RunningTimersUseCase = RunningTimersUseCaseImpl(repo: runningTimersRepo, presetsRepo: presetsRepo, analytics: analyticsRepo)
+    private(set) lazy var storeUseCase: StoreUseCase = StoreUseCase(analytics: analyticsRepo)
 }

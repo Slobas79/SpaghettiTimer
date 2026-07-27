@@ -94,5 +94,11 @@ final class TimersViewModel {
         presets.map { TileItem(preset: $0) }
     }
 
+    /// User-created (pinned) presets, excluding built-ins — this is what the
+    /// free pin cap counts against.
+    var userPresetCount: Int {
+        presets.filter { !$0.isBuiltIn }.count
+    }
+
     func tick(at date: Date) {}
 }

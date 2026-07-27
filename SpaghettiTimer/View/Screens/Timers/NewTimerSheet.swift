@@ -41,6 +41,8 @@ struct NewTimerSheet: View {
     /// end-time wheel can't get stuck showing a stale hour format.
     @State private var localeChangeTick = 0
     @State private var showingTour = false
+    /// Non-nil while the paywall is shown over the sheet (auto-restart / pin gate).
+    @State private var paywallTrigger: PaywallTrigger?
     @FocusState private var nameFocused: Bool
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -59,6 +61,10 @@ struct NewTimerSheet: View {
     @ScaledMetric(relativeTo: .subheadline) private var durReadoutSize: CGFloat = 15
     @ScaledMetric(relativeTo: .subheadline) private var segLabelSize: CGFloat = 15
 
+    /// Drives the premium gates (auto-restart trial, pin cap) and the paywall.
+    let store: StoreUseCase
+    /// Current count of user (pinned) presets — what the free pin cap counts.
+    let pinnedCount: Int
     let onSave: (String, TimeInterval, Bool, TimeInterval?) -> Void
 
     private var duration: TimeInterval {
@@ -77,6 +83,36 @@ struct NewTimerSheet: View {
 
     private var restartDelay: TimeInterval? {
         autoRestart ? TimeInterval(cooldownTotal) : nil
+    }
+
+    /// Auto-restart toggle gated by the free trial: turning it on when no free
+    /// uses remain (and not Pro) opens the paywall instead of flipping the switch.
+    private var autoRestartBinding: Binding<Bool> {
+        Binding(
+            get: { autoRestart },
+            set: { want in
+                if want && !store.canEnableAutoRestart() {
+                    paywallTrigger = .autoRestart
+                } else {
+                    autoRestart = want
+                }
+            }
+        )
+    }
+
+    /// Pin toggle gated by the free preset cap: pinning past the limit (and not
+    /// Pro) opens the paywall instead.
+    private var pinnedBinding: Binding<Bool> {
+        Binding(
+            get: { isPinned },
+            set: { want in
+                if want && !store.canPin(currentUserPresetCount: pinnedCount) {
+                    paywallTrigger = .pinLimit
+                } else {
+                    isPinned = want
+                }
+            }
+        )
     }
 
     /// Duration mode disables Start at 0; End-time mode is always valid.
@@ -103,6 +139,8 @@ struct NewTimerSheet: View {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         switch mode {
         case .duration:
+            // Count this against the free auto-restart trial (no-op for Pro).
+            if restartDelay != nil { store.registerAutoRestartUse() }
             onSave(trimmed, duration, isPinned, restartDelay)
         case .endTime:
             // Auto-restart is meaningless for a fixed clock target, so it's always nil.
@@ -168,6 +206,10 @@ struct NewTimerSheet: View {
                 .receive(on: DispatchQueue.main)
         ) { _ in
             localeChangeTick += 1
+        }
+        .sheet(item: $paywallTrigger) { trigger in
+            PaywallView(store: store, trigger: trigger)
+                .presentationBackground(.black)
         }
     }
 
@@ -266,7 +308,7 @@ struct NewTimerSheet: View {
                 icon: "arrow.clockwise",
                 title: "Auto-restart after finish",
                 description: "Re-run this timer automatically after a cooldown delay.",
-                isOn: $autoRestart.animation(reduceMotion ? nil : .easeInOut(duration: 0.2))
+                isOn: autoRestartBinding.animation(reduceMotion ? nil : .easeInOut(duration: 0.2))
             )
             .tutorialTarget(.autoRestartRow)
 
@@ -281,7 +323,7 @@ struct NewTimerSheet: View {
                 icon: "pin",
                 title: "Pin timer",
                 description: "Keep this timer permanently available.",
-                isOn: $isPinned
+                isOn: pinnedBinding
             )
         }
         .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surfaceFill))
@@ -683,7 +725,7 @@ struct NewTimerSheet: View {
                 icon: "pin",
                 title: "Pin timer",
                 description: "Keep this timer permanently available.",
-                isOn: $isPinned
+                isOn: pinnedBinding
             )
         }
         .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surfaceFill))
@@ -1019,12 +1061,12 @@ private struct WheelColumn: View {
 // MARK: - Preview
 
 #Preview("Auto-restart ON") {
-    NewTimerSheet { _, _, _, _ in }
+    NewTimerSheet(store: .preview, pinnedCount: 0) { _, _, _, _ in }
         .seededAutoRestart()
 }
 
 #Preview("End time") {
-    NewTimerSheet { _, _, _, _ in }
+    NewTimerSheet(store: .preview, pinnedCount: 0) { _, _, _, _ in }
         .seededEndTime()
 }
 

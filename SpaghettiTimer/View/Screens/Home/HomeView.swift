@@ -9,8 +9,9 @@ import SwiftUI
 
 struct HomeView: View {
     let viewModel: TimersViewModel
+    let store: StoreUseCase
 
     var body: some View {
-        TimersView(viewModel: viewModel)
+        TimersView(viewModel: viewModel, store: store)
     }
 }

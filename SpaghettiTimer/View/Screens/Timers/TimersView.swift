@@ -9,9 +9,11 @@ import SwiftUI
 
 struct TimersView: View {
     @State var viewModel: TimersViewModel
+    let store: StoreUseCase
     @State private var showingNew = false
     @State private var showingSplash = false
     @State private var showingTour = false
+    @State private var directPaywall: PaywallTrigger?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -79,6 +81,18 @@ struct TimersView: View {
                     } label: {
                         Label("Replay tips", systemImage: "questionmark.circle")
                     }
+                    if !store.isPro {
+                        Button {
+                            directPaywall = .general
+                        } label: {
+                            Label("Unlock Pro", systemImage: "crown")
+                        }
+                    }
+                    Button {
+                        Task { await store.restore() }
+                    } label: {
+                        Label("Restore Purchases", systemImage: "arrow.clockwise.circle")
+                    }
                 }
         }
         // One-shot Help trigger in the bottom-right corner: starts the Home
@@ -112,11 +126,15 @@ struct TimersView: View {
             }
         }
         .sheet(isPresented: $showingNew) {
-            NewTimerSheet { name, duration, pinned, autoRestartDelaySeconds in
+            NewTimerSheet(store: store, pinnedCount: viewModel.userPresetCount) { name, duration, pinned, autoRestartDelaySeconds in
                 viewModel.createTimer(name: name, duration: duration, pinned: pinned, autoRestartDelaySeconds: autoRestartDelaySeconds)
             }
             .presentationBackground(.black)
             .presentationDragIndicator(.hidden)
+        }
+        .sheet(item: $directPaywall) { trigger in
+            PaywallView(store: store, trigger: trigger)
+                .presentationBackground(.black)
         }
         .onAppear {
             viewModel.refresh()

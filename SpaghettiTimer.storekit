@@ -1,0 +1,41 @@
+{
+  "identifier" : "8A3F1C2D-4B5E-4A6F-9C7D-1E2F3A4B5C6D",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : true,
+      "internalID" : "2B7E9F04-1A3C-4D5E-8F09-6A1B2C3D4E5F",
+      "localizations" : [
+        {
+          "description" : "Unlock auto-restart and unlimited pinned presets. One-time purchase.",
+          "displayName" : "SpaghettiTimer Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.spaghettitimer.pro.lifetime",
+      "referenceName" : "SpaghettiTimer Pro",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
