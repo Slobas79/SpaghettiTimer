@@ -18,6 +18,7 @@ nonisolated enum AppGroup {
 nonisolated enum AppGroupKey {
     static let userPresets = "presets.user"
     static let hiddenBuiltInPresets = "presets.hiddenBuiltIns"
+    static let nextHourPinned = "presets.nextHourPinned"
     static let runningTimers = "runningTimers"
     static let userCancelledTimers = "runningTimers.userCancelled"
 }

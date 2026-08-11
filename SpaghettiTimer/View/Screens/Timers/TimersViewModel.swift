@@ -13,6 +13,8 @@ import Observation
 final class TimersViewModel {
     private(set) var presets: [TimerPreset] = []
     private(set) var running: [RunningTimer] = []
+    /// Drives the dynamic "To next hour" tile in the first grid cell.
+    private(set) var isNextHourPinned: Bool = false
 
     @ObservationIgnored private let presetsUseCase: TimerPresetsUseCase
     @ObservationIgnored private let runningUseCase: RunningTimersUseCase
@@ -23,10 +25,12 @@ final class TimersViewModel {
 
         presets = presetsUseCase.presets
         running = runningUseCase.running
+        isNextHourPinned = presetsUseCase.isNextHourPinned
 
         presetsUseCase.onChange = { [weak self] in
             guard let self else { return }
             self.presets = presetsUseCase.presets
+            self.isNextHourPinned = presetsUseCase.isNextHourPinned
         }
         runningUseCase.onChange = { [weak self] in
             guard let self else { return }
@@ -79,6 +83,18 @@ final class TimersViewModel {
 
     func pin(_ preset: TimerPreset) {
         presetsUseCase.pinPreset(preset)
+    }
+
+    // MARK: - "To next hour" tile
+
+    func setNextHourPinned(_ pinned: Bool) {
+        presetsUseCase.setNextHourPinned(pinned)
+    }
+
+    /// Starts a one-shot timer ending at the next full hour, recomputed now —
+    /// the tile stores no duration of its own.
+    func startNextHour() {
+        runningUseCase.start(preset: NextHour.preset(at: Date()))
     }
 
     struct TileItem: Identifiable {

@@ -130,6 +130,13 @@ final class StoreUseCase {
         isPro || count < ProConfig.freePinLimit
     }
 
+    /// The dynamic "To next hour" tile is Pro-only — there is no free trial for
+    /// it the way there is for auto-restart, and it doesn't count against the
+    /// free pin cap.
+    func canPinNextHour() -> Bool {
+        isPro
+    }
+
     /// Free auto-restart creations still remaining (0 once the trial is spent).
     var remainingFreeAutoRestartUses: Int {
         max(0, ProConfig.freeAutoRestartUses - usageRepo.autoRestartUseCount())

@@ -15,6 +15,7 @@ import SwiftUI
 enum PaywallTrigger: String, Identifiable {
     case autoRestart
     case pinLimit
+    case nextHour
     case general
 
     var id: String { rawValue }
@@ -24,6 +25,7 @@ enum PaywallTrigger: String, Identifiable {
         switch self {
         case .autoRestart: return "Keep your timers looping"
         case .pinLimit:    return "Room for every timer"
+        case .nextHour:    return "Always on the hour"
         case .general:     return "Unlock the full timer"
         }
     }
@@ -32,6 +34,7 @@ enum PaywallTrigger: String, Identifiable {
         switch self {
         case .autoRestart: return "You've used auto-restart on the house. Unlock it for good — plus unlimited pinned presets."
         case .pinLimit:    return "You've filled your free presets. Go unlimited — and unlock auto-restart while you're at it."
+        case .nextHour:    return "Pin the “To next hour” tile and stay one tap from the top of the hour — plus everything else in Pro."
         case .general:     return "One upgrade unlocks everything below."
         }
     }
@@ -133,6 +136,12 @@ struct PaywallView: View {
                 icon: "infinity",
                 title: "Unlimited presets",
                 description: "Pin as many timers as you like, always one tap away."
+            )
+            hairline
+            featureRow(
+                icon: "clock",
+                title: "To next hour",
+                description: "Pin a tile that always counts down to the next full hour — no setting it each time."
             )
         }
         .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surfaceFill))
@@ -256,4 +265,8 @@ struct PaywallView: View {
 
 #Preview("Pin limit") {
     PaywallView(store: .preview, trigger: .pinLimit)
+}
+
+#Preview("To next hour") {
+    PaywallView(store: .preview, trigger: .nextHour)
 }

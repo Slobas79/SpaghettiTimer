@@ -12,6 +12,10 @@ nonisolated protocol PresetsRepo: Sendable {
     func saveUserPresets(_ presets: [TimerPreset])
     func loadHiddenBuiltInIDs() -> Set<UUID>
     func saveHiddenBuiltInIDs(_ ids: Set<UUID>)
+    /// Whether the dynamic "To next hour" tile is pinned to the home grid.
+    /// It carries no stored duration, so it lives outside `userPresets`.
+    func loadNextHourPinned() -> Bool
+    func saveNextHourPinned(_ pinned: Bool)
     func allPresets() -> [TimerPreset]
 }
 
@@ -43,6 +47,14 @@ nonisolated final class PresetsRepoImpl: PresetsRepo {
         if let data = try? JSONEncoder().encode(ids) {
             defaults.set(data, forKey: AppGroupKey.hiddenBuiltInPresets)
         }
+    }
+
+    func loadNextHourPinned() -> Bool {
+        defaults.bool(forKey: AppGroupKey.nextHourPinned)
+    }
+
+    func saveNextHourPinned(_ pinned: Bool) {
+        defaults.set(pinned, forKey: AppGroupKey.nextHourPinned)
     }
 
     func allPresets() -> [TimerPreset] {

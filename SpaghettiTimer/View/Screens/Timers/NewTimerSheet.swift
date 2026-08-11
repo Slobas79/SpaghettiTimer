@@ -66,6 +66,9 @@ struct NewTimerSheet: View {
     /// Current count of user (pinned) presets — what the free pin cap counts.
     let pinnedCount: Int
     let onSave: (String, TimeInterval, Bool, TimeInterval?) -> Void
+    /// Called instead of `onSave` when an End-time timer is pinned: the pin
+    /// becomes the dynamic "To next hour" home tile, not a frozen duration.
+    let onPinNextHour: () -> Void
 
     private var duration: TimeInterval {
         TimeInterval(hours * 3600 + minutes * 60 + seconds)
@@ -115,6 +118,22 @@ struct NewTimerSheet: View {
         )
     }
 
+    /// End-time mode's pin toggle. Pinning here installs the dynamic "To next
+    /// hour" tile, which is Pro-only — no free cap to spend, so a non-Pro user
+    /// always gets the paywall.
+    private var nextHourPinnedBinding: Binding<Bool> {
+        Binding(
+            get: { isPinned },
+            set: { want in
+                if want && !store.canPinNextHour() {
+                    paywallTrigger = .nextHour
+                } else {
+                    isPinned = want
+                }
+            }
+        )
+    }
+
     /// Duration mode disables Start at 0; End-time mode is always valid.
     private var canSave: Bool {
         switch mode {
@@ -143,8 +162,21 @@ struct NewTimerSheet: View {
             if restartDelay != nil { store.registerAutoRestartUse() }
             onSave(trimmed, duration, isPinned, restartDelay)
         case .endTime:
-            // Auto-restart is meaningless for a fixed clock target, so it's always nil.
-            onSave(trimmed, endTimeDuration(now: Date()), isPinned, nil)
+            // A pinned clock target can't store a duration — the same "20:00"
+            // means something different tomorrow — so the pin installs the
+            // dynamic "To next hour" home tile instead.
+            if isPinned {
+                // Re-check the Pro gate here too: `isPinned` survives a switch
+                // from Duration mode, where it's only capped, not Pro-only.
+                guard store.canPinNextHour() else {
+                    paywallTrigger = .nextHour
+                    return
+                }
+                onPinNextHour()
+            } else {
+                // Auto-restart is meaningless for a fixed clock target, so it's always nil.
+                onSave(trimmed, endTimeDuration(now: Date()), false, nil)
+            }
         }
         dismiss()
     }
@@ -724,8 +756,10 @@ struct NewTimerSheet: View {
             optionRow(
                 icon: "pin",
                 title: "Pin timer",
-                description: "Keep this timer permanently available.",
-                isOn: pinnedBinding
+                // A clock target can't be pinned as-is, so say what pinning
+                // actually leaves on the home grid.
+                description: "Adds a “To next hour” tile that always counts down to the next full hour.",
+                isOn: nextHourPinnedBinding
             )
         }
         .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surfaceFill))
@@ -1061,12 +1095,12 @@ private struct WheelColumn: View {
 // MARK: - Preview
 
 #Preview("Auto-restart ON") {
-    NewTimerSheet(store: .preview, pinnedCount: 0) { _, _, _, _ in }
+    NewTimerSheet(store: .preview, pinnedCount: 0, onSave: { _, _, _, _ in }, onPinNextHour: {})
         .seededAutoRestart()
 }
 
 #Preview("End time") {
-    NewTimerSheet(store: .preview, pinnedCount: 0) { _, _, _, _ in }
+    NewTimerSheet(store: .preview, pinnedCount: 0, onSave: { _, _, _, _ in }, onPinNextHour: {})
         .seededEndTime()
 }
 

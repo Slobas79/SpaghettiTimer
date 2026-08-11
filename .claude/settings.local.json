@@ -37,7 +37,11 @@
       "Bash(plutil -p \"/Users/slobodanstamenic/Library/Developer/CoreSimulator/Devices/0592300E-4A81-495B-926D-E26127AA21AB/data/Containers/Shared/AppGroup/C57B61A0-2FAF-4317-8223-398535193D8E/Library/Preferences/group.sloba.SpaghettiTimer.plist\")",
       "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,id=5454ADD8-CACF-4EA9-9437-D0470B7DCFC8' build)",
       "mcp__computer-use__request_access",
-      "mcp__computer-use__write_clipboard"
+      "mcp__computer-use__write_clipboard",
+      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build)",
+      "Bash(plutil -replace \"presets.nextHourPinned\" -bool true /Users/slobodanstamenic/Library/Developer/CoreSimulator/Devices/5454ADD8-CACF-4EA9-9437-D0470B7DCFC8/data/Containers/Shared/AppGroup/2E6D0856-E7E8-42BF-B8EA-2E683AE5FDA6/Library/Preferences/group.sloba.SpaghettiTimer.plist)",
+      "Bash(plutil -replace 'presets\\\\.nextHourPinned' -bool true /Users/slobodanstamenic/Library/Developer/CoreSimulator/Devices/5454ADD8-CACF-4EA9-9437-D0470B7DCFC8/data/Containers/Shared/AppGroup/2E6D0856-E7E8-42BF-B8EA-2E683AE5FDA6/Library/Preferences/group.sloba.SpaghettiTimer.plist)",
+      "Bash(plutil -p /Users/slobodanstamenic/Library/Developer/CoreSimulator/Devices/5454ADD8-CACF-4EA9-9437-D0470B7DCFC8/data/Containers/Shared/AppGroup/2E6D0856-E7E8-42BF-B8EA-2E683AE5FDA6/Library/Preferences/group.sloba.SpaghettiTimer.plist)"
     ]
   }
 }

@@ -17,6 +17,10 @@ enum Theme {
     static let cardBorder = Color(red: 45 / 255, green: 150 / 255, blue: 255 / 255).opacity(0.30) // #2D96FF @ 30%
     static let mutedTime = Color(red: 138 / 255, green: 138 / 255, blue: 142 / 255)   // #8A8A8E
 
+    // "To next hour" tile — same dark surface, set apart by a stronger outline
+    static let nextHourBorder = accent.opacity(0.55)                                  // mix(accent 55%, transparent)
+    static let nextHourBadgeFill = accent.opacity(0.16)                               // mix(accent 16%, transparent)
+
     // New Timer sheet — precomputed color-mix(in srgb, …) blends over black
     static let surfaceFill = Color.white.opacity(0.02)                                // rgba(255,255,255,.02)
     static let surfaceBorder = Color(red: 0.230, green: 0.614, blue: 1.0).opacity(0.275)   // mix(accent 22%, white .07)

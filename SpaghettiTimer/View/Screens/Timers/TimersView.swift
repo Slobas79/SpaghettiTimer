@@ -45,6 +45,16 @@ struct TimersView: View {
                         }
 
                         LazyVGrid(columns: columns, spacing: Theme.gridGap) {
+                            // Always the first cell when present — it never
+                            // reorders with the pinned presets behind it.
+                            if viewModel.isNextHourPinned {
+                                NextHourTile(
+                                    now: context.date,
+                                    onStart: { viewModel.startNextHour() },
+                                    onUnpin: { viewModel.setNextHourPinned(false) }
+                                )
+                            }
+
                             ForEach(viewModel.presetTiles) { item in
                                 TimerTile(
                                     preset: item.preset,
@@ -126,9 +136,14 @@ struct TimersView: View {
             }
         }
         .sheet(isPresented: $showingNew) {
-            NewTimerSheet(store: store, pinnedCount: viewModel.userPresetCount) { name, duration, pinned, autoRestartDelaySeconds in
-                viewModel.createTimer(name: name, duration: duration, pinned: pinned, autoRestartDelaySeconds: autoRestartDelaySeconds)
-            }
+            NewTimerSheet(
+                store: store,
+                pinnedCount: viewModel.userPresetCount,
+                onSave: { name, duration, pinned, autoRestartDelaySeconds in
+                    viewModel.createTimer(name: name, duration: duration, pinned: pinned, autoRestartDelaySeconds: autoRestartDelaySeconds)
+                },
+                onPinNextHour: { viewModel.setNextHourPinned(true) }
+            )
             .presentationBackground(.black)
             .presentationDragIndicator(.hidden)
         }
@@ -201,6 +216,8 @@ private struct FABPressStyle: ButtonStyle {
 private struct TimersPreviewHarness: View {
     /// Set true to render the coach-mark tour over the harness.
     var tour = false
+    /// Set true to render the dynamic "To next hour" tile in the first cell.
+    var nextHourPinned = false
     @State private var showingTour = false
 
     private let columns = [
@@ -227,6 +244,9 @@ private struct TimersPreviewHarness: View {
                         onPause: {}, onResume: {}, onCancel: {}
                     )
                     LazyVGrid(columns: columns, spacing: Theme.gridGap) {
+                        if nextHourPinned {
+                            NextHourTile(now: .now, onStart: {}, onUnpin: {})
+                        }
                         ForEach(TimerPreset.builtIns) { preset in
                             TimerTile(preset: preset, onStart: {}, onUnpin: {}, onPin: nil)
                                 .tutorialTarget(.presetTile)
@@ -254,4 +274,8 @@ private struct TimersPreviewHarness: View {
 
 #Preview("Home tour") {
     TimersPreviewHarness(tour: true)
+}
+
+#Preview("To next hour pinned") {
+    TimersPreviewHarness(nextHourPinned: true)
 }
