@@ -10,9 +10,11 @@ import Foundation
 nonisolated enum AppGroup {
     static let id = "group.sloba.SpaghettiTimer"
 
-    static var defaults: UserDefaults {
-        UserDefaults(suiteName: id) ?? .standard
-    }
+    /// One shared instance for the whole process. It must be stored, not
+    /// computed: `UserDefaults(suiteName:)` mints a new object per call, and
+    /// KVO — which `@AppStorage` relies on — only fires for observers
+    /// registered on the very instance the write went through.
+    nonisolated(unsafe) static let defaults = UserDefaults(suiteName: id) ?? .standard
 }
 
 nonisolated enum AppGroupKey {

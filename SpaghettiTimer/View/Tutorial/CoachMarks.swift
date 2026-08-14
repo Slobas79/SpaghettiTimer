@@ -12,8 +12,9 @@ import SwiftUI
 
 extension View {
     /// Hosts the coach-mark tour for `screen`: renders the overlay while
-    /// `isActive` is true, persists the once-per-screen flag on Skip/Done,
-    /// and shows the "You're all set" toast after Done. `onTab` is called
+    /// `isActive` is true, persists the once-per-screen flag on Done only
+    /// (Skip leaves the tour on offer), and shows the "You're all set" toast
+    /// after Done. `onTab` is called
     /// when the shown step declares a sheet tab, so the host screen can put
     /// itself in the state the step spotlights (e.g. switch to End time).
     func coachMarks(_ screen: TutorialScreen,
@@ -39,12 +40,15 @@ private struct CoachMarksHost: ViewModifier {
                 if isActive {
                     GeometryReader { geo in
                         CoachMarksOverlay(steps: steps, anchors: anchors, geo: geo, onTab: onTab) { completed in
-                            TutorialFlags.markDone(screen)
                             isActive = false
-                            if completed {
-                                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.25)) {
-                                    showToast = true
-                                }
+                            // Only a completed tour retires the screen's Help
+                            // button. Skip just puts the tips away — they stay
+                            // on offer until the user has actually seen them
+                            // through to the last tip.
+                            guard completed else { return }
+                            TutorialFlags.markDone(screen)
+                            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.25)) {
+                                showToast = true
                             }
                         }
                     }
@@ -121,6 +125,14 @@ private struct CoachMarksOverlay: View {
             }
             .onChange(of: i) { _, newIndex in
                 if let tab = steps[min(newIndex, steps.count - 1)].tab { onTab?(tab) }
+            }
+            // Keep the stored index inside the filtered range. Without this a
+            // shrinking script (a spotlight target leaving the screen) would
+            // leave `index` past the end, where `min(...)` re-clamps it to the
+            // same step every time — Next stops advancing and the final Done,
+            // which is what persists the "tour finished" flag, is unreachable.
+            .onChange(of: steps.count) { _, newCount in
+                index = min(index, max(0, newCount - 1))
             }
         }
     }

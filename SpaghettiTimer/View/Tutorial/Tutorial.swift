@@ -20,7 +20,9 @@ nonisolated enum TutorialScreen: String, Sendable {
     case splash = "tutorial.splash.done"
 }
 
-/// Once-per-screen gate — set on Done **or** Skip.
+/// Once-per-screen gate — set only when the tour is played through to its
+/// last tip and finished with **Done**. Skipping leaves it unset, so the
+/// screen's Help button stays available.
 nonisolated enum TutorialFlags {
     static func isDone(_ screen: TutorialScreen) -> Bool {
         AppGroup.defaults.bool(forKey: screen.rawValue)

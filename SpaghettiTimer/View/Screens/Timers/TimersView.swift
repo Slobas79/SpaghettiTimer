@@ -14,6 +14,17 @@ struct TimersView: View {
     @State private var showingSplash = false
     @State private var showingTour = false
     @State private var directPaywall: PaywallTrigger?
+    /// The Home tour script, resolved once in `onAppear`. Kept in state rather
+    /// than recomputed in `body`: `TutorialTour.home` asks the device whether
+    /// it has a Dynamic Island, which reads `false` until the key window is
+    /// laid out — recomputing per render could change the step count (and with
+    /// it which card is last) while the tour is running.
+    @State private var homeSteps: [TutorialStep] = []
+    /// Mirrors `tutorial.home.done`. `@AppStorage` observes the key, so
+    /// finishing or skipping the tour hides the Help button immediately
+    /// instead of relying on some other state change to re-run `body`.
+    @AppStorage(TutorialScreen.home.rawValue, store: AppGroup.defaults)
+    private var homeTourDone = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -80,7 +91,8 @@ struct TimersView: View {
         // Floating + FAB, pinned bottom-centre. Sits beneath the coach-mark/
         // splash overlays so the tour scrim covers it — and so tip 3 can
         // spotlight it through the scrim's cutout. A quiet long-press replays
-        // the tips (the one-shot Help button is gone once the tour is done).
+        // the tips (the one-shot Help button is gone once the tour is
+        // finished with Done).
         .overlay(alignment: .bottom) {
             AddTimerFAB(action: { showingNew = true })
                 .tutorialTarget(.addTile)
@@ -106,11 +118,12 @@ struct TimersView: View {
                 }
         }
         // One-shot Help trigger in the bottom-right corner: starts the Home
-        // tour on demand and is gone for good once the tour is finished or
-        // skipped. Clear of the running banner (top) and the centre FAB.
+        // tour on demand and is gone for good once the tour has been played
+        // through to the last tip and finished with Done. Skipping leaves it
+        // here. Clear of the running banner (top) and the centre FAB.
         // Beneath the coach-mark/splash overlays so the tour scrim covers it.
         .overlay(alignment: .bottomTrailing) {
-            if !showingSplash && !showingTour && !TutorialFlags.isDone(.home) {
+            if !showingSplash && !showingTour && !homeTourDone {
                 TutorialHelpButton(style: .corner) {
                     showingTour = true
                 }
@@ -118,7 +131,7 @@ struct TimersView: View {
                 .padding(.bottom, 45)
             }
         }
-        .coachMarks(.home, isActive: $showingTour, steps: TutorialTour.home)
+        .coachMarks(.home, isActive: $showingTour, steps: homeSteps)
         .overlay {
             if showingSplash {
                 // "Skip intro" skips only the splash — the Home tour stays
@@ -153,6 +166,10 @@ struct TimersView: View {
         }
         .onAppear {
             viewModel.refresh()
+            // Resolve the tour script now that the window is laid out, so the
+            // Dynamic Island tip is included on the hardware that has one and
+            // the step count stays fixed for the life of this screen.
+            homeSteps = TutorialTour.home
             // First app run only: play the intro splash, then land on the
             // normal Home screen (with the Help button). The splash never
             // consumes the Home tour — that's the Help button's job.
@@ -219,6 +236,7 @@ private struct TimersPreviewHarness: View {
     /// Set true to render the dynamic "To next hour" tile in the first cell.
     var nextHourPinned = false
     @State private var showingTour = false
+    @State private var homeSteps: [TutorialStep] = []
 
     private let columns = [
         GridItem(.flexible(), spacing: Theme.gridGap),
@@ -263,8 +281,11 @@ private struct TimersPreviewHarness: View {
                 .tutorialTarget(.addTile)
                 .padding(.bottom, 34)
         }
-        .coachMarks(.home, isActive: $showingTour, steps: TutorialTour.home)
-        .onAppear { showingTour = tour }
+        .coachMarks(.home, isActive: $showingTour, steps: homeSteps)
+        .onAppear {
+            homeSteps = TutorialTour.home
+            showingTour = tour
+        }
     }
 }
 
