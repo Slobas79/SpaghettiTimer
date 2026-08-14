@@ -16,7 +16,9 @@ protocol TimerPresetsUseCase: AnyObject {
     var onChange: (() -> Void)? { get set }
 
     func reload()
-    func addPreset(name: String, duration: TimeInterval, autoRestartDelaySeconds: TimeInterval?)
+    /// Returns the newly created preset so the caller can start it right away.
+    @discardableResult
+    func addPreset(name: String, duration: TimeInterval, autoRestartDelaySeconds: TimeInterval?) -> TimerPreset
     func pinPreset(_ preset: TimerPreset)
     func deletePreset(_ preset: TimerPreset)
     func setNextHourPinned(_ pinned: Bool)
@@ -43,20 +45,21 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
         onChange?()
     }
 
-    func addPreset(name: String, duration: TimeInterval, autoRestartDelaySeconds: TimeInterval? = nil) {
-        var user = repo.loadUserPresets()
-        user.append(
-            TimerPreset(
-                name: name,
-                duration: duration,
-                isBuiltIn: false,
-                autoRestartDelaySeconds: autoRestartDelaySeconds
-            )
+    @discardableResult
+    func addPreset(name: String, duration: TimeInterval, autoRestartDelaySeconds: TimeInterval? = nil) -> TimerPreset {
+        let preset = TimerPreset(
+            name: name,
+            duration: duration,
+            isBuiltIn: false,
+            autoRestartDelaySeconds: autoRestartDelaySeconds
         )
+        var user = repo.loadUserPresets()
+        user.append(preset)
         repo.saveUserPresets(user)
         analytics.log(.presetCreate(durationSeconds: Int(duration), autoRestart: autoRestartDelaySeconds != nil))
         reload()
         WidgetCenter.shared.reloadAllTimelines()
+        return preset
     }
 
     func pinPreset(_ preset: TimerPreset) {

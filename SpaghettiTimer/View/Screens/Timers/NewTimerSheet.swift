@@ -173,10 +173,11 @@ struct NewTimerSheet: View {
                     return
                 }
                 onPinNextHour()
-            } else {
-                // Auto-restart is meaningless for a fixed clock target, so it's always nil.
-                onSave(trimmed, endTimeDuration(now: Date()), false, nil)
             }
+            // The button says Start, so the picked clock target runs either
+            // way — the pin above only adds the "To next hour" home tile.
+            // Auto-restart is meaningless for a fixed clock target, so it's always nil.
+            onSave(trimmed, endTimeDuration(now: Date()), false, nil)
         }
         dismiss()
     }

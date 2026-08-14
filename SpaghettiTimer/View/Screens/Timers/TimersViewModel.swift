@@ -63,18 +63,21 @@ final class TimersViewModel {
         presetsUseCase.addPreset(name: name, duration: duration, autoRestartDelaySeconds: autoRestartDelaySeconds)
     }
 
+    /// The sheet's action button says "Start", so the timer runs either way —
+    /// pinning only decides whether it also sticks around as a home tile.
     func createTimer(name: String, duration: TimeInterval, pinned: Bool, autoRestartDelaySeconds: TimeInterval? = nil) {
+        let preset: TimerPreset
         if pinned {
-            presetsUseCase.addPreset(name: name, duration: duration, autoRestartDelaySeconds: autoRestartDelaySeconds)
+            preset = presetsUseCase.addPreset(name: name, duration: duration, autoRestartDelaySeconds: autoRestartDelaySeconds)
         } else {
-            let ephemeral = TimerPreset(
+            preset = TimerPreset(
                 name: name,
                 duration: duration,
                 isBuiltIn: false,
                 autoRestartDelaySeconds: autoRestartDelaySeconds
             )
-            runningUseCase.start(preset: ephemeral)
         }
+        runningUseCase.start(preset: preset)
     }
 
     func deletePreset(_ preset: TimerPreset) {
