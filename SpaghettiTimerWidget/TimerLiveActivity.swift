@@ -71,7 +71,7 @@ struct TimerLiveActivity: Widget {
 
             return DynamicIsland {
                 // Header: timer title — or the app name when the timer is
-                // unnamed — (leading) · loop glyph (trailing).
+                // unnamed — followed by the loop glyph, both left-aligned.
                 DynamicIslandExpandedRegion(.center) {
                     // No `fixedSize` here: the leading region is narrower
                     // than the title's ideal width on some devices, and
@@ -80,10 +80,6 @@ struct TimerLiveActivity: Widget {
                     HStack {
                         HeaderTitle(text: headerTitle(metadata))
                             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-                        // Clears the island's top-left corner curve: without
-                        // the inset the first glyph is shaved by the mask.
-//                            .padding(.leading, 10)
-//                            .frame(maxWidth: .infinity, alignment: .leading)
                         
                         if isRepeating {
                             // The name that used to sit beside this glyph now leads
@@ -94,6 +90,10 @@ struct TimerLiveActivity: Widget {
                                 .accessibilityLabel("Auto-restart")
                                 .padding(.leading, 24)
                         }
+
+                        // Without this the HStack sizes to its content and the
+                        // region centers it; the spacer pins the title left.
+                        Spacer(minLength: 0)
                     }
                 }
                 
