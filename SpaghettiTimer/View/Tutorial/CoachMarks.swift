@@ -292,6 +292,17 @@ private struct CoachMarksOverlay: View {
             .padding(.bottom, -4) // soak up the scale gap (mock: margin-bottom: -4)
             .accessibilityHidden(true)
 
+        case .dynamicIsland:
+            // Same fixed-design-scaled-to-fit treatment as the widget art
+            // below: pin the layout frame to the scaled size so the art can't
+            // push the card off screen on narrow devices.
+            let diWidth = TutorialDynamicIslandArt.designWidth
+            let diHeight = TutorialDynamicIslandArt.designHeight
+            let diScale = min(0.87, (geo.size.width - 80) / diWidth)
+            TutorialDynamicIslandArt()
+                .scaleEffect(diScale)
+                .frame(width: diWidth * diScale, height: diHeight * diScale)
+
         case .widget:
             // TutorialWidgetArt is a fixed 364×170 design. scaleEffect is a
             // render-only transform, so we must also pin the layout frame to the

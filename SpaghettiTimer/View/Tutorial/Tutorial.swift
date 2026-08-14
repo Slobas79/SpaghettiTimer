@@ -48,6 +48,7 @@ nonisolated enum TutorialTargetID: Hashable, Sendable {
 /// a centered hint card instead of being spotlighted (no cutout/connector).
 nonisolated enum TutorialArt: Sendable {
     case runningBanner
+    case dynamicIsland
     case widget
 }
 
@@ -113,7 +114,35 @@ nonisolated struct TutorialStep: Sendable {
 
 /// The per-screen tour scripts. New tips for future features: append a step.
 enum TutorialTour {
-    static let home: [TutorialStep] = [
+    /// The Home tour. Computed rather than stored because the Dynamic Island
+    /// tip only makes sense on hardware that has one — the step count and the
+    /// "Tip N of M" dots follow automatically.
+    @MainActor
+    static var home: [TutorialStep] {
+        var steps = homeCore
+        if DeviceCapabilities.hasDynamicIsland {
+            steps.append(dynamicIslandStep)
+        }
+        steps.append(widgetStep)
+        return steps
+    }
+
+    /// The Dynamic Island tip — inserted after the running-banner tip so the
+    /// tour moves outward: on-screen banner → island → home screen widget.
+    private static let dynamicIslandStep = TutorialStep(
+        art: .dynamicIsland,
+        title: "Live on the Dynamic Island",
+        body: "Touch and hold the island to expand it — check the countdown, pause or dismiss, without opening the app."
+    )
+
+    private static let widgetStep = TutorialStep(
+        art: .widget,
+        title: "Add the widget",
+        body: "Your pinned timers on the home screen — tap a tile to start it without opening the app. Long-press your home screen and add Spaghetti Timer."
+    )
+
+    /// The device-independent part of the Home tour.
+    private static let homeCore: [TutorialStep] = [
         TutorialStep(
             target: .presetTile,
             title: "Tap to start",
@@ -138,11 +167,6 @@ enum TutorialTour {
             art: .runningBanner,
             title: "Always in reach",
             body: "A running timer lives at the top of this screen. Pause or dismiss it without leaving the grid."
-        ),
-        TutorialStep(
-            art: .widget,
-            title: "Add the widget",
-            body: "Your pinned timers on the home screen — tap a tile to start it without opening the app. Long-press your home screen and add Spaghetti Timer."
         )
     ]
 
