@@ -17,6 +17,7 @@ import WidgetKit
 private enum LiveActivityStyle {
     static let accent = Color(red: 10 / 255, green: 132 / 255, blue: 255 / 255)   // #0A84FF
     static let bannerFill = Color(red: 2 / 255, green: 21 / 255, blue: 41 / 255)  // #021529
+    static let segUnlit = Color(red: 0.00884, green: 0.09946, blue: 0.19392)      // mix(accent 14%, #010810)
     static let cornerRadius: CGFloat = 22
 }
 
@@ -38,11 +39,8 @@ struct TimerLiveActivity: Widget {
                             .foregroundStyle(LiveActivityStyle.accent)
                             .accessibilityLabel("Auto-restart")
                     }
-                    Text(context.attributes.metadata?.presetName ?? String(localized: "Timer"))
-                        .font(.system(size: 19, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.85))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
+                    BannerTitle(text: headerTitle(context.attributes.metadata))
+                        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                     countdownText(state: context.state)
                         .font(.system(size: 36, weight: .bold))
                         .monospacedDigit()
@@ -72,40 +70,33 @@ struct TimerLiveActivity: Widget {
             let paused = isPaused(state: context.state)
 
             return DynamicIsland {
-                // Header: app mark + "Spaghetti Timer" (leading) · label + loop glyph (trailing).
-                DynamicIslandExpandedRegion(.leading) {
-                    HStack(spacing: 8) {
-                        Image("AppMark")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 28, height: 28)
-                            .clipShape(RoundedRectangle(cornerRadius: 28 * 0.2237, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 28 * 0.2237, style: .continuous)
-                                    .stroke(.white.opacity(0.08), lineWidth: 1)
-                            )
-                        Text("Spaghetti Timer")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                            .fixedSize(horizontal: true, vertical: false)
-                    }
-                }
-                DynamicIslandExpandedRegion(.trailing) {
-                    HStack(spacing: 6) {
+                // Header: timer title — or the app name when the timer is
+                // unnamed — (leading) · loop glyph (trailing).
+                DynamicIslandExpandedRegion(.center) {
+                    // No `fixedSize` here: the leading region is narrower
+                    // than the title's ideal width on some devices, and
+                    // pinning the width pushed the whole header out of
+                    // bounds instead of letting the title shrink.
+                    HStack {
+                        HeaderTitle(text: headerTitle(metadata))
+                            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                        // Clears the island's top-left corner curve: without
+                        // the inset the first glyph is shaved by the mask.
+//                            .padding(.leading, 10)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+                        
                         if isRepeating {
+                            // The name that used to sit beside this glyph now leads
+                            // the header, so the glyph carries its own label.
                             Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.system(size: 19, weight: .semibold))
                                 .foregroundStyle(LiveActivityStyle.accent)
+                                .accessibilityLabel("Auto-restart")
+                                .padding(.leading, 24)
                         }
-                        Text(metadata?.presetName ?? String(localized: "Timer"))
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.55))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
                     }
                 }
+                
                 // Body: ring · big countdown · pause/resume · dismiss.
                 DynamicIslandExpandedRegion(.bottom) {
                     HStack(spacing: 14) {
@@ -152,6 +143,14 @@ struct TimerLiveActivity: Widget {
         }
     }
 
+    /// The timer's own title, falling back to the app name when it has none.
+    /// An unnamed one-shot timer stores `""` rather than `nil`, so the
+    /// metadata's optionality alone isn't enough of a check.
+    private func headerTitle(_ metadata: SpaghettiTimerMetadata?) -> String {
+        let name = metadata?.presetName.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return name.isEmpty ? "Spaghetti Timer" : name
+    }
+
     @ViewBuilder
     private func pauseResumeButton(alarmID: String?, state: AlarmPresentationState, size: CGFloat = 40) -> some View {
         if let alarmID, let id = UUID(uuidString: alarmID) {
@@ -184,7 +183,7 @@ struct TimerLiveActivity: Widget {
 
     /// Accent progress ring with a glyph at its center, mirroring the design's `Ring`.
     /// Uses `ProgressView(timerInterval:)` so the ring depletes live (system-updated) while
-    /// running, and a static fraction while paused. The glyph is the stopwatch normally, or
+    /// running, and a static fraction while paused. The glyph is the app mark normally, or
     /// the loop glyph when the timer auto-repeats.
     @ViewBuilder
     private func progressRing(
@@ -222,11 +221,16 @@ struct TimerLiveActivity: Widget {
                 EmptyView()
             }
 
-            if !(glyphOnlyWhenRepeating && !isRepeating) {
-                Image(systemName: isRepeating ? "arrow.clockwise" : "stopwatch")
+            if isRepeating {
+                Image(systemName: "arrow.clockwise")
                     .font(.system(size: glyphPointSize, weight: .semibold))
                     .foregroundStyle(LiveActivityStyle.accent)
                     .accessibilityHidden(true)
+            } else if !glyphOnlyWhenRepeating {
+                // The app mark, not a generic stopwatch — 1.22× the old point
+                // size because the glyph is tall and narrow where the symbol
+                // was square.
+                SevenSegMark(height: glyphPointSize * 1.22)
             }
         }
         .frame(width: diameter, height: diameter)
@@ -280,6 +284,90 @@ struct TimerLiveActivity: Widget {
         return hours > 0
             ? String(format: "%d:%02d:%02d", hours, minutes, secs)
             : String(format: "%d:%02d", minutes, secs)
+    }
+}
+
+// MARK: - Brand mark
+
+/// The app mark — the seven-segment "5" from the app icon — drawn from shapes
+/// rather than loaded from an image.
+///
+/// The shipped `AppMark` asset is a flattened 1024² export: pure black canvas
+/// with the glyph filling only ~30% of it, so at 22–28pt on the black island it
+/// read as nothing at all. Drawing it keeps the mark crisp at every size the
+/// island asks for and lets it be tinted. Geometry mirrors `SevenSegDigit` in
+/// the main app (authored in a 300×480 space, corner radius 18).
+private struct SevenSegMark: View {
+    private struct Bar: Identifiable {
+        let id: Character
+        let rect: CGRect
+        let lit: Bool
+    }
+
+    /// The icon's glyph lights A · F · G · C · D — a seven-segment `5`.
+    private static let bars: [Bar] = [
+        Bar(id: "A", rect: CGRect(x: 24,  y: 0,   width: 252, height: 62),  lit: true),
+        Bar(id: "F", rect: CGRect(x: 0,   y: 78,  width: 58,  height: 126), lit: true),
+        Bar(id: "B", rect: CGRect(x: 242, y: 78,  width: 58,  height: 126), lit: false),
+        Bar(id: "G", rect: CGRect(x: 24,  y: 209, width: 252, height: 62),  lit: true),
+        Bar(id: "E", rect: CGRect(x: 0,   y: 276, width: 58,  height: 126), lit: false),
+        Bar(id: "C", rect: CGRect(x: 242, y: 276, width: 58,  height: 126), lit: true),
+        Bar(id: "D", rect: CGRect(x: 24,  y: 418, width: 252, height: 62),  lit: true)
+    ]
+
+    /// Rendered height in points; width follows the icon's 300:480 aspect.
+    let height: CGFloat
+    var litColor: Color = LiveActivityStyle.accent
+    var unlitColor: Color = LiveActivityStyle.segUnlit
+
+    var body: some View {
+        let s = height / 480   // icon space → points
+        ZStack(alignment: .topLeading) {
+            ForEach(Self.bars) { bar in
+                RoundedRectangle(cornerRadius: 18 * s, style: .continuous)
+                    .fill(bar.lit ? litColor : unlitColor)
+                    .frame(width: bar.rect.width * s, height: bar.rect.height * s)
+                    .offset(x: bar.rect.minX * s, y: bar.rect.minY * s)
+            }
+        }
+        .frame(width: 300 * s, height: height, alignment: .topLeading)
+        .accessibilityHidden(true)
+    }
+}
+
+// MARK: - Titles
+
+/// Titles live in their own views because `@ScaledMetric` is a dynamic property
+/// and `TimerLiveActivity` is a `Widget`, not a `View` — it can't host one. At
+/// the default text size the metric returns the base value unchanged, so these
+/// render exactly as the fixed-size versions did.
+
+/// The Dynamic Island header title.
+private struct HeaderTitle: View {
+    let text: String
+    @ScaledMetric(relativeTo: .subheadline) private var size: CGFloat = 14
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: size, weight: .semibold))
+            .foregroundStyle(.white)
+            .lineLimit(1)
+            .minimumScaleFactor(0.6)
+            .allowsTightening(true)
+    }
+}
+
+/// The lock screen banner title, mirroring `RunningTimerRow`'s name label.
+private struct BannerTitle: View {
+    let text: String
+    @ScaledMetric(relativeTo: .body) private var size: CGFloat = 19
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: size, weight: .medium))
+            .foregroundStyle(.white.opacity(0.85))
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
     }
 }
 
@@ -388,6 +476,20 @@ private enum LiveActivityPreviewData {
     LiveActivityPreviewData.countdown(remaining: 125)
     LiveActivityPreviewData.paused(remaining: 125)
     LiveActivityPreviewData.alert
+}
+
+// An unnamed one-shot timer — the only states where the header and the banner
+// fall back to the app name.
+#Preview("DI Expanded · Unnamed", as: .dynamicIsland(.expanded), using: LiveActivityPreviewData.attributes(name: "")) {
+    TimerLiveActivity()
+} contentStates: {
+    LiveActivityPreviewData.countdown(remaining: 125)
+}
+
+#Preview("Lock Screen · Unnamed", as: .content, using: LiveActivityPreviewData.attributes(name: "")) {
+    TimerLiveActivity()
+} contentStates: {
+    LiveActivityPreviewData.countdown(remaining: 125)
 }
 
 #Preview("DI Compact", as: .dynamicIsland(.compact), using: LiveActivityPreviewData.attributes(name: "Pasta")) {

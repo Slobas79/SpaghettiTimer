@@ -41,7 +41,10 @@
       "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build)",
       "Bash(plutil -replace \"presets.nextHourPinned\" -bool true /Users/slobodanstamenic/Library/Developer/CoreSimulator/Devices/5454ADD8-CACF-4EA9-9437-D0470B7DCFC8/data/Containers/Shared/AppGroup/2E6D0856-E7E8-42BF-B8EA-2E683AE5FDA6/Library/Preferences/group.sloba.SpaghettiTimer.plist)",
       "Bash(plutil -replace 'presets\\\\.nextHourPinned' -bool true /Users/slobodanstamenic/Library/Developer/CoreSimulator/Devices/5454ADD8-CACF-4EA9-9437-D0470B7DCFC8/data/Containers/Shared/AppGroup/2E6D0856-E7E8-42BF-B8EA-2E683AE5FDA6/Library/Preferences/group.sloba.SpaghettiTimer.plist)",
-      "Bash(plutil -p /Users/slobodanstamenic/Library/Developer/CoreSimulator/Devices/5454ADD8-CACF-4EA9-9437-D0470B7DCFC8/data/Containers/Shared/AppGroup/2E6D0856-E7E8-42BF-B8EA-2E683AE5FDA6/Library/Preferences/group.sloba.SpaghettiTimer.plist)"
+      "Bash(plutil -p /Users/slobodanstamenic/Library/Developer/CoreSimulator/Devices/5454ADD8-CACF-4EA9-9437-D0470B7DCFC8/data/Containers/Shared/AppGroup/2E6D0856-E7E8-42BF-B8EA-2E683AE5FDA6/Library/Preferences/group.sloba.SpaghettiTimer.plist)",
+      "Bash(sips -g all \"/Users/slobodanstamenic/Projects/SpaghettiTimer/SpaghettiTimer/SupportingFiles/AppIcon.icon/Assets/SpaghettiTimer-AppIcon-1024.png\")",
+      "Bash(sips -g all \"/Users/slobodanstamenic/Projects/SpaghettiTimer/SpaghettiTimerWidget/Assets.xcassets/AppMark.imageset/appicon-1024.png\")",
+      "Bash(xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build)"
     ]
   }
 }
