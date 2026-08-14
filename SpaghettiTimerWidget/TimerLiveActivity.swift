@@ -100,7 +100,7 @@ struct TimerLiveActivity: Widget {
                 // Body: ring · big countdown · pause/resume · dismiss.
                 DynamicIslandExpandedRegion(.bottom) {
                     HStack(spacing: 14) {
-                        progressRing(state: context.state, isRepeating: isRepeating,
+                        progressRing(state: context.state,
                                      diameter: 66, stroke: 6, glyphPointSize: 24)
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             if paused {
@@ -126,7 +126,7 @@ struct TimerLiveActivity: Widget {
                     .padding(.top, 8)
                 }
             } compactLeading: {
-                progressRing(state: context.state, isRepeating: isRepeating,
+                progressRing(state: context.state,
                              diameter: 22, stroke: 3.2, glyphPointSize: 11)
                     .padding(.leading, 2)
             } compactTrailing: {
@@ -136,8 +136,8 @@ struct TimerLiveActivity: Widget {
                     .foregroundStyle(paused ? .white.opacity(0.6) : .white)
                     .frame(maxWidth: 60)
             } minimal: {
-                progressRing(state: context.state, isRepeating: isRepeating,
-                             diameter: 22, stroke: 3, glyphPointSize: 10, glyphOnlyWhenRepeating: true)
+                progressRing(state: context.state,
+                             diameter: 22, stroke: 3, glyphPointSize: 10)
             }
             .keylineTint(LiveActivityStyle.accent)
         }
@@ -181,18 +181,16 @@ struct TimerLiveActivity: Widget {
         }
     }
 
-    /// Accent progress ring with a glyph at its center, mirroring the design's `Ring`.
+    /// Accent progress ring with the app mark at its center, mirroring the design's `Ring`.
     /// Uses `ProgressView(timerInterval:)` so the ring depletes live (system-updated) while
-    /// running, and a static fraction while paused. The glyph is the app mark normally, or
-    /// the loop glyph when the timer auto-repeats.
+    /// running, and a static fraction while paused. The center always carries the app mark —
+    /// auto-restart is signalled outside the ring, in the header and the banner.
     @ViewBuilder
     private func progressRing(
         state: AlarmPresentationState,
-        isRepeating: Bool,
         diameter: CGFloat,
         stroke: CGFloat,
-        glyphPointSize: CGFloat,
-        glyphOnlyWhenRepeating: Bool = false
+        glyphPointSize: CGFloat
     ) -> some View {
         ZStack {
             Circle()
@@ -221,17 +219,10 @@ struct TimerLiveActivity: Widget {
                 EmptyView()
             }
 
-            if isRepeating {
-                Image(systemName: "arrow.clockwise")
-                    .font(.system(size: glyphPointSize, weight: .semibold))
-                    .foregroundStyle(LiveActivityStyle.accent)
-                    .accessibilityHidden(true)
-            } else if !glyphOnlyWhenRepeating {
-                // The app mark, not a generic stopwatch — 1.22× the old point
-                // size because the glyph is tall and narrow where the symbol
-                // was square.
-                SevenSegMark(height: glyphPointSize * 1.22)
-            }
+            // The app mark, not a generic stopwatch — 1.22× the old point
+            // size because the glyph is tall and narrow where the symbol
+            // was square.
+            SevenSegMark(height: glyphPointSize * 1.22)
         }
         .frame(width: diameter, height: diameter)
         .accessibilityElement(children: .ignore)
