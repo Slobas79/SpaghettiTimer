@@ -215,8 +215,34 @@ struct NewTimerSheet: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 28)
             }
+            // Drag down anywhere in the form to push the keyboard away.
+            .scrollDismissesKeyboard(.interactively)
         }
         .background(Color.black.ignoresSafeArea())
+        // Tap anywhere on the sheet to dismiss the keyboard. Simultaneous so it
+        // never competes with the controls underneath — the toggles, the mode
+        // buttons and the wheels all keep their own taps.
+        .contentShape(Rectangle())
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                nameFocused = false
+            }
+        )
+        // Explicit escape hatch: the wheels aren't text input, so the keyboard
+        // never dismisses itself once the name field has been tapped.
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button {
+                    nameFocused = false
+                } label: {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: buttonSize, weight: .semibold))
+                }
+                .tint(Theme.accent)
+                .accessibilityLabel("Done")
+            }
+        }
         .coachMarks(.newTimer, isActive: $showingTour, steps: TutorialTour.newTimer) { tab in
             // Tour steps drive the sheet: tip 2 spotlights the selected End
             // time segment, the others need the Duration surface back.
@@ -318,6 +344,10 @@ struct NewTimerSheet: View {
         TextField("", text: $name, prompt: Text("e.g. Pasta").foregroundColor(Theme.disabledText))
             .focused($nameFocused)
             .textInputAutocapitalization(.words)
+            // Return key reads "Done" and closes the keyboard instead of
+            // inserting a newline in a single-line name.
+            .submitLabel(.done)
+            .onSubmit { nameFocused = false }
             .accessibilityLabel("Timer name")
             .font(.system(size: nameSize, weight: .medium))
             .foregroundStyle(.white)
