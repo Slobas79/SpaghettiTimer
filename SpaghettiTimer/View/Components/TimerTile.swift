@@ -44,6 +44,7 @@ struct TimerTile: View {
     private var tile: some View {
         Button(action: onStart) {
             face
+                
         }
         .buttonStyle(.plain)
         .overlay(alignment: .topTrailing) { pinOverlay }
@@ -66,6 +67,7 @@ struct TimerTile: View {
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
+                .truncationMode(.tail)
 
             Text(TimerFormatting.format(preset.duration))
                 .font(.system(size: durationSize, weight: .regular))
