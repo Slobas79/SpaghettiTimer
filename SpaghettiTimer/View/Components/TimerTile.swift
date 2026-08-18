@@ -73,6 +73,7 @@ struct TimerTile: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
                 .truncationMode(.tail)
+                .padding(.horizontal, 4)
 
             Text(TimerFormatting.format(preset.duration))
                 .font(.system(size: durationSize, weight: .regular))
