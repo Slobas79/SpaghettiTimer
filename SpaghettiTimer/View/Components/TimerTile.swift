@@ -42,12 +42,17 @@ struct TimerTile: View {
     }
 
     private var tile: some View {
-        Button(action: onStart) {
-            face
-                
+        // Siblings, not nested: the pin used to be an `.overlay` on the start
+        // Button, which left two overlapping button gestures for the ScrollView
+        // and the context-menu recognizer to arbitrate between.
+        ZStack(alignment: .topTrailing) {
+            Button(action: onStart) {
+                face
+            }
+            .buttonStyle(.plain)
+
+            pinOverlay
         }
-        .buttonStyle(.plain)
-        .overlay(alignment: .topTrailing) { pinOverlay }
         // Collapse the tile (and its decorative pin overlay) into one VoiceOver
         // element: name as label, spoken duration as value, with pin/unpin
         // reachable as a rotor action rather than a tiny separate target.
@@ -114,12 +119,15 @@ struct TimerTile: View {
             Image(systemName: systemName)
                 .font(.system(size: pinSize, weight: .semibold))
                 .foregroundStyle(Theme.accent)
-                .frame(width: 30, height: 30)
+                // The badge box has to be sized *inside* the label and given a
+                // content shape to be tappable. A bare `.frame` is layout only:
+                // hit-testing falls through it to the glyph's own ~21x18pt rect,
+                // and every near-miss lands on the start button underneath.
+                .frame(width: 40, height: 40)
+                .contentShape(Rectangle())
         }
-        .frame(width: 40, height: 40)
         .buttonStyle(.plain)
         .tutorialTarget(.pinBadge)
-        .padding(0)
         .accessibilityHidden(true)
     }
 

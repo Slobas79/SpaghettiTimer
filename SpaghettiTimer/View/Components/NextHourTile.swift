@@ -32,13 +32,17 @@ struct NextHourTile: View {
     }
 
     var body: some View {
-        Button(action: onStart) {
-            face
+        // Siblings, not nested — see the matching note in `TimerTile`.
+        ZStack(alignment: .topTrailing) {
+            Button(action: onStart) {
+                face
+            }
+            .buttonStyle(.plain)
+
+            pinButton
         }
-        .buttonStyle(.plain)
-        .overlay(alignment: .topTrailing) { pinButton }
         // One VoiceOver element, matching `TimerTile`: unpinning is a rotor
-        // action rather than a separate 30pt target.
+        // action rather than a separate corner target.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("To next hour")
         .accessibilityValue(accessibilityValue)
@@ -75,7 +79,7 @@ struct NextHourTile: View {
                 .fill(Theme.cardFill)
         )
         // The badge owns the top-left corner; the pin sits opposite it. The
-        // trailing inset reserves the pin's 30pt corner, so a translation
+        // trailing inset reserves the pin's corner, so a translation
         // longer than the English "To next hour" shrinks to fit instead of
         // sliding underneath it.
         .overlay(alignment: .topLeading) {
@@ -118,10 +122,17 @@ struct NextHourTile: View {
             Image(systemName: "pin.fill")
                 .font(.system(size: pinSize, weight: .semibold))
                 .foregroundStyle(Theme.accent)
-                .frame(width: 30, height: 30)
+                // Sized inside the label and given a content shape, so the whole
+                // 44pt box is tappable — a bare `.frame` is layout only, which
+                // left just the glyph hittable and dropped near-misses onto the
+                // start button. 44 rather than the full corner inset so the box
+                // doesn't reach the tail of a long "Until …" label.
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .padding(14)
+        // Keeps the glyph at the same 29pt inset it has always had.
+        .padding(7)
         .accessibilityHidden(true)
     }
 
