@@ -9,10 +9,24 @@ Build and run via Xcode — open `SpaghettiTimer.xcodeproj` and use the `Spaghet
 From the command line (requires a connected device or a booted simulator):
 
 ```bash
-xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 16' build
+xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 17' build
 ```
 
-There are no unit tests, linting tools, or package managers in this project.
+There are no linting tools or package managers in this project.
+
+## Testing — mandatory
+
+`SpaghettiTimerTests` is a Swift Testing (`import Testing`) unit-test target, wired into the `SpaghettiTimer` scheme. Run it from the command line:
+
+```bash
+xcodebuild -project SpaghettiTimer.xcodeproj -scheme SpaghettiTimer -destination 'platform=iOS Simulator,name=iPhone 17' test
+```
+
+Rules — these are not optional:
+
+1. **Run the tests after every code change.** Any edit to source in `SpaghettiTimer/` or `SpaghettiTimerWidget/` must be followed by a full test run before the task is reported as done.
+2. **The task is not finished until the tests pass.** A failing or erroring test run means the work is incomplete — fix the code and re-run until green. Never report completion on a red or unrun suite, and never describe a failure as pre-existing without showing the failing output.
+3. **Do not change existing tests without explicit approval from the user.** Editing, weakening, renaming, skipping, deleting, or disabling an existing test — including changing its expectations to match new behaviour — requires asking first and getting a yes. If a change breaks a test, the default assumption is that the change is wrong, not the test. Adding *new* tests for new behaviour is always allowed and encouraged.
 
 ## Architecture
 

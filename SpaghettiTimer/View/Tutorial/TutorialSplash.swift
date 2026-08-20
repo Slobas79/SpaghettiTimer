@@ -160,12 +160,30 @@ private struct SevenSegDigit: View {
         ("D", CGRect(x: 24,  y: 418, width: 252, height: 62))
     ]
 
+    /// Digit 1 lights only the right column, and at this glyph size two 126pt
+    /// bars split by a 72pt gap read as a colon rather than a 1. These stretch
+    /// B and C into the (unlit) A and D rows, so the stroke gets the ~3.5:1
+    /// proportion a real seven-segment 1 has and fills the same box as 2 and 3
+    /// — while staying two separate bars, same width, radius and middle gap as
+    /// every other segment.
+    private static let oneBars: [Character: CGRect] = [
+        "B": CGRect(x: 242, y: 0,   width: 58, height: 204),
+        "C": CGRect(x: 242, y: 276, width: 58, height: 204)
+    ]
+
     var body: some View {
         let lit = Self.segmentMap[digit] ?? []
         Canvas { ctx, _ in
-            for (segment, rect) in Self.bars {
+            // Unlit skeleton first, lit segments over it: digit 1's stretched
+            // bars reach into the A and D rows and must not be clipped by them.
+            for (segment, rect) in Self.bars where !lit.contains(segment) {
                 let bar = Path(roundedRect: rect, cornerRadius: 18, style: .continuous)
-                ctx.fill(bar, with: .color(lit.contains(segment) ? Theme.accent : Theme.segUnlit))
+                ctx.fill(bar, with: .color(Theme.segUnlit))
+            }
+            for (segment, rect) in Self.bars where lit.contains(segment) {
+                let rect = digit == 1 ? (Self.oneBars[segment] ?? rect) : rect
+                let bar = Path(roundedRect: rect, cornerRadius: 18, style: .continuous)
+                ctx.fill(bar, with: .color(Theme.accent))
             }
         }
         .frame(width: 300, height: 480)
