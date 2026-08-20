@@ -26,23 +26,24 @@ nonisolated enum AppGroupKey {
 }
 
 nonisolated enum UserCancelledTimers {
-    static func mark(_ id: UUID) {
-        let defaults = AppGroup.defaults
+    // `defaults` is injectable so tests can use a scratch suite. Tests run inside the
+    // host app's process, where the app's own use case is concurrently
+    // read-modify-writing this same key.
+    static func mark(_ id: UUID, in defaults: UserDefaults = AppGroup.defaults) {
         var ids = load(from: defaults)
         ids.insert(id)
         save(ids, to: defaults)
     }
 
-    static func consume(_ id: UUID) -> Bool {
-        let defaults = AppGroup.defaults
+    static func consume(_ id: UUID, in defaults: UserDefaults = AppGroup.defaults) -> Bool {
         var ids = load(from: defaults)
         let was = ids.remove(id) != nil
         save(ids, to: defaults)
         return was
     }
 
-    static func contains(_ id: UUID) -> Bool {
-        load(from: AppGroup.defaults).contains(id)
+    static func contains(_ id: UUID, in defaults: UserDefaults = AppGroup.defaults) -> Bool {
+        load(from: defaults).contains(id)
     }
 
     private static func load(from defaults: UserDefaults) -> Set<UUID> {

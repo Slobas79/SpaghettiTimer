@@ -27,14 +27,23 @@ nonisolated struct TimerPreset: Identifiable, Codable, Hashable, Sendable {
         self.isBuiltIn = isBuiltIn
         self.autoRestartDelaySeconds = autoRestartDelaySeconds
     }
+}
 
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(UUID.self, forKey: .id)
-        name = try container.decode(String.self, forKey: .name)
-        duration = try container.decode(TimeInterval.self, forKey: .duration)
-        isBuiltIn = try container.decodeIfPresent(Bool.self, forKey: .isBuiltIn) ?? false
-        autoRestartDelaySeconds = try container.decodeIfPresent(TimeInterval.self, forKey: .autoRestartDelaySeconds)
+nonisolated extension TimerPreset {
+    /// A user-owned copy of this preset, for pinning a built-in or ephemeral preset
+    /// to the home grid. Keeps the same `id` so a running timer started from the
+    /// original still matches its tile.
+    ///
+    /// Carries `autoRestartDelaySeconds` forward — pinning must not quietly turn a
+    /// repeating timer into a one-shot, which is what it used to do.
+    func pinnedCopy() -> TimerPreset {
+        TimerPreset(
+            id: id,
+            name: name,
+            duration: duration,
+            isBuiltIn: false,
+            autoRestartDelaySeconds: autoRestartDelaySeconds
+        )
     }
 }
 

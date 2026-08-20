@@ -15,14 +15,19 @@ struct StopTimerIntent: LiveActivityIntent {
     @Parameter(title: "Timer ID")
     var timerID: String
 
-    // The timer's own details, baked into the alarm when it's scheduled. The
-    // stored `RunningTimer` is still preferred, but it lives in shared
-    // UserDefaults that other processes rewrite (the widget's timeline, the
-    // pause/resume intents, the app's in-memory array), and a record that got
-    // dropped or rewritten used to silently kill auto-restart — the alarm rang,
-    // Stop found nothing to repeat, and the timer never came back. These
-    // parameters travel with the alarm, so a repeating timer can always restart
-    // itself. Optional so alarms scheduled by an older build still decode.
+    // The timer's own details, baked into the alarm when it's scheduled.
+    //
+    // The stored `RunningTimer` is still preferred, but it lives in shared
+    // UserDefaults that other processes rewrite — the widget's timeline, the
+    // pause/resume intents, the app's in-memory array — and a record that got
+    // dropped or rewritten used to silently kill auto-restart: the alarm rang, Stop
+    // found nothing to repeat, and the timer never came back. These parameters
+    // travel with the alarm itself, so a repeating timer can always restart itself
+    // no matter what happened to shared storage.
+    //
+    // They are optional and must stay optional. That is not a migration shim: it is
+    // what lets the fallback exist at all, and it also means an alarm scheduled by a
+    // build that predates these parameters still decodes instead of failing to stop.
     @Parameter(title: "Preset ID")
     var presetID: String?
 
@@ -80,7 +85,11 @@ struct StopTimerIntent: LiveActivityIntent {
 
         // The stored record can have lost its delay to a rewrite even when the
         // record itself survived, so the baked-in value backstops it too.
-        if let finished, let delay = finished.autoRestartDelaySeconds ?? autoRestartDelay, delay >= 0 {
+        if let finished,
+           let delay = AutoRestartPolicy.resolvedDelay(
+               stored: finished.autoRestartDelaySeconds,
+               parameter: autoRestartDelay
+           ) {
             await Self.scheduleNextIteration(after: finished, delay: delay)
         }
 
@@ -89,18 +98,14 @@ struct StopTimerIntent: LiveActivityIntent {
         return .result()
     }
 
-    /// Reconstructs the finished timer from the parameters carried by the alarm,
-    /// for when its shared-storage record is gone. Only the fields the next
-    /// iteration needs are meaningful — `startDate` is in the past by definition.
     private func bakedInTimer(id: UUID) -> RunningTimer? {
-        guard let duration, let presetID, let presetUUID = UUID(uuidString: presetID) else { return nil }
-        return RunningTimer(
+        AutoRestartPolicy.bakedTimer(
             id: id,
-            presetID: presetUUID,
-            name: timerName ?? "",
-            startDate: Date().addingTimeInterval(-duration),
+            presetID: presetID,
+            name: timerName,
             duration: duration,
-            autoRestartDelaySeconds: autoRestartDelay
+            autoRestartDelay: autoRestartDelay,
+            now: Date()
         )
     }
 
@@ -111,14 +116,7 @@ struct StopTimerIntent: LiveActivityIntent {
     }
 
     private static func scheduleNextIteration(after previous: RunningTimer, delay: TimeInterval) async {
-        let next = RunningTimer(
-            id: UUID(),
-            presetID: previous.presetID,
-            name: previous.name,
-            startDate: Date().addingTimeInterval(delay),
-            duration: previous.duration,
-            autoRestartDelaySeconds: delay
-        )
+        let next = previous.nextIteration(id: UUID(), delay: delay, now: Date())
 
         let repo = RunningTimersRepoImpl()
         var timers = repo.load()

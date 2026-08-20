@@ -11,27 +11,58 @@ import Foundation
 import SwiftUI
 
 nonisolated enum AlarmConfigurationFactory {
-    /// Builds the AlarmKit configuration for a `RunningTimer`. `leadIn` is added to the
-    /// AlarmKit countdown duration to delay the actual alert by that many seconds while
-    /// still presenting a single countdown — used to implement the auto-restart cooldown.
+    /// Builds the AlarmKit configuration for a `RunningTimer`.
+    ///
+    /// Kept to pure pass-through: `AlarmManager.AlarmConfiguration` exposes no
+    /// readable properties, so nothing about the value this returns can be asserted
+    /// in a test. The pieces below are testable, this composition is not — so it
+    /// must stay trivial enough to verify by eye.
     static func makeConfiguration(
         for timer: RunningTimer,
         leadIn: TimeInterval = 0
     ) -> AlarmManager.AlarmConfiguration<SpaghettiTimerMetadata> {
-        let alert: AlarmPresentation.Alert
+        AlarmManager.AlarmConfiguration.timer(
+            duration: countdownDuration(for: timer, leadIn: leadIn),
+            attributes: makeAttributes(for: timer),
+            stopIntent: makeStopIntent(for: timer),
+            secondaryIntent: RepeatTimerIntent(
+                timerID: timer.id.uuidString,
+                presetID: timer.presetID.uuidString
+            ),
+            sound: .default
+        )
+    }
+
+    /// The AlarmKit countdown length. `leadIn` implements the auto-restart cooldown:
+    /// the next iteration's `startDate` is set `leadIn` seconds in the future, and
+    /// adding the same amount here means the alert fires exactly at its `endDate`
+    /// while the user still sees a single continuous countdown.
+    ///
+    /// These two must move together — `leadIn` here and the `startDate` offset in
+    /// `RunningTimer.nextIteration(id:delay:now:)`.
+    static func countdownDuration(for timer: RunningTimer, leadIn: TimeInterval) -> TimeInterval {
+        timer.duration + leadIn
+    }
+
+    /// A repeating timer gets a Stop button only. Offering "Repeat" as well would be
+    /// redundant, and `RepeatTimerIntent` has no cooldown handling — so the secondary
+    /// button is withheld and `RepeatTimerIntent` is reachable for one-shots only.
+    static func makeAlert(for timer: RunningTimer) -> AlarmPresentation.Alert {
         if timer.autoRestartDelaySeconds != nil {
-            alert = AlarmPresentation.Alert(
+            return AlarmPresentation.Alert(
                 title: LocalizedStringResource(stringLiteral: timer.name),
                 stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill")
             )
-        } else {
-            alert = AlarmPresentation.Alert(
-                title: LocalizedStringResource(stringLiteral: timer.name),
-                stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill"),
-                secondaryButton: .init(text: "Repeat", textColor: .white, systemImageName: "repeat"),
-                secondaryButtonBehavior: .custom
-            )
         }
+        return AlarmPresentation.Alert(
+            title: LocalizedStringResource(stringLiteral: timer.name),
+            stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill"),
+            secondaryButton: .init(text: "Repeat", textColor: .white, systemImageName: "repeat"),
+            secondaryButtonBehavior: .custom
+        )
+    }
+
+    static func makeAttributes(for timer: RunningTimer) -> AlarmAttributes<SpaghettiTimerMetadata> {
         let countdown = AlarmPresentation.Countdown(
             title: LocalizedStringResource(stringLiteral: timer.name),
             pauseButton: .init(text: "Pause", textColor: .white, systemImageName: "pause.fill")
@@ -40,8 +71,8 @@ nonisolated enum AlarmConfigurationFactory {
             title: LocalizedStringResource(stringLiteral: timer.name),
             resumeButton: .init(text: "Resume", textColor: .white, systemImageName: "play.fill")
         )
-        let attributes = AlarmAttributes<SpaghettiTimerMetadata>(
-            presentation: .init(alert: alert, countdown: countdown, paused: paused),
+        return AlarmAttributes<SpaghettiTimerMetadata>(
+            presentation: .init(alert: makeAlert(for: timer), countdown: countdown, paused: paused),
             metadata: SpaghettiTimerMetadata(
                 presetName: timer.name,
                 alarmID: timer.id.uuidString,
@@ -50,13 +81,14 @@ nonisolated enum AlarmConfigurationFactory {
             ),
             tintColor: .accentColor
         )
-        return AlarmManager.AlarmConfiguration.timer(
-            duration: timer.duration + leadIn,
-            attributes: attributes,
-            stopIntent: StopTimerIntent(timer: timer),
-            secondaryIntent: RepeatTimerIntent(timerID: timer.id.uuidString, presetID: timer.presetID.uuidString),
-            sound: .default
-        )
+    }
+
+    /// The Stop intent baked into the alarm. It must be built with `init(timer:)`,
+    /// not from the id alone: the parameters it carries are the only copy of the
+    /// timer that survives another process erasing the shared-storage record, and
+    /// they are what lets a repeating timer restart itself.
+    static func makeStopIntent(for timer: RunningTimer) -> StopTimerIntent {
+        StopTimerIntent(timer: timer)
     }
 }
 
@@ -71,13 +103,5 @@ nonisolated struct SpaghettiTimerMetadata: AlarmMetadata {
         self.alarmID = alarmID
         self.presetID = presetID
         self.autoRestartDelaySeconds = autoRestartDelaySeconds
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        presetName = try container.decode(String.self, forKey: .presetName)
-        alarmID = try container.decode(String.self, forKey: .alarmID)
-        presetID = try container.decode(String.self, forKey: .presetID)
-        autoRestartDelaySeconds = try container.decodeIfPresent(TimeInterval.self, forKey: .autoRestartDelaySeconds)
     }
 }

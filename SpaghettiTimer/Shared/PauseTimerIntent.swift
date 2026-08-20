@@ -28,17 +28,10 @@ struct PauseTimerIntent: AppIntent {
 
         let repo = RunningTimersRepoImpl()
         var timers = repo.load()
-        if let index = timers.firstIndex(where: { $0.id == id }), timers[index].pausedAt == nil {
+        if let index = timers.firstIndex(where: { $0.id == id }),
+           let paused = timers[index].paused(at: Date()) {
             let existing = timers[index]
-            timers[index] = RunningTimer(
-                id: existing.id,
-                presetID: existing.presetID,
-                name: existing.name,
-                startDate: existing.startDate,
-                duration: existing.duration,
-                pausedAt: Date(),
-                autoRestartDelaySeconds: existing.autoRestartDelaySeconds
-            )
+            timers[index] = paused
             repo.save(timers)
             PendingAnalyticsQueueRepoImpl().log(.timerPause(
                 presetID: existing.presetID,

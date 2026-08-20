@@ -24,7 +24,9 @@ struct PresetsProvider: TimelineProvider {
     func getSnapshot(in context: Context, completion: @escaping (PresetsEntry) -> Void) {
         let now = Date()
         let presets = PresetsRepoImpl().allPresets()
-        let timers = Self.visibleTimers(at: now)
+        let timers = RunningTimersMerge.visible(in: RunningTimersRepoImpl().load(),
+                                               liveAlarmIDs: Self.liveAlarmIDs(),
+                                               now: now)
         completion(PresetsEntry(date: now,
                                 presets: presets,
                                 activePresetIDs: Self.activeIDs(in: timers, at: now)))
@@ -33,7 +35,9 @@ struct PresetsProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<PresetsEntry>) -> Void) {
         let now = Date()
         let presets = PresetsRepoImpl().allPresets()
-        let timers = Self.visibleTimers(at: now)
+        let timers = RunningTimersMerge.visible(in: RunningTimersRepoImpl().load(),
+                                               liveAlarmIDs: Self.liveAlarmIDs(),
+                                               now: now)
 
         let transitionDates = timers
             .filter { !$0.isPaused && $0.endDate > now }
@@ -61,33 +65,18 @@ struct PresetsProvider: TimelineProvider {
         Set(timers.filter { $0.isPaused || !$0.isFinished(at: date) }.map { $0.presetID })
     }
 
-    /// The timers this widget should treat as running, right now.
+    /// Live alarm ids, or `nil` when AlarmKit can't be queried from this process.
     ///
-    /// Read-only on purpose: this runs in the widget's process, and the shared
-    /// running-timers record is owned by the app and the intents. It used to
-    /// write the filtered list back, which deleted records out from under them —
-    /// including the one that is alerting this very second (it's `isFinished`),
-    /// so `StopTimerIntent` then found nothing to auto-restart. Stale records are
-    /// cleaned up by the app on launch/foreground and by the intents themselves;
-    /// here they're just filtered out of the display.
-    private static func visibleTimers(at now: Date) -> [RunningTimer] {
-        let stored = RunningTimersRepoImpl().load()
-        guard !stored.isEmpty else { return stored }
-
-        let liveAlarmIDs: Set<UUID>?
-        if let alarms = try? AlarmManager.shared.alarms {
-            liveAlarmIDs = Set(alarms.map(\.id))
-        } else {
-            liveAlarmIDs = nil
-        }
-
-        return stored.filter { timer in
-            if let liveAlarmIDs, !liveAlarmIDs.contains(timer.id) { return false }
-            if !timer.isPaused && timer.isFinished(at: now) { return false }
-            if timer.endDate.addingTimeInterval(1) < now { return false }
-            return true
-        }
+    /// The widget only ever *reads* shared storage. It used to write its filtered
+    /// list back, which deleted the record of the timer alerting at that moment —
+    /// so `StopTimerIntent` found nothing to auto-restart and the chain died. The
+    /// filtering now lives in `RunningTimersMerge.visible`, which takes an array and
+    /// returns an array and so cannot persist anything.
+    private static func liveAlarmIDs() -> Set<UUID>? {
+        guard let alarms = try? AlarmManager.shared.alarms else { return nil }
+        return Set(alarms.map(\.id))
     }
+
 }
 
 /// Visual constants mirrored from the design handoff (and the main app's `Theme.swift`,

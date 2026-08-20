@@ -10,6 +10,20 @@ import Foundation
 import SwiftUI
 import WidgetKit
 
+// TODO: This intent never received the hardening from commit 91cfd9d. It reads the
+// previous timer's duration and delay only from `runningRepo.load()`, so if the
+// stored record was erased by another process it silently produces a 60-second,
+// non-repeating timer named "Timer" — the same failure mode `StopTimerIntent`'s
+// baked-in `@Parameter`s were added to fix.
+//
+// Not currently reachable for repeating timers: `AlarmConfigurationFactory.makeAlert`
+// withholds the secondary "Repeat" button whenever `autoRestartDelaySeconds != nil`,
+// so this only ever fires on one-shots and the auto-restart chain is unaffected.
+// It becomes a live bug the moment a Repeat button is offered on a repeating alert.
+//
+// Fix is ~15 lines (an `init(timer:)` plus baked-in parameters, reusing
+// `AutoRestartPolicy.bakedTimer`) but it changes the alarm payload shape a second
+// time in one release, so it is deliberately deferred to its own change.
 struct RepeatTimerIntent: LiveActivityIntent {
     nonisolated static let title: LocalizedStringResource = "Repeat Timer"
     nonisolated static let description = IntentDescription("Restarts the same timer from the beginning.")

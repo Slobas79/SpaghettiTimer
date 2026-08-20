@@ -65,16 +65,9 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
     func pinPreset(_ preset: TimerPreset) {
         var user = repo.loadUserPresets()
         guard !user.contains(where: { $0.id == preset.id }) else { return }
-        user.append(
-            TimerPreset(
-                id: preset.id,
-                name: preset.name,
-                duration: preset.duration,
-                isBuiltIn: false,
-                // Pinning must not quietly turn a repeating timer into a one-shot.
-                autoRestartDelaySeconds: preset.autoRestartDelaySeconds
-            )
-        )
+        // `pinnedCopy()` carries every field forward — pinning must not quietly
+        // turn a repeating timer into a one-shot.
+        user.append(preset.pinnedCopy())
         repo.saveUserPresets(user)
         analytics.log(.presetPin())
         reload()

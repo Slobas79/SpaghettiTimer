@@ -19,7 +19,6 @@ protocol RunningTimersUseCase: AnyObject {
     func stop(_ timer: RunningTimer)
     func pause(_ timer: RunningTimer)
     func resume(_ timer: RunningTimer)
-    func pruneFinished()
     func reconcileOnForeground()
 }
 
@@ -31,18 +30,37 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     private let repo: RunningTimersRepo
     private let presetsRepo: PresetsRepo
     private let analytics: AnalyticsRepo
+    private let cancelledTimers: UserDefaults
+    private let observesAlarmKit: Bool
 
     private var alarmObservationTask: Task<Void, Never>?
     private var seenAlarmIDs: Set<UUID> = []
 
-    init(repo: RunningTimersRepo, presetsRepo: PresetsRepo, analytics: AnalyticsRepo = NoOpAnalyticsRepo()) {
+    /// - Parameters:
+    ///   - cancelledTimers: the suite backing `UserCancelledTimers`. Injectable so a
+    ///     test can use a scratch suite instead of the shared App Group.
+    ///   - observesAlarmKit: when `false`, skips startup reconciliation, the
+    ///     `alarmUpdates` observation task, and alarm scheduling in `start(preset:)`.
+    ///     Tests set this: scheduling would call `requestAuthorization()` and pop a
+    ///     system permission alert inside the test host process. Reconciliation is
+    ///     still exercisable through `applyLiveAlarms(ids:)`.
+    init(repo: RunningTimersRepo,
+         presetsRepo: PresetsRepo,
+         analytics: AnalyticsRepo = NoOpAnalyticsRepo(),
+         cancelledTimers: UserDefaults = AppGroup.defaults,
+         observesAlarmKit: Bool = true) {
         self.repo = repo
         self.presetsRepo = presetsRepo
         self.analytics = analytics
+        self.cancelledTimers = cancelledTimers
+        self.observesAlarmKit = observesAlarmKit
         reload()
+        guard observesAlarmKit else { return }
         reconcileOnStartup()
         observeAlarmDismissals()
     }
+
+
 
     private func reconcileOnStartup() {
         guard !running.isEmpty else { return }
@@ -73,10 +91,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         alarmObservationTask = Task { [weak self] in
             for await alarms in AlarmManager.shared.alarmUpdates {
                 guard let self else { return }
-                let activeIDs = Set(alarms.map(\.id))
-                self.seenAlarmIDs.formUnion(activeIDs)
-                self.removeTimers(notIn: activeIDs)
-                self.adoptTimersStartedElsewhere(liveIDs: activeIDs)
+                self.applyLiveAlarms(ids: Set(alarms.map(\.id)))
                 self.syncPauseState(from: alarms)
             }
         }
@@ -113,8 +128,9 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         // done. A *freshly* started timer whose alarm is still scheduling is neither finished nor
         // seen, so it's preserved; an actively ringing alarm is still in `liveIDs`, so it's kept.
         // (Mirrors `removeTimers(notIn:)`.)
-        let now = Date()
-        let dismissed = running.filter { !liveIDs.contains($0.id) && (seenAlarmIDs.contains($0.id) || $0.isFinished(at: now)) }
+        let dismissed = RunningTimersMerge.dismissed(
+            in: running, liveAlarmIDs: liveIDs, seenIDs: seenAlarmIDs, now: Date()
+        )
         if !dismissed.isEmpty {
             logCompletions(for: dismissed)
             let dismissedSet = Set(dismissed.map(\.id))
@@ -137,29 +153,12 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             let existing = running[index]
             switch alarm.state {
             case .paused:
-                guard !existing.isPaused else { continue }
-                running[index] = RunningTimer(
-                    id: existing.id,
-                    presetID: existing.presetID,
-                    name: existing.name,
-                    startDate: existing.startDate,
-                    duration: existing.duration,
-                    pausedAt: now,
-                    autoRestartDelaySeconds: existing.autoRestartDelaySeconds
-                )
+                guard let paused = existing.paused(at: now) else { continue }
+                running[index] = paused
                 changed = true
             case .countdown:
-                guard let pausedAt = existing.pausedAt else { continue }
-                let delta = now.timeIntervalSince(pausedAt)
-                running[index] = RunningTimer(
-                    id: existing.id,
-                    presetID: existing.presetID,
-                    name: existing.name,
-                    startDate: existing.startDate.addingTimeInterval(delta),
-                    duration: existing.duration,
-                    pausedAt: nil,
-                    autoRestartDelaySeconds: existing.autoRestartDelaySeconds
-                )
+                guard let resumed = existing.resumed(at: now) else { continue }
+                running[index] = resumed
                 changed = true
             default:
                 continue
@@ -172,11 +171,21 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         }
     }
 
+    /// Reconciles against a snapshot of the alarms AlarmKit currently considers live.
+    ///
+    /// Split out of the `alarmUpdates` loop so cross-process reconciliation can be
+    /// driven from a test — `AlarmKit.Alarm` has no public memberwise initializer, so
+    /// a test cannot fabricate `[Alarm]`, but a set of ids is all this needs.
+    func applyLiveAlarms(ids activeIDs: Set<UUID>) {
+        seenAlarmIDs.formUnion(activeIDs)
+        removeTimers(notIn: activeIDs)
+        adoptTimersStartedElsewhere(liveIDs: activeIDs)
+    }
+
     private func removeTimers(notIn activeIDs: Set<UUID>) {
-        let now = Date()
-        let dismissed = running
-            .filter { !activeIDs.contains($0.id) &&
-                      (seenAlarmIDs.contains($0.id) || $0.isFinished(at: now)) }
+        let dismissed = RunningTimersMerge.dismissed(
+            in: running, liveAlarmIDs: activeIDs, seenIDs: seenAlarmIDs, now: Date()
+        )
         guard !dismissed.isEmpty else { return }
 
         // Auto-restart is handled by StopTimerIntent so it works even when this
@@ -191,8 +200,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         // written by StopTimerIntent (which bypasses this use case) survives — and
         // so the dismissed ones are cleared from shared storage too, instead of
         // being read straight back in.
-        var stored = repo.load()
-        stored.removeAll { dismissedSet.contains($0.id) }
+        let stored = RunningTimersMerge.removingDismissed(disk: repo.load(), dismissedIDs: dismissedSet)
         repo.save(stored)
         running = stored
         onChange?()
@@ -205,8 +213,9 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     /// without this the in-memory array (and the home screen) misses them until
     /// the next foregrounding, and the next `repo.save(running)` erases them.
     private func adoptTimersStartedElsewhere(liveIDs: Set<UUID>) {
-        let known = Set(running.map(\.id))
-        let unknown = repo.load().filter { liveIDs.contains($0.id) && !known.contains($0.id) }
+        let unknown = RunningTimersMerge.adoptable(
+            inMemory: running, disk: repo.load(), liveAlarmIDs: liveIDs
+        )
         guard !unknown.isEmpty else { return }
         running.append(contentsOf: unknown)
         onChange?()
@@ -220,7 +229,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     /// `timer_cancel`/acknowledged `timer_complete` that was already logged.
     private func logCompletions(for dismissed: [RunningTimer]) {
         for timer in dismissed {
-            let wasCancelled = UserCancelledTimers.consume(timer.id)
+            let wasCancelled = UserCancelledTimers.consume(timer.id, in: cancelledTimers)
             guard !wasCancelled else { continue }
             analytics.log(.timerComplete(
                 presetID: timer.presetID,
@@ -249,8 +258,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         // Repo first: another process may have added a timer (auto-restart's next
         // iteration, or a widget start) that this array doesn't know about yet,
         // and saving the stale array would drop it.
-        let knownIDs = Set(running.map(\.id))
-        running += repo.load().filter { !knownIDs.contains($0.id) }
+        running = RunningTimersMerge.merging(inMemory: running, disk: repo.load())
         running.append(timer)
         repo.save(running)
         let isEphemeral = !presetsRepo.allPresets().contains { $0.id == preset.id }
@@ -262,16 +270,18 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             autoRestart: preset.autoRestartDelaySeconds != nil,
             source: .app
         ))
-        Task {
-            await ensureAuthorized()
-            await schedule(timer)
+        if observesAlarmKit {
+            Task {
+                await ensureAuthorized()
+                await schedule(timer)
+            }
         }
         onChange?()
         WidgetCenter.shared.reloadAllTimelines()
     }
 
     func stop(_ timer: RunningTimer) {
-        UserCancelledTimers.mark(timer.id)
+        UserCancelledTimers.mark(timer.id, in: cancelledTimers)
         running.removeAll { $0.id == timer.id }
         repo.save(running)
         analytics.log(.timerCancel(presetID: timer.presetID, name: timer.name, durationSeconds: Int(timer.duration), source: .app))
@@ -282,17 +292,10 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     }
 
     func pause(_ timer: RunningTimer) {
-        guard let index = running.firstIndex(where: { $0.id == timer.id }), !running[index].isPaused else { return }
+        guard let index = running.firstIndex(where: { $0.id == timer.id }),
+              let paused = running[index].paused(at: Date()) else { return }
         let existing = running[index]
-        running[index] = RunningTimer(
-            id: existing.id,
-            presetID: existing.presetID,
-            name: existing.name,
-            startDate: existing.startDate,
-            duration: existing.duration,
-            pausedAt: Date(),
-            autoRestartDelaySeconds: existing.autoRestartDelaySeconds
-        )
+        running[index] = paused
         repo.save(running)
         analytics.log(.timerPause(presetID: existing.presetID, name: existing.name, durationSeconds: Int(existing.duration), source: .app))
         let timerID = timer.id
@@ -303,39 +306,13 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
 
     func resume(_ timer: RunningTimer) {
         guard let index = running.firstIndex(where: { $0.id == timer.id }),
-              let pausedAt = running[index].pausedAt else { return }
+              let resumed = running[index].resumed(at: Date()) else { return }
         let existing = running[index]
-        let delta = Date().timeIntervalSince(pausedAt)
-        running[index] = RunningTimer(
-            id: existing.id,
-            presetID: existing.presetID,
-            name: existing.name,
-            startDate: existing.startDate.addingTimeInterval(delta),
-            duration: existing.duration,
-            pausedAt: nil,
-            autoRestartDelaySeconds: existing.autoRestartDelaySeconds
-        )
+        running[index] = resumed
         repo.save(running)
         analytics.log(.timerResume(presetID: existing.presetID, name: existing.name, durationSeconds: Int(existing.duration), source: .app))
         let timerID = timer.id
         Task { try? AlarmManager.shared.resume(id: timerID) }
-        onChange?()
-        WidgetCenter.shared.reloadAllTimelines()
-    }
-
-    func pruneFinished() {
-        let now = Date()
-        let finished = running.filter { $0.isFinished(at: now) }
-        guard !finished.isEmpty else { return }
-        for timer in finished {
-            UserCancelledTimers.mark(timer.id)
-        }
-        running.removeAll { $0.isFinished(at: now) }
-        repo.save(running)
-        for timer in finished {
-            let timerID = timer.id
-            Task { try? AlarmManager.shared.cancel(id: timerID) }
-        }
         onChange?()
         WidgetCenter.shared.reloadAllTimelines()
     }
