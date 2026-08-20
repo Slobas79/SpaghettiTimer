@@ -36,7 +36,8 @@ struct PauseTimerIntent: AppIntent {
                 name: existing.name,
                 startDate: existing.startDate,
                 duration: existing.duration,
-                pausedAt: Date()
+                pausedAt: Date(),
+                autoRestartDelaySeconds: existing.autoRestartDelaySeconds
             )
             repo.save(timers)
             PendingAnalyticsQueueRepoImpl().log(.timerPause(

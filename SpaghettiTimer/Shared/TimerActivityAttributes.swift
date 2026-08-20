@@ -53,7 +53,7 @@ nonisolated enum AlarmConfigurationFactory {
         return AlarmManager.AlarmConfiguration.timer(
             duration: timer.duration + leadIn,
             attributes: attributes,
-            stopIntent: StopTimerIntent(timerID: timer.id.uuidString),
+            stopIntent: StopTimerIntent(timer: timer),
             secondaryIntent: RepeatTimerIntent(timerID: timer.id.uuidString, presetID: timer.presetID.uuidString),
             sound: .default
         )

@@ -24,7 +24,7 @@ struct PresetsProvider: TimelineProvider {
     func getSnapshot(in context: Context, completion: @escaping (PresetsEntry) -> Void) {
         let now = Date()
         let presets = PresetsRepoImpl().allPresets()
-        let timers = Self.prunedTimers(at: now)
+        let timers = Self.visibleTimers(at: now)
         completion(PresetsEntry(date: now,
                                 presets: presets,
                                 activePresetIDs: Self.activeIDs(in: timers, at: now)))
@@ -33,7 +33,7 @@ struct PresetsProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<PresetsEntry>) -> Void) {
         let now = Date()
         let presets = PresetsRepoImpl().allPresets()
-        let timers = Self.prunedTimers(at: now)
+        let timers = Self.visibleTimers(at: now)
 
         let transitionDates = timers
             .filter { !$0.isPaused && $0.endDate > now }
@@ -61,9 +61,17 @@ struct PresetsProvider: TimelineProvider {
         Set(timers.filter { $0.isPaused || !$0.isFinished(at: date) }.map { $0.presetID })
     }
 
-    private static func prunedTimers(at now: Date) -> [RunningTimer] {
-        let repo = RunningTimersRepoImpl()
-        let stored = repo.load()
+    /// The timers this widget should treat as running, right now.
+    ///
+    /// Read-only on purpose: this runs in the widget's process, and the shared
+    /// running-timers record is owned by the app and the intents. It used to
+    /// write the filtered list back, which deleted records out from under them —
+    /// including the one that is alerting this very second (it's `isFinished`),
+    /// so `StopTimerIntent` then found nothing to auto-restart. Stale records are
+    /// cleaned up by the app on launch/foreground and by the intents themselves;
+    /// here they're just filtered out of the display.
+    private static func visibleTimers(at now: Date) -> [RunningTimer] {
+        let stored = RunningTimersRepoImpl().load()
         guard !stored.isEmpty else { return stored }
 
         let liveAlarmIDs: Set<UUID>?
@@ -73,18 +81,12 @@ struct PresetsProvider: TimelineProvider {
             liveAlarmIDs = nil
         }
 
-        let kept = stored.filter { timer in
+        return stored.filter { timer in
             if let liveAlarmIDs, !liveAlarmIDs.contains(timer.id) { return false }
             if !timer.isPaused && timer.isFinished(at: now) { return false }
             if timer.endDate.addingTimeInterval(1) < now { return false }
             return true
         }
-
-        if kept.count != stored.count {
-            repo.save(kept)
-        }
-        print("[Widget] prunedTimers stored=\(stored.count) live=\(liveAlarmIDs?.count ?? -1) kept=\(kept.count)")
-        return kept
     }
 }
 

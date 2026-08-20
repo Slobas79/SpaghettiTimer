@@ -76,6 +76,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
                 let activeIDs = Set(alarms.map(\.id))
                 self.seenAlarmIDs.formUnion(activeIDs)
                 self.removeTimers(notIn: activeIDs)
+                self.adoptTimersStartedElsewhere(liveIDs: activeIDs)
                 self.syncPauseState(from: alarms)
             }
         }
@@ -185,11 +186,29 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         logCompletions(for: dismissed)
 
         let dismissedSet = Set(dismissed.map(\.id))
-        running.removeAll { dismissedSet.contains($0.id) }
         seenAlarmIDs.subtract(dismissedSet)
-        // Reload from disk so any next-iteration timer scheduled by StopTimerIntent
-        // (running in a different process while the app was backgrounded) becomes visible.
-        running = repo.load()
+        // Start from disk, not from the in-memory array, so a next-iteration timer
+        // written by StopTimerIntent (which bypasses this use case) survives — and
+        // so the dismissed ones are cleared from shared storage too, instead of
+        // being read straight back in.
+        var stored = repo.load()
+        stored.removeAll { dismissedSet.contains($0.id) }
+        repo.save(stored)
+        running = stored
+        onChange?()
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    /// Pulls in timers that were started outside this use case — the auto-restart
+    /// iteration `StopTimerIntent` writes when a repeating timer is stopped, or a
+    /// timer launched from the widget. They only ever reach shared storage, so
+    /// without this the in-memory array (and the home screen) misses them until
+    /// the next foregrounding, and the next `repo.save(running)` erases them.
+    private func adoptTimersStartedElsewhere(liveIDs: Set<UUID>) {
+        let known = Set(running.map(\.id))
+        let unknown = repo.load().filter { liveIDs.contains($0.id) && !known.contains($0.id) }
+        guard !unknown.isEmpty else { return }
+        running.append(contentsOf: unknown)
         onChange?()
         WidgetCenter.shared.reloadAllTimelines()
     }
@@ -227,6 +246,11 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             duration: preset.duration,
             autoRestartDelaySeconds: preset.autoRestartDelaySeconds
         )
+        // Repo first: another process may have added a timer (auto-restart's next
+        // iteration, or a widget start) that this array doesn't know about yet,
+        // and saving the stale array would drop it.
+        let knownIDs = Set(running.map(\.id))
+        running += repo.load().filter { !knownIDs.contains($0.id) }
         running.append(timer)
         repo.save(running)
         let isEphemeral = !presetsRepo.allPresets().contains { $0.id == preset.id }

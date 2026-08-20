@@ -38,7 +38,8 @@ struct ResumeTimerIntent: AppIntent {
                 name: existing.name,
                 startDate: existing.startDate.addingTimeInterval(delta),
                 duration: existing.duration,
-                pausedAt: nil
+                pausedAt: nil,
+                autoRestartDelaySeconds: existing.autoRestartDelaySeconds
             )
             repo.save(timers)
             PendingAnalyticsQueueRepoImpl().log(.timerResume(

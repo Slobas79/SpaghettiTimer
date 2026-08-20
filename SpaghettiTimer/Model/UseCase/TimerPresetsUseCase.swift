@@ -66,7 +66,14 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
         var user = repo.loadUserPresets()
         guard !user.contains(where: { $0.id == preset.id }) else { return }
         user.append(
-            TimerPreset(id: preset.id, name: preset.name, duration: preset.duration, isBuiltIn: false)
+            TimerPreset(
+                id: preset.id,
+                name: preset.name,
+                duration: preset.duration,
+                isBuiltIn: false,
+                // Pinning must not quietly turn a repeating timer into a one-shot.
+                autoRestartDelaySeconds: preset.autoRestartDelaySeconds
+            )
         )
         repo.saveUserPresets(user)
         analytics.log(.presetPin())
