@@ -33,6 +33,29 @@ struct TimersView: View {
         GridItem(.flexible(), spacing: Theme.gridGap)
     ]
 
+    /// Home's secondary actions, behind the ••• corner menu — the single
+    /// entry point for Replay tips, the direct paywall and Restore Purchases.
+    @ViewBuilder
+    private var secondaryActions: some View {
+        Button {
+            showingTour = true
+        } label: {
+            Label("Replay tips", systemImage: "questionmark.circle")
+        }
+        if !store.isPro {
+            Button {
+                directPaywall = .general
+            } label: {
+                Label("Unlock Pro", systemImage: "crown")
+            }
+        }
+        Button {
+            Task { await store.restore() }
+        } label: {
+            Label("Restore Purchases", systemImage: "arrow.clockwise.circle")
+        }
+    }
+
     var body: some View {
         ZStack {
             Theme.screenBG.ignoresSafeArea()
@@ -90,43 +113,44 @@ struct TimersView: View {
         }
         // Floating + FAB, pinned bottom-centre. Sits beneath the coach-mark/
         // splash overlays so the tour scrim covers it — and so tip 3 can
-        // spotlight it through the scrim's cutout. A quiet long-press replays
-        // the tips (the one-shot Help button is gone once the tour is
-        // finished with Done).
+        // spotlight it through the scrim's cutout. Tap only: the secondary
+        // actions it used to hide behind a long-press now live in the visible
+        // ••• menu bottom-left.
         .overlay(alignment: .bottom) {
             AddTimerFAB(action: { showingNew = true })
                 .tutorialTarget(.addTile)
                 .padding(.bottom, 34)
-                .contextMenu {
-                    Button {
-                        showingTour = true
-                    } label: {
-                        Label("Replay tips", systemImage: "questionmark.circle")
-                    }
-                    if !store.isPro {
-                        Button {
-                            directPaywall = .general
-                        } label: {
-                            Label("Unlock Pro", systemImage: "crown")
-                        }
-                    }
-                    Button {
-                        Task { await store.restore() }
-                    } label: {
-                        Label("Restore Purchases", systemImage: "arrow.clockwise.circle")
-                    }
-                }
         }
-        // One-shot Help trigger in the bottom-right corner: starts the Home
-        // tour on demand and is gone for good once the tour has been played
-        // through to the last tip and finished with Done. Skipping leaves it
-        // here. Clear of the running banner (top) and the centre FAB.
-        // Beneath the coach-mark/splash overlays so the tour scrim covers it.
-        .overlay(alignment: .bottomTrailing) {
+        // One-shot Help trigger, bottom-LEFT: starts the Home tour on demand
+        // and is gone for good once the tour has been played through to the
+        // last tip and finished with Done. Skipping leaves it here. It takes
+        // the leading corner precisely because it retires — the corner it
+        // vacates is the one the thumb reaches for least. Clear of the running
+        // banner (top) and the centre FAB; beneath the coach-mark/splash
+        // overlays so the tour scrim covers it.
+        .overlay(alignment: .bottomLeading) {
             if !showingSplash && !showingTour && !homeTourDone {
                 TutorialHelpButton(style: .corner) {
                     showingTour = true
                 }
+                .padding(.leading, 20)
+                .padding(.bottom, 45)
+            }
+        }
+        // The permanent ••• menu, bottom-RIGHT, mirroring the Help button's
+        // corner geometry. This one never goes away, so it owns the settled
+        // thumb-side corner: Restore Purchases and the direct paywall stay one
+        // tap from the grid for the life of the install. Hidden under the
+        // splash/tour like its opposite number.
+        .overlay(alignment: .bottomTrailing) {
+            if !showingSplash && !showingTour {
+                Menu {
+                    secondaryActions
+                } label: {
+                    CornerChromeGlyph(systemName: "ellipsis")
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("More options")
                 .padding(.trailing, 20)
                 .padding(.bottom, 45)
             }
@@ -280,6 +304,15 @@ private struct TimersPreviewHarness: View {
             AddTimerFAB(action: {})
                 .tutorialTarget(.addTile)
                 .padding(.bottom, 34)
+        }
+        // Layout parity with the real screen — the puck only, since the harness
+        // has no store to drive the menu's Pro entries.
+        .overlay(alignment: .bottomTrailing) {
+            if !showingTour {
+                CornerChromeGlyph(systemName: "ellipsis")
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 45)
+            }
         }
         .coachMarks(.home, isActive: $showingTour, steps: homeSteps)
         .onAppear {
