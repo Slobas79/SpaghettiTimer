@@ -33,8 +33,8 @@ struct TutorialDynamicIslandArt: View {
     private static let buttonSize: CGFloat = 52
 
     /// Mid-run state of the same sample timer the running-banner tip shows.
-    private static let title = "5 min"
-    private static let countdown = "4:12"
+    private static let title = "Al Dente"
+    private static let countdown = "6:43"
     private static let remainingFraction: CGFloat = 0.84
 
     var body: some View {

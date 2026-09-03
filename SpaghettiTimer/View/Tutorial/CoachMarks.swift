@@ -287,14 +287,14 @@ private struct CoachMarksOverlay: View {
     private func artBlock(_ art: TutorialArt) -> some View {
         switch art {
         case .runningBanner:
-            // The classic running banner as it looks mid-countdown ("5 min · 04:59").
+            // The classic running banner as it looks mid-countdown ("Al Dente · 07:59").
             RunningTimerRow(
                 timer: RunningTimer(
                     id: Self.artBannerID,
                     presetID: Self.artBannerID,
-                    name: "5 min",
+                    name: "Al Dente",
                     startDate: Date().addingTimeInterval(-1),
-                    duration: 300
+                    duration: 480
                 ),
                 now: Date(),
                 onPause: {}, onResume: {}, onCancel: {}

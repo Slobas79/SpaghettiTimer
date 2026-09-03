@@ -48,10 +48,17 @@ nonisolated extension TimerPreset {
 }
 
 nonisolated extension TimerPreset {
+    /// One flagship example per target group — cooking, gym, focus, self-care — so a
+    /// fresh install's grid shows what the app is *for*, rather than four arbitrary
+    /// durations named after themselves.
+    ///
+    /// The ids are load-bearing and must not change: `presets.hiddenBuiltIns` stores
+    /// them, and `Analytics.safePresetName` uses membership here as its allowlist for
+    /// reporting a preset name off-device.
     static let builtIns: [TimerPreset] = [
-        TimerPreset(id: UUID(uuidString: "11111111-1111-1111-1111-000000000001")!, name: "1 min",  duration: 60,   isBuiltIn: true),
-        TimerPreset(id: UUID(uuidString: "11111111-1111-1111-1111-000000000002")!, name: "5 min",  duration: 300,  isBuiltIn: true),
-        TimerPreset(id: UUID(uuidString: "11111111-1111-1111-1111-000000000003")!, name: "10 min", duration: 600,  isBuiltIn: true),
-        TimerPreset(id: UUID(uuidString: "11111111-1111-1111-1111-000000000004")!, name: "25 min", duration: 1500, isBuiltIn: true)
+        TimerPreset(id: UUID(uuidString: "11111111-1111-1111-1111-000000000001")!, name: "Al Dente",  duration: 480,  isBuiltIn: true),
+        TimerPreset(id: UUID(uuidString: "11111111-1111-1111-1111-000000000002")!, name: "Rest Set",  duration: 90,   isBuiltIn: true),
+        TimerPreset(id: UUID(uuidString: "11111111-1111-1111-1111-000000000003")!, name: "Pomodoro",  duration: 1500, isBuiltIn: true),
+        TimerPreset(id: UUID(uuidString: "11111111-1111-1111-1111-000000000004")!, name: "Power Nap", duration: 1200, isBuiltIn: true)
     ]
 }

@@ -26,10 +26,10 @@ struct TutorialWidgetArt: View {
     // Mirrors the shipped default widget: the four built-in one-shot presets
     // (`TimerPreset.builtIns`) a fresh install shows on the Home Screen.
     private let tiles: [Tile] = [
-        Tile(name: "1 min", time: "01:00"),
-        Tile(name: "5 min", time: "05:00"),
-        Tile(name: "10 min", time: "10:00"),
-        Tile(name: "25 min", time: "25:00")
+        Tile(name: "Al Dente", time: "08:00"),
+        Tile(name: "Rest Set", time: "01:30"),
+        Tile(name: "Pomodoro", time: "25:00"),
+        Tile(name: "Power Nap", time: "20:00")
     ]
 
     // Widget styling mirrored from `PresetsWidget.swift`'s `WidgetStyle`

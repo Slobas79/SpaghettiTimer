@@ -228,7 +228,7 @@ private struct FABPressStyle: ButtonStyle {
 // MARK: - Preview
 
 /// Renders the home screen layout with the handoff's reference state
-/// (one running "5 min" timer + the four built-in presets + add card)
+/// (one running "Rest Set" timer + the four built-in presets + add card)
 /// using the real components, without the AlarmKit-backed view model.
 private struct TimersPreviewHarness: View {
     /// Set true to render the coach-mark tour over the harness.
@@ -246,9 +246,9 @@ private struct TimersPreviewHarness: View {
     private let running = RunningTimer(
         id: UUID(),
         presetID: TimerPreset.builtIns[1].id,
-        name: "5 min",
+        name: TimerPreset.builtIns[1].name,
         startDate: Date().addingTimeInterval(-1),
-        duration: 300
+        duration: TimerPreset.builtIns[1].duration
     )
 
     var body: some View {
