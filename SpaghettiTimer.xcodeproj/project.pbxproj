@@ -81,6 +81,13 @@
 			);
 			target = 7BA8A9AA2FAA7B2200DD2D1C /* SpaghettiTimerWidgetExtension */;
 		};
+		7BC0DE012FFF000200BB0002 /* Exceptions for "SpaghettiTimer" folder in "SpaghettiTimer" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				SpaghettiTimer.storekit,
+			);
+			target = 7BB56A5F2E3A2E54006CE2CC /* SpaghettiTimer */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -101,6 +108,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				7BA8A9CE2FAA7C2700DD2D1C /* Exceptions for "SpaghettiTimer" folder in "SpaghettiTimerWidgetExtension" target */,
+				7BC0DE012FFF000200BB0002 /* Exceptions for "SpaghettiTimer" folder in "SpaghettiTimer" target */,
 			);
 			path = SpaghettiTimer;
 			sourceTree = "<group>";

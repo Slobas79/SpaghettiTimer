@@ -66,7 +66,17 @@ final class StoreUseCase {
     func loadProduct() async {
         isLoadingProduct = true
         defer { isLoadingProduct = false }
-        product = try? await Product.products(for: [ProConfig.productID]).first
+        do {
+            let products = try await Product.products(for: [ProConfig.productID])
+            product = products.first
+            if products.isEmpty {
+                print("[Store] no product returned for \(ProConfig.productID) — StoreKit answered with an empty list. Check the scheme's StoreKit configuration and the product ID.")
+            } else {
+                print("[Store] loaded \(products.count) product(s): \(products.map(\.id))")
+            }
+        } catch {
+            print("[Store] product load failed: \(error)")
+        }
     }
 
     /// Recomputes `isPro` from the current set of StoreKit entitlements.

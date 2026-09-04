@@ -62,7 +62,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../SpaghettiTimer.storekit">
+         identifier = "../SpaghettiTimer/SpaghettiTimer.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
