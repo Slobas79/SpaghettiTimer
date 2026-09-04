@@ -36,7 +36,7 @@ struct RunningTimerRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             HStack(spacing: 12) {
                 if timer.isPaused {
                     CircleButton(systemName: "play.fill", action: onResume)
@@ -53,20 +53,22 @@ struct RunningTimerRow: View {
                     .accessibilityHint("Stops and removes the timer")
             }
 
-            Spacer(minLength: 12)
-
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Spacer(minLength: 0)
                 if timer.autoRestartDelaySeconds != nil, now >= timer.startDate {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: glyphSize, weight: .semibold))
                         .foregroundStyle(Theme.accent)
                         .accessibilityHidden(true)
                 }
+                // The countdown must always be fully visible, so the name is the
+                // element that gives way: it truncates instead of squeezing the digits.
                 Text(timer.name)
                     .font(.system(size: nameSize, weight: .medium))
                     .foregroundStyle(.white.opacity(0.85))
                     .lineLimit(1)
-                    .minimumScaleFactor(0.6)
+                    .truncationMode(.tail)
+                    .layoutPriority(0)
 
                 if now < timer.startDate {
                     HStack(spacing: 6) {
@@ -78,12 +80,18 @@ struct RunningTimerRow: View {
                             .contentTransition(numericTransition)
                     }
                     .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .layoutPriority(1)
                 } else {
                     Text(TimerFormatting.format(timer.remaining(at: now)))
                         .font(.system(size: countdownSize, weight: .bold))
                         .monospacedDigit()
                         .foregroundStyle(.white)
                         .contentTransition(numericTransition)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .layoutPriority(1)
                 }
             }
             // Read the name + live countdown as a single, frequently-updating
@@ -92,6 +100,9 @@ struct RunningTimerRow: View {
             .accessibilityLabel(timer.name)
             .accessibilityValue(statusValue)
             .accessibilityAddTraits(.updatesFrequently)
+            // Take the row's leftover width as one block, so the name/countdown
+            // pair is measured against all of it rather than a share of it.
+            .layoutPriority(1)
         }
         .padding(.horizontal, 16)
         .frame(maxWidth: .infinity)

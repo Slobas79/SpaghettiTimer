@@ -19,20 +19,25 @@ private enum LiveActivityStyle {
     static let bannerFill = Color(red: 2 / 255, green: 21 / 255, blue: 41 / 255)  // #021529
     static let segUnlit = Color(red: 0.00884, green: 0.09946, blue: 0.19392)      // mix(accent 14%, #010810)
     static let cornerRadius: CGFloat = 22
+    /// The banner countdown's font. Shared so the hidden sizing sample and the
+    /// live timer text are measured with identical metrics — see `countdownSample`.
+    static let bannerCountdown = Font.system(size: 36, weight: .bold)
 }
 
 struct TimerLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: AlarmAttributes<SpaghettiTimerMetadata>.self) { context in
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 HStack(spacing: 12) {
                     pauseResumeButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
                     cancelButton(alarmID: context.attributes.metadata?.alarmID, state: context.state)
                 }
 
-                Spacer(minLength: 12)
-
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                // Layout mirrors `RunningTimerRow`: the spacer sits inside this
+                // stack rather than beside it, so the title keeps every point the
+                // countdown doesn't need instead of splitting the row's width.
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Spacer(minLength: 0)
                     if context.attributes.metadata?.autoRestartDelaySeconds != nil {
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 15, weight: .semibold))
@@ -41,11 +46,27 @@ struct TimerLiveActivity: Widget {
                     }
                     BannerTitle(text: headerTitle(context.attributes.metadata))
                         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-                    countdownText(state: context.state)
-                        .font(.system(size: 36, weight: .bold))
+                        .layoutPriority(0)
+                    // The countdown is never truncated: a hidden sample of the
+                    // widest digits it can show sets the width — measured by the
+                    // text system, not by hand — and the live text rides on top.
+                    Text(countdownSample(state: context.state))
+                        .font(LiveActivityStyle.bannerCountdown)
                         .monospacedDigit()
-                        .foregroundStyle(.white)
+                        // Rigid, so the row compresses the title instead of this.
+                        // Safe on a plain string, unlike on `Text(timerInterval:)`.
+                        .fixedSize(horizontal: true, vertical: false)
+                        .hidden()
+                        .overlay(alignment: .trailing) {
+                            countdownText(state: context.state)
+                                .font(LiveActivityStyle.bannerCountdown)
+                                .monospacedDigit()
+                                .foregroundStyle(.white)
+                                .lineLimit(1)
+                        }
+                        .layoutPriority(1)
                 }
+                .layoutPriority(1)
             }
             .padding(.horizontal, 16)
             .frame(maxWidth: .infinity)
@@ -235,15 +256,38 @@ struct TimerLiveActivity: Widget {
         return false
     }
 
-    /// Human-readable remaining time for VoiceOver — "5 minutes", "1 hour, 30 seconds".
-    private func spokenRemaining(state: AlarmPresentationState) -> String {
-        let seconds: TimeInterval
+    /// Seconds left on the clock, or `nil` in the states that have no countdown.
+    private func remainingSeconds(state: AlarmPresentationState) -> TimeInterval? {
         switch state.mode {
         case .countdown(let countdown):
-            seconds = max(0, countdown.fireDate.timeIntervalSinceNow)
+            return max(0, countdown.fireDate.timeIntervalSinceNow)
         case .paused(let paused):
-            seconds = max(0, paused.totalCountdownDuration - paused.previouslyElapsedDuration)
+            return max(0, paused.totalCountdownDuration - paused.previouslyElapsedDuration)
         default:
+            return nil
+        }
+    }
+
+    /// The widest string the banner countdown can display, used as a hidden
+    /// sizing sample behind the live text.
+    ///
+    /// `Text(timerInterval:)` has no content-derived width: offered space it
+    /// takes all of it (starving the title), and asked for its ideal width it
+    /// reports one that overflows the banner. Neither is a size to lay out
+    /// against, so the width comes from a static `Text` the layout system can
+    /// actually measure. Digits are monospaced, so the sample is exactly as
+    /// wide as any real value with the same number of them. Remaining time only
+    /// ever shrinks, so a sample chosen at render time still fits every frame
+    /// the system draws before the next update.
+    private func countdownSample(state: AlarmPresentationState) -> String {
+        guard let seconds = remainingSeconds(state: state) else { return "59:59" }
+        if seconds < 3600 { return "59:59" }
+        return seconds < 36000 ? "9:59:59" : "99:59:59"
+    }
+
+    /// Human-readable remaining time for VoiceOver — "5 minutes", "1 hour, 30 seconds".
+    private func spokenRemaining(state: AlarmPresentationState) -> String {
+        guard let seconds = remainingSeconds(state: state) else {
             return String(localized: "Done")
         }
         let total = Int(min(seconds.rounded(), 8.64e9))
@@ -354,11 +398,13 @@ private struct BannerTitle: View {
     @ScaledMetric(relativeTo: .body) private var size: CGFloat = 19
 
     var body: some View {
+        // Truncates rather than shrinks: on the banner the countdown owns the
+        // space it needs and the name is the element that gives way.
         Text(text)
             .font(.system(size: size, weight: .medium))
             .foregroundStyle(.white.opacity(0.85))
             .lineLimit(1)
-            .minimumScaleFactor(0.5)
+            .truncationMode(.tail)
     }
 }
 
