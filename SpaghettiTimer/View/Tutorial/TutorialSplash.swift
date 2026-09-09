@@ -13,20 +13,15 @@ import SwiftUI
 
 /// The full-screen intro splash. Fades in, ticks the digit 3 → 2 → 1 on a
 /// 900ms cadence (each tick replays the pop), then fades out via `onFinish`.
-/// "Skip intro" calls `onSkip` — it skips only the splash, never the tour.
 struct TutorialSplash: View {
     /// The countdown finished.
     let onFinish: () -> Void
-    /// The user tapped "Skip intro".
-    let onSkip: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var count = 3
     @State private var showDigit = false   // gates the first pop-in
     @State private var bloom = false       // glow bloom on appear
-    @State private var showCaption = false
-    @State private var showSkip = false
     @State private var leaving = false
 
     /// Icon glyphs are authored in a 300×480 space; render at ~170pt wide.
@@ -53,46 +48,22 @@ struct TutorialSplash: View {
             .opacity(bloom ? 1 : 0)
             .accessibilityHidden(true)
 
-            VStack(spacing: 40) {
-                ZStack {
-                    if showDigit {
-                        SevenSegDigit(digit: count)
-                            .scaleEffect(Self.digitScale)
-                            .frame(width: 170, height: 480 * Self.digitScale)
-                            // Icon-style glow around the lit segments.
-                            .shadow(color: Theme.accent.opacity(0.45), radius: 17)
-                            .id(count)
-                            .transition(reduceMotion
-                                ? .opacity
-                                : .scale(scale: 0.82).combined(with: .opacity))
-                    }
+            ZStack {
+                if showDigit {
+                    SevenSegDigit(digit: count)
+                        .scaleEffect(Self.digitScale)
+                        .frame(width: 170, height: 480 * Self.digitScale)
+                        // Icon-style glow around the lit segments.
+                        .shadow(color: Theme.accent.opacity(0.45), radius: 17)
+                        .id(count)
+                        .transition(reduceMotion
+                            ? .opacity
+                            : .scale(scale: 0.82).combined(with: .opacity))
                 }
-                .frame(width: 170, height: 480 * Self.digitScale)
-                .animation(pop, value: count)
-                .accessibilityHidden(true)
-
-                Text("Getting you set up…")
-                    .font(.system(size: 15))
-                    .foregroundStyle(Theme.splashCaption)
-                    .opacity(showCaption ? 1 : 0)
-                    .offset(y: showCaption ? 0 : 8)
             }
-
-            VStack {
-                Spacer()
-                Button {
-                    guard !leaving else { return }
-                    leave(then: onSkip)
-                } label: {
-                    Text("Skip intro")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Theme.mutedTime)
-                        .padding(12)
-                }
-                .buttonStyle(.plain)
-                .opacity(showSkip ? 1 : 0)
-                .padding(.bottom, 44)
-            }
+            .frame(width: 170, height: 480 * Self.digitScale)
+            .animation(pop, value: count)
+            .accessibilityHidden(true)
         }
         .opacity(leaving ? 0 : 1)
         .accessibilityElement(children: .contain)
@@ -101,8 +72,6 @@ struct TutorialSplash: View {
         .onAppear {
             withAnimation(.easeOut(duration: 0.4)) { bloom = true }
             withAnimation(pop) { showDigit = true }
-            withAnimation(.easeOut(duration: 0.4).delay(0.3)) { showCaption = true }
-            withAnimation(.easeOut(duration: 0.4).delay(0.8)) { showSkip = true }
         }
         .task { await runCountdown() }
     }
@@ -193,5 +162,5 @@ private struct SevenSegDigit: View {
 // MARK: - Preview
 
 #Preview {
-    TutorialSplash(onFinish: {}, onSkip: {})
+    TutorialSplash(onFinish: {})
 }

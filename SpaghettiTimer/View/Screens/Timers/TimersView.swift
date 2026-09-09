@@ -158,14 +158,10 @@ struct TimersView: View {
         .coachMarks(.home, isActive: $showingTour, steps: homeSteps)
         .overlay {
             if showingSplash {
-                // "Skip intro" skips only the splash — the Home tour stays
+                // The splash plays through on its own — the Home tour stays
                 // available behind the Help button either way.
                 TutorialSplash(
                     onFinish: {
-                        showingSplash = false
-                        TutorialFlags.markDone(.splash)
-                    },
-                    onSkip: {
                         showingSplash = false
                         TutorialFlags.markDone(.splash)
                     }
