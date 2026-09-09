@@ -70,6 +70,7 @@
 				Repository/Disc/RunningTimersRepo.swift,
 				Shared/Analytics.swift,
 				Shared/AppGroup.swift,
+				Shared/BannerCountdown.swift,
 				Shared/CancelTimerIntent.swift,
 				Shared/PauseTimerIntent.swift,
 				Shared/RepeatTimerIntent.swift,
@@ -107,8 +108,8 @@
 		7BB56A622E3A2E54006CE2CC /* SpaghettiTimer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				7BA8A9CE2FAA7C2700DD2D1C /* Exceptions for "SpaghettiTimer" folder in "SpaghettiTimerWidgetExtension" target */,
 				7BC0DE012FFF000200BB0002 /* Exceptions for "SpaghettiTimer" folder in "SpaghettiTimer" target */,
+				7BA8A9CE2FAA7C2700DD2D1C /* Exceptions for "SpaghettiTimer" folder in "SpaghettiTimerWidgetExtension" target */,
 			);
 			path = SpaghettiTimer;
 			sourceTree = "<group>";

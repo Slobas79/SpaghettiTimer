@@ -268,21 +268,10 @@ struct TimerLiveActivity: Widget {
         }
     }
 
-    /// The widest string the banner countdown can display, used as a hidden
-    /// sizing sample behind the live text.
-    ///
-    /// `Text(timerInterval:)` has no content-derived width: offered space it
-    /// takes all of it (starving the title), and asked for its ideal width it
-    /// reports one that overflows the banner. Neither is a size to lay out
-    /// against, so the width comes from a static `Text` the layout system can
-    /// actually measure. Digits are monospaced, so the sample is exactly as
-    /// wide as any real value with the same number of them. Remaining time only
-    /// ever shrinks, so a sample chosen at render time still fits every frame
-    /// the system draws before the next update.
+    /// The hidden sizing sample behind the banner countdown. The rule it follows
+    /// — and why the width has to come from a sample at all — is `BannerCountdown`.
     private func countdownSample(state: AlarmPresentationState) -> String {
-        guard let seconds = remainingSeconds(state: state) else { return "59:59" }
-        if seconds < 3600 { return "59:59" }
-        return seconds < 36000 ? "9:59:59" : "99:59:59"
+        BannerCountdown.sample(remaining: remainingSeconds(state: state))
     }
 
     /// Human-readable remaining time for VoiceOver — "5 minutes", "1 hour, 30 seconds".
@@ -301,24 +290,12 @@ struct TimerLiveActivity: Widget {
         case .countdown(let countdown):
             Text(timerInterval: Date()...countdown.fireDate, countsDown: true)
         case .paused(let paused):
-            Text(formatRemaining(paused.totalCountdownDuration - paused.previouslyElapsedDuration))
+            Text(BannerCountdown.text(remaining: paused.totalCountdownDuration - paused.previouslyElapsedDuration))
         case .alert:
             Text("Done")
         default:
             Text("--:--")
         }
-    }
-
-    private func formatRemaining(_ seconds: TimeInterval) -> String {
-        guard seconds.isFinite else { return "0:00" }
-        // Cap well below Int range (~273 years) so the Int() conversion can never trap.
-        let total = Int(min(max(0, seconds.rounded()), 8.64e9))
-        let hours = total / 3600
-        let minutes = (total % 3600) / 60
-        let secs = total % 60
-        return hours > 0
-            ? String(format: "%d:%02d:%02d", hours, minutes, secs)
-            : String(format: "%d:%02d", minutes, secs)
     }
 }
 
