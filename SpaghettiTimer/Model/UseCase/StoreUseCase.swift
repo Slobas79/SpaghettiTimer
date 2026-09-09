@@ -21,7 +21,8 @@ import Observation
 @Observable
 final class StoreUseCase {
     /// True once the user owns the lifetime Pro unlock. Drives every gate.
-    private(set) var isPro: Bool = false
+    /// Forced on while `ProConfig.qaUnlockAllPro` is `true` (QA builds only).
+    private(set) var isPro: Bool = ProConfig.qaUnlockAllPro
     /// The loaded StoreKit product, or nil until `loadProduct()` succeeds.
     private(set) var product: Product?
     private(set) var isLoadingProduct = false
@@ -89,7 +90,7 @@ final class StoreUseCase {
                 owned = true
             }
         }
-        isPro = owned
+        isPro = owned || ProConfig.qaUnlockAllPro
     }
 
     // MARK: - Purchase / restore
