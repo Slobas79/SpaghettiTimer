@@ -12,10 +12,14 @@ struct RunningTimerRow: View {
     let onResume: () -> Void
     let onCancel: () -> Void
 
+    /// The row is a fixed-height band, so the watermark is sized off that
+    /// height rather than off a font size that would overflow and clip.
+    private static let rowHeight: CGFloat = 76
+    private static let watermarkInset: CGFloat = 14
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ScaledMetric(relativeTo: .body) private var nameSize: CGFloat = 19
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 36
-    @ScaledMetric(relativeTo: .body) private var glyphSize: CGFloat = 15
     @ScaledMetric(relativeTo: .title3) private var delayGlyphSize: CGFloat = 18
 
     private var numericTransition: ContentTransition {
@@ -55,12 +59,6 @@ struct RunningTimerRow: View {
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Spacer(minLength: 0)
-                if timer.autoRestartDelaySeconds != nil, now >= timer.startDate {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: glyphSize, weight: .semibold))
-                        .foregroundStyle(Theme.accent)
-                        .accessibilityHidden(true)
-                }
                 // The countdown must always be fully visible, so the name is the
                 // element that gives way: it truncates instead of squeezing the digits.
                 Text(timer.name)
@@ -106,16 +104,33 @@ struct RunningTimerRow: View {
         }
         .padding(.horizontal, 16)
         .frame(maxWidth: .infinity)
-        .frame(height: 76)
-        .background(
-            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
-                .fill(Theme.bannerFill)
-        )
+        .frame(height: Self.rowHeight)
+        .background(rowBackground)
         .overlay(
             RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
                 .stroke(Theme.accent, lineWidth: 2)
         )
         .shadow(color: Theme.accent.opacity(0.28), radius: 12, y: 6)
+    }
+
+    /// Same auto-repeat watermark the tile uses, so a repeating timer reads the
+    /// same whether it is idle on a tile or running in a row. Sits in the
+    /// background so the buttons, name and countdown all draw over it.
+    private var rowBackground: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous)
+                .fill(Theme.bannerFill)
+            if timer.autoRestartDelaySeconds != nil {
+                Image(systemName: "arrow.clockwise")
+                    .resizable()
+                    .scaledToFit()
+                    .fontWeight(.semibold)
+                    .padding(.vertical, Self.watermarkInset)
+                    .foregroundStyle(Theme.accent.opacity(0.2))
+                    .accessibilityHidden(true)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius, style: .continuous))
     }
 }
 

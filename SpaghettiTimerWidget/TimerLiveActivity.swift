@@ -19,6 +19,11 @@ private enum LiveActivityStyle {
     static let bannerFill = Color(red: 2 / 255, green: 21 / 255, blue: 41 / 255)  // #021529
     static let segUnlit = Color(red: 0.00884, green: 0.09946, blue: 0.19392)      // mix(accent 14%, #010810)
     static let cornerRadius: CGFloat = 22
+    /// Banner geometry, mirroring `RunningTimerRow`: a fixed-height band whose
+    /// auto-repeat watermark is sized off that height rather than off a font
+    /// size that would overflow and clip.
+    static let bannerHeight: CGFloat = 76
+    static let watermarkInset: CGFloat = 14
     /// The banner countdown's font. Shared so the hidden sizing sample and the
     /// live timer text are measured with identical metrics — see `countdownSample`.
     static let bannerCountdown = Font.system(size: 36, weight: .bold)
@@ -38,12 +43,6 @@ struct TimerLiveActivity: Widget {
                 // countdown doesn't need instead of splitting the row's width.
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Spacer(minLength: 0)
-                    if context.attributes.metadata?.autoRestartDelaySeconds != nil {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(LiveActivityStyle.accent)
-                            .accessibilityLabel("Auto-restart")
-                    }
                     BannerTitle(text: headerTitle(context.attributes.metadata))
                         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                         .layoutPriority(0)
@@ -70,11 +69,8 @@ struct TimerLiveActivity: Widget {
             }
             .padding(.horizontal, 16)
             .frame(maxWidth: .infinity)
-            .frame(height: 76)
-            .background(
-                RoundedRectangle(cornerRadius: LiveActivityStyle.cornerRadius, style: .continuous)
-                    .fill(LiveActivityStyle.bannerFill)
-            )
+            .frame(height: LiveActivityStyle.bannerHeight)
+            .background(bannerBackground(isRepeating: context.attributes.metadata?.autoRestartDelaySeconds != nil))
             .overlay(
                 RoundedRectangle(cornerRadius: LiveActivityStyle.cornerRadius, style: .continuous)
                     .stroke(LiveActivityStyle.accent, lineWidth: 2)
@@ -162,6 +158,28 @@ struct TimerLiveActivity: Widget {
             }
             .keylineTint(LiveActivityStyle.accent)
         }
+    }
+
+    /// Same auto-repeat watermark `TimerTile` and `RunningTimerRow` use, so a
+    /// repeating timer reads the same on a tile, in the app's running row and on
+    /// the lock screen. Sits in the background so the buttons, name and
+    /// countdown all draw over it, and keeps the glyph's spoken label — it is
+    /// the banner's only auto-restart cue.
+    private func bannerBackground(isRepeating: Bool) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: LiveActivityStyle.cornerRadius, style: .continuous)
+                .fill(LiveActivityStyle.bannerFill)
+            if isRepeating {
+                Image(systemName: "arrow.clockwise")
+                    .resizable()
+                    .scaledToFit()
+                    .fontWeight(.semibold)
+                    .padding(.vertical, LiveActivityStyle.watermarkInset)
+                    .foregroundStyle(LiveActivityStyle.accent.opacity(0.2))
+                    .accessibilityLabel("Auto-restart")
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: LiveActivityStyle.cornerRadius, style: .continuous))
     }
 
     /// The timer's own title, falling back to the app name when it has none.
