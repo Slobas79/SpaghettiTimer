@@ -98,7 +98,7 @@ struct TimerTile: View {
             if preset.autoRestartDelaySeconds != nil {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 80, weight: .semibold))
-                    .foregroundStyle(Theme.accent.opacity(0.14))
+                    .foregroundStyle(Theme.accent.opacity(0.2))
                     .accessibilityHidden(true)
             }
         }
