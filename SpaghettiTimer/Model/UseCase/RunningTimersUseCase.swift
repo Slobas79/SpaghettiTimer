@@ -13,9 +13,18 @@ import WidgetKit
 protocol RunningTimersUseCase: AnyObject {
     var running: [RunningTimer] { get }
     var onChange: (() -> Void)? { get set }
+    /// Fired when a start was dropped because AlarmKit permission was refused —
+    /// the UI's only cue that the tap did nothing on purpose.
+    var onAuthorizationDenied: (() -> Void)? { get set }
 
     func reload()
-    func start(preset: TimerPreset)
+    /// Starts `preset` once AlarmKit permission is in hand, and not before.
+    ///
+    /// The returned task completes when the attempt has settled either way. The UI
+    /// discards it — the result arrives through `onChange` / `onAuthorizationDenied`
+    /// — but a test can await it instead of racing the permission hop.
+    @discardableResult
+    func start(preset: TimerPreset) -> Task<Void, Never>
     func stop(_ timer: RunningTimer)
     func pause(_ timer: RunningTimer)
     func resume(_ timer: RunningTimer)
@@ -26,11 +35,13 @@ protocol RunningTimersUseCase: AnyObject {
 final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     private(set) var running: [RunningTimer] = []
     var onChange: (() -> Void)?
+    var onAuthorizationDenied: (() -> Void)?
 
     private let repo: RunningTimersRepo
     private let presetsRepo: PresetsRepo
     private let analytics: AnalyticsRepo
     private let cancelledTimers: UserDefaults
+    private let authorizer: AlarmAuthorizing
     private let observesAlarmKit: Bool
 
     private var alarmObservationTask: Task<Void, Never>?
@@ -39,20 +50,23 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     /// - Parameters:
     ///   - cancelledTimers: the suite backing `UserCancelledTimers`. Injectable so a
     ///     test can use a scratch suite instead of the shared App Group.
+    ///   - authorizer: the AlarmKit permission gate. Injectable so a test can drive
+    ///     the granted and refused paths without the system prompt.
     ///   - observesAlarmKit: when `false`, skips startup reconciliation, the
     ///     `alarmUpdates` observation task, and alarm scheduling in `start(preset:)`.
-    ///     Tests set this: scheduling would call `requestAuthorization()` and pop a
-    ///     system permission alert inside the test host process. Reconciliation is
-    ///     still exercisable through `applyLiveAlarms(ids:)`.
+    ///     Tests set this: scheduling would pop a system alert inside the test host
+    ///     process. Reconciliation is still exercisable through `applyLiveAlarms(ids:)`.
     init(repo: RunningTimersRepo,
          presetsRepo: PresetsRepo,
          analytics: AnalyticsRepo = NoOpAnalyticsRepo(),
          cancelledTimers: UserDefaults = AppGroup.defaults,
+         authorizer: AlarmAuthorizing = AlarmKitAuthorizer(),
          observesAlarmKit: Bool = true) {
         self.repo = repo
         self.presetsRepo = presetsRepo
         self.analytics = analytics
         self.cancelledTimers = cancelledTimers
+        self.authorizer = authorizer
         self.observesAlarmKit = observesAlarmKit
         reload()
         guard observesAlarmKit else { return }
@@ -246,7 +260,23 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         onChange?()
     }
 
-    func start(preset: TimerPreset) {
+    @discardableResult
+    func start(preset: TimerPreset) -> Task<Void, Never> {
+        // Permission first, and nothing before it. An unauthorized timer would be
+        // persisted, drawn on Home and counted in analytics while AlarmKit stays
+        // empty — a countdown that can never ring. The prompt on a first start is
+        // therefore a gate, not a formality: a refusal drops the start entirely.
+        Task { [weak self] in
+            guard let self else { return }
+            guard await self.authorizer.resolve() == .authorized else {
+                self.onAuthorizationDenied?()
+                return
+            }
+            self.commitStart(preset: preset)
+        }
+    }
+
+    private func commitStart(preset: TimerPreset) {
         let timer = RunningTimer(
             id: UUID(),
             presetID: preset.id,
@@ -271,10 +301,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             source: .app
         ))
         if observesAlarmKit {
-            Task {
-                await ensureAuthorized()
-                await schedule(timer)
-            }
+            Task { await schedule(timer) }
         }
         onChange?()
         WidgetCenter.shared.reloadAllTimelines()
@@ -315,22 +342,6 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         Task { try? AlarmManager.shared.resume(id: timerID) }
         onChange?()
         WidgetCenter.shared.reloadAllTimelines()
-    }
-
-    private func ensureAuthorized() async {
-        let manager = AlarmManager.shared
-        print("[AlarmKit] authorizationState=\(manager.authorizationState)")
-        switch manager.authorizationState {
-        case .notDetermined:
-            do {
-                let result = try await manager.requestAuthorization()
-                print("[AlarmKit] requestAuthorization result=\(result)")
-            } catch {
-                print("[AlarmKit] requestAuthorization error=\(error)")
-            }
-        default:
-            return
-        }
     }
 
     private func schedule(_ timer: RunningTimer) async {

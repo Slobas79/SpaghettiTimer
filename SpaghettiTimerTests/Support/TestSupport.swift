@@ -86,6 +86,55 @@ final class RecordingRunningTimersRepo: RunningTimersRepo, @unchecked Sendable {
     }
 }
 
+// MARK: - Alarm authorization stub
+
+/// Answers the permission gate with a fixed verdict, and lets a test look at the
+/// world at the exact moment the gate is consulted — which is how the ordering
+/// ("nothing is written before permission settles") gets asserted at all.
+nonisolated final class StubAlarmAuthorizer: AlarmAuthorizing, @unchecked Sendable {
+    private let lock = NSLock()
+    private let answer: AlarmAuthorization
+    private let onResolve: (@Sendable () -> Void)?
+    private var calls = 0
+
+    init(_ answer: AlarmAuthorization, onResolve: (@Sendable () -> Void)? = nil) {
+        self.answer = answer
+        self.onResolve = onResolve
+    }
+
+    var resolveCount: Int {
+        lock.lock(); defer { lock.unlock() }
+        return calls
+    }
+
+    func resolve() async -> AlarmAuthorization {
+        countCall()
+        onResolve?()
+        return answer
+    }
+
+    private func countCall() {
+        lock.lock(); defer { lock.unlock() }
+        calls += 1
+    }
+}
+
+/// A thread-safe one-slot box, for carrying a value out of a `@Sendable` closure
+/// and reading it back once the awaited work has settled.
+nonisolated final class Captured<Value>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage: Value?
+
+    var value: Value? {
+        lock.lock(); defer { lock.unlock() }
+        return storage
+    }
+
+    func capture(_ newValue: Value) {
+        lock.lock(); storage = newValue; lock.unlock()
+    }
+}
+
 // MARK: - Fixtures
 
 extension Date {

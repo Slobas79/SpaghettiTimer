@@ -68,6 +68,7 @@
 				Model/Entity/TimerPreset.swift,
 				Repository/Disc/PresetsRepo.swift,
 				Repository/Disc/RunningTimersRepo.swift,
+				Shared/AlarmAuthorization.swift,
 				Shared/Analytics.swift,
 				Shared/AppGroup.swift,
 				Shared/BannerCountdown.swift,

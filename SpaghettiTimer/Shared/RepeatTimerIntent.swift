@@ -60,6 +60,10 @@ struct RepeatTimerIntent: LiveActivityIntent {
             try? manager.cancel(id: oldID)
         }
 
+        // Permission before persistence: the repeat is a fresh start like any other,
+        // and an unauthorized one would only add a timer that can never ring.
+        guard await AlarmKitAuthorizer().resolve() == .authorized else { return .result() }
+
         let presetUUID = UUID(uuidString: presetID) ?? UUID()
         let preset = presetsRepo.allPresets().first(where: { $0.id == presetUUID })
             ?? TimerPreset(id: presetUUID, name: "Timer", duration: oldDuration, isBuiltIn: false, autoRestartDelaySeconds: oldAutoRestartDelay)
@@ -83,10 +87,6 @@ struct RepeatTimerIntent: LiveActivityIntent {
             durationSeconds: Int(running.duration),
             source: .alarmAlert
         ))
-
-        if manager.authorizationState == .notDetermined {
-            _ = try? await manager.requestAuthorization()
-        }
 
         let configuration = AlarmConfigurationFactory.makeConfiguration(for: running)
         _ = try? await manager.schedule(id: running.id, configuration: configuration)

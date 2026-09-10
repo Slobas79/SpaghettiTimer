@@ -116,6 +116,12 @@ struct StopTimerIntent: LiveActivityIntent {
     }
 
     private static func scheduleNextIteration(after previous: RunningTimer, delay: TimeInterval) async {
+        // Permission before persistence, same as every other start path. Reaching
+        // here means an alarm just fired, so this is all but always `.authorized` —
+        // but revoking mid-chain must end the chain, not fill the list with timers
+        // that can never ring.
+        guard await AlarmKitAuthorizer().resolve() == .authorized else { return }
+
         let next = previous.nextIteration(id: UUID(), delay: delay, now: Date())
 
         let repo = RunningTimersRepoImpl()
@@ -133,13 +139,8 @@ struct StopTimerIntent: LiveActivityIntent {
             autoRestartIteration: true
         ))
 
-        let manager = AlarmManager.shared
-        if manager.authorizationState == .notDetermined {
-            _ = try? await manager.requestAuthorization()
-        }
-
         let configuration = AlarmConfigurationFactory.makeConfiguration(for: next, leadIn: delay)
-        _ = try? await manager.schedule(id: next.id, configuration: configuration)
+        _ = try? await AlarmManager.shared.schedule(id: next.id, configuration: configuration)
         print("[Stop] auto-restart scheduled next id=\(next.id) startDate=\(next.startDate)")
     }
 }

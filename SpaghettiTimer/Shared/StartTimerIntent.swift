@@ -26,6 +26,11 @@ struct StartTimerIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult {
+        // Permission before persistence. A widget tap that can't schedule an alarm
+        // must not leave a phantom timer in shared storage for the app to draw and
+        // count down to a ring that never comes.
+        guard await AlarmKitAuthorizer().resolve() == .authorized else { return .result() }
+
         let presetUUID = UUID(uuidString: presetID) ?? UUID()
         let presetsRepo = PresetsRepoImpl()
         let runningRepo = RunningTimersRepoImpl()
@@ -55,13 +60,8 @@ struct StartTimerIntent: AppIntent {
             source: .widget
         ))
 
-        let manager = AlarmManager.shared
-        if manager.authorizationState == .notDetermined {
-            _ = try? await manager.requestAuthorization()
-        }
-
         let configuration = AlarmConfigurationFactory.makeConfiguration(for: running)
-        _ = try? await manager.schedule(id: running.id, configuration: configuration)
+        _ = try? await AlarmManager.shared.schedule(id: running.id, configuration: configuration)
 
         WidgetCenter.shared.reloadAllTimelines()
         return .result()

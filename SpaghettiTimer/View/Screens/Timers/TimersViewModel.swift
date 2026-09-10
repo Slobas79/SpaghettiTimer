@@ -15,6 +15,9 @@ final class TimersViewModel {
     private(set) var running: [RunningTimer] = []
     /// Drives the dynamic "To next hour" tile in the first grid cell.
     private(set) var isNextHourPinned: Bool = false
+    /// Raised when a start was dropped for want of AlarmKit permission. Settable so
+    /// the alert's binding can clear it on dismiss.
+    var isAlarmPermissionDenied: Bool = false
 
     @ObservationIgnored private let presetsUseCase: TimerPresetsUseCase
     @ObservationIgnored private let runningUseCase: RunningTimersUseCase
@@ -35,6 +38,9 @@ final class TimersViewModel {
         runningUseCase.onChange = { [weak self] in
             guard let self else { return }
             self.running = runningUseCase.running
+        }
+        runningUseCase.onAuthorizationDenied = { [weak self] in
+            self?.isAlarmPermissionDenied = true
         }
     }
 

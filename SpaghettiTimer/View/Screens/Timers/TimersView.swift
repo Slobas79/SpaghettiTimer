@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct TimersView: View {
     @State var viewModel: TimersViewModel
@@ -27,6 +28,7 @@ struct TimersView: View {
     private var homeTourDone = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.openURL) private var openURL
 
     private let columns = [
         GridItem(.flexible(), spacing: Theme.gridGap),
@@ -183,6 +185,19 @@ struct TimersView: View {
         .sheet(item: $directPaywall) { trigger in
             PaywallView(store: store, trigger: trigger)
                 .presentationBackground(.black)
+        }
+        // Nothing started, and the tap has to say so. A refused alarm permission is
+        // the one case where a preset tap is deliberately inert — silence there
+        // reads as a broken tile.
+        .alert("Alarms are turned off", isPresented: $viewModel.isAlarmPermissionDenied) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    openURL(url)
+                }
+            }
+            Button("Not Now", role: .cancel) {}
+        } message: {
+            Text("SpaghettiTimer needs permission to schedule alarms — without it a timer can’t ring, so it won’t start. Turn alarms on in Settings, then try again.")
         }
         .onAppear {
             viewModel.refresh()
