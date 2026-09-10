@@ -31,7 +31,13 @@ struct NewTimerSheet: View {
     /// Refreshed roughly once a minute by `refreshEndTimeBoundary`, so the
     /// wheel can't drift into the past if the sheet is left open.
     @State private var earliest = NewTimerSheet.earliestBoundary(now: Date())
-    @State private var isPinned: Bool = false
+    /// Pin state is tracked per creation mode and never shared between them:
+    /// the two pins are different products behind different gates — Duration
+    /// pins a preset against the free cap, End time installs the Pro-only
+    /// "To next hour" tile — so a pin earned in one mode must not carry into
+    /// the other and walk past its paywall.
+    @State private var isPinnedDuration: Bool = false
+    @State private var isPinnedNextHour: Bool = false
     @State private var autoRestart: Bool = false
     @State private var cooldownHours: Int = 0
     @State private var cooldownMinutes: Int = 0
@@ -107,12 +113,12 @@ struct NewTimerSheet: View {
     /// Pro) opens the paywall instead.
     private var pinnedBinding: Binding<Bool> {
         Binding(
-            get: { isPinned },
+            get: { isPinnedDuration },
             set: { want in
                 if want && !store.canPin(currentUserPresetCount: pinnedCount) {
                     paywallTrigger = .pinLimit
                 } else {
-                    isPinned = want
+                    isPinnedDuration = want
                 }
             }
         )
@@ -123,12 +129,12 @@ struct NewTimerSheet: View {
     /// always gets the paywall.
     private var nextHourPinnedBinding: Binding<Bool> {
         Binding(
-            get: { isPinned },
+            get: { isPinnedNextHour },
             set: { want in
                 if want && !store.canPinNextHour() {
                     paywallTrigger = .nextHour
                 } else {
-                    isPinned = want
+                    isPinnedNextHour = want
                 }
             }
         )
@@ -160,14 +166,14 @@ struct NewTimerSheet: View {
         case .duration:
             // Count this against the free auto-restart trial (no-op for Pro).
             if restartDelay != nil { store.registerAutoRestartUse() }
-            onSave(trimmed, duration, isPinned, restartDelay)
+            onSave(trimmed, duration, isPinnedDuration, restartDelay)
         case .endTime:
             // A pinned clock target can't store a duration — the same "20:00"
             // means something different tomorrow — so the pin installs the
             // dynamic "To next hour" home tile instead.
-            if isPinned {
-                // Re-check the Pro gate here too: `isPinned` survives a switch
-                // from Duration mode, where it's only capped, not Pro-only.
+            if isPinnedNextHour {
+                // Belt and braces: the toggle already gates on Pro, but the
+                // entitlement can lapse while the sheet is open.
                 guard store.canPinNextHour() else {
                     paywallTrigger = .nextHour
                     return
