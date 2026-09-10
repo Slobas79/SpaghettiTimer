@@ -965,6 +965,12 @@ private struct Wheel: View {
     private var wheelHeight: CGFloat { compact ? 144 : 220 }
     private var itemHeight: CGFloat { compact ? 36 : 46 }
     private var fontSize: CGFloat { compact ? 23 : 30 }
+    /// How far the selection band sits inside the wheel — and, applied again to
+    /// the row, how far the h/m/s content sits inside the band.
+    private let bandInset: CGFloat = 12
+    /// Added past the trailing "s" so the band clears it by about as much as it
+    /// clears the leading digits. See the row's padding below.
+    private let unitClearance: CGFloat = 8
 
     var body: some View {
         ZStack {
@@ -976,7 +982,7 @@ private struct Wheel: View {
                         .strokeBorder(Theme.bandBorder, lineWidth: 1)
                 )
                 .frame(height: itemHeight)
-                .padding(.horizontal, 12)
+                .padding(.horizontal, bandInset)
                 .allowsHitTesting(false)
 
             HStack(spacing: 0) {
@@ -987,6 +993,15 @@ private struct Wheel: View {
                 WheelColumn(count: 60, value: $seconds, label: "Seconds", itemHeight: itemHeight, wheelHeight: wheelHeight, fontSize: fontSize)
                 unitLabel("s")
             }
+            // Hold the row inside the band, and give the trailing end the extra it
+            // needs to match the leading one. The band should clear the content by
+            // the same amount at both ends, but the two ends are not the same
+            // shape: the leading end is a flexible column whose centred digits sit
+            // well inside it, while the trailing end is a fixed 28pt unit label
+            // with only its own centring slack. Without the difference added by
+            // hand the band ran out mid-"s".
+            .padding(.horizontal, bandInset)
+            .padding(.trailing, unitClearance)
         }
         .frame(height: wheelHeight)
         .padding(.horizontal, 12)
