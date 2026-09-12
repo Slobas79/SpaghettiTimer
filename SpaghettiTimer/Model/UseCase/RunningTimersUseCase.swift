@@ -77,6 +77,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
 
 
     private func reconcileOnStartup() {
+        if purgeIfAlarmsRevoked() { return }
         guard !running.isEmpty else { return }
         let liveIDs: Set<UUID>
         if let alarms = try? AlarmManager.shared.alarms {
@@ -112,6 +113,16 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     }
 
     func reconcileOnForeground() {
+        // Alarms can be turned off in Settings while the app is backgrounded, which
+        // silently breaks every timer already scheduled without removing any of them.
+        // Foregrounding is the only moment we can notice — AlarmKit publishes no
+        // authorization-change sequence, only `alarmUpdates`, which fires on alarm
+        // changes and not on permission changes — and it is also the exact moment the
+        // user walks back from Settings. This runs ahead of the liveness pass below
+        // because that pass structurally cannot catch a revocation: see
+        // `AlarmAuthorization.revokesScheduledTimers`.
+        if purgeIfAlarmsRevoked() { return }
+
         // AppIntents (Stop / Repeat / Start) run in other processes and write directly to the
         // shared repo while the app is backgrounded. Re-load it on foreground so out-of-process
         // additions (auto-restart's next iteration) and removals are reflected — the in-memory
@@ -157,6 +168,61 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             onChange?()
             WidgetCenter.shared.reloadAllTimelines()
         }
+    }
+
+    /// Clears every running timer once AlarmKit permission has been revoked, and
+    /// reports whether it had anything to clear.
+    ///
+    /// A timer that cannot ring must not exist — the same rule the start paths enforce
+    /// with the permission gate, applied to timers that were legitimately started and
+    /// then had the ground taken out from under them. Cancelling each alarm is the part
+    /// that matters beyond Home: clearing shared storage fixes the running row and the
+    /// widget dot, but the Lock Screen and Dynamic Island presentations belong to
+    /// AlarmKit and come down only when the alarm itself does.
+    ///
+    /// `false` when nothing was purged, so the caller falls through to its normal
+    /// reconciliation and so a second foreground under the same denial re-alerts
+    /// nobody.
+    @discardableResult
+    func purgeIfAlarmsRevoked() -> Bool {
+        guard authorizer.current.revokesScheduledTimers else { return false }
+        // Disk as well as memory: the auto-restart iteration `StopTimerIntent` wrote
+        // from another process is exactly the kind of timer that gets stranded here,
+        // and this array has never been told about it.
+        let stranded = RunningTimersMerge.merging(inMemory: running, disk: repo.load())
+        guard !stranded.isEmpty else { return false }
+
+        for timer in stranded {
+            // Mark before cancelling. The cancels land as an `alarmUpdates` emission,
+            // and without the flag `logCompletions` would bill each revoked timer as a
+            // `timer_complete` that nobody ever heard.
+            UserCancelledTimers.mark(timer.id, in: cancelledTimers)
+            // A revocation is not a user cancellation, but it is a forced one, and it
+            // is the closest terminal event in the taxonomy — logging nothing would
+            // leave every one of these starts without an end.
+            analytics.log(.timerCancel(
+                presetID: timer.presetID,
+                name: timer.name,
+                durationSeconds: Int(timer.duration),
+                source: .app
+            ))
+        }
+
+        running = []
+        repo.save([])
+        seenAlarmIDs.removeAll()
+        if observesAlarmKit {
+            let ids = stranded.map(\.id)
+            Task {
+                for id in ids { try? AlarmManager.shared.cancel(id: id) }
+            }
+        }
+        // Timers vanishing on their own needs explaining, and the refusal alert
+        // already says what happened and offers the way back into Settings.
+        onAuthorizationDenied?()
+        onChange?()
+        WidgetCenter.shared.reloadAllTimelines()
+        return true
     }
 
     private func syncPauseState(from alarms: [Alarm]) {

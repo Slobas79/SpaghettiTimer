@@ -94,13 +94,23 @@ final class RecordingRunningTimersRepo: RunningTimersRepo, @unchecked Sendable {
 nonisolated final class StubAlarmAuthorizer: AlarmAuthorizing, @unchecked Sendable {
     private let lock = NSLock()
     private let answer: AlarmAuthorization
+    private let currentAnswer: AlarmAuthorization
     private let onResolve: (@Sendable () -> Void)?
     private var calls = 0
 
-    init(_ answer: AlarmAuthorization, onResolve: (@Sendable () -> Void)? = nil) {
+    /// - Parameter current: what the non-prompting read reports, when it differs from
+    ///   what `resolve()` would answer. Revocation is exactly that shape — the timer
+    ///   was started under a grant and the state changed underneath it — so a purge
+    ///   test needs the two to disagree. Defaults to `answer`.
+    init(_ answer: AlarmAuthorization,
+         current: AlarmAuthorization? = nil,
+         onResolve: (@Sendable () -> Void)? = nil) {
         self.answer = answer
+        self.currentAnswer = current ?? answer
         self.onResolve = onResolve
     }
+
+    var current: AlarmAuthorization { currentAnswer }
 
     var resolveCount: Int {
         lock.lock(); defer { lock.unlock() }
