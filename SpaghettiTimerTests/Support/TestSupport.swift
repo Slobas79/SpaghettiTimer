@@ -145,6 +145,78 @@ nonisolated final class Captured<Value>: @unchecked Sendable {
     }
 }
 
+// MARK: - Start side-effect spies
+
+/// An ordered, thread-safe log of the side effects a start fires.
+///
+/// The bug this exists for was pure ordering — every step happened, one of them
+/// too early — so the assertion has to be about sequence, not counts.
+nonisolated final class SideEffectLog: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage: [String] = []
+
+    var events: [String] {
+        lock.lock(); defer { lock.unlock() }
+        return storage
+    }
+
+    func record(_ event: String) {
+        lock.lock(); storage.append(event); lock.unlock()
+    }
+}
+
+/// Stands in for AlarmKit. Records the schedule, and lets a test look at the world
+/// at the exact moment the alarm is handed over — which is how "the widget has not
+/// been refreshed yet" gets asserted at all.
+nonisolated final class SpyAlarmScheduler: AlarmScheduling, @unchecked Sendable {
+    private let lock = NSLock()
+    private let log: SideEffectLog?
+    private let onSchedule: (@Sendable () -> Void)?
+    private var storage: [RunningTimer] = []
+
+    init(log: SideEffectLog? = nil, onSchedule: (@Sendable () -> Void)? = nil) {
+        self.log = log
+        self.onSchedule = onSchedule
+    }
+
+    var scheduled: [RunningTimer] {
+        lock.lock(); defer { lock.unlock() }
+        return storage
+    }
+
+    func schedule(_ timer: RunningTimer) async {
+        // Locking inline is unavailable from an async context; hop through a
+        // synchronous helper, the same shape `StubAlarmAuthorizer` uses.
+        record(timer)
+        log?.record("schedule")
+        onSchedule?()
+    }
+
+    private func record(_ timer: RunningTimer) {
+        lock.lock(); storage.append(timer); lock.unlock()
+    }
+}
+
+/// Counts widget refreshes. `WidgetCenter` is a process-wide singleton with
+/// nothing to observe, so the seam is the only way to see one happen.
+nonisolated final class SpyWidgetRefresher: WidgetRefreshing, @unchecked Sendable {
+    private let lock = NSLock()
+    private let log: SideEffectLog?
+    private var count = 0
+
+    init(log: SideEffectLog? = nil) { self.log = log }
+
+    var reloadCount: Int {
+        lock.lock(); defer { lock.unlock() }
+        return count
+    }
+
+    func reloadTimelines() {
+        lock.lock(); count += 1; lock.unlock()
+        log?.record("reload")
+    }
+}
+
 // MARK: - Presets stub
 
 /// A fixed preset list, so a test can name exactly what the widget's start

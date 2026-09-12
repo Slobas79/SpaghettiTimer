@@ -42,6 +42,8 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     private let analytics: AnalyticsRepo
     private let cancelledTimers: UserDefaults
     private let authorizer: AlarmAuthorizing
+    private let scheduler: AlarmScheduling
+    private let widgets: WidgetRefreshing
     private let observesAlarmKit: Bool
 
     private var alarmObservationTask: Task<Void, Never>?
@@ -52,21 +54,32 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     ///     test can use a scratch suite instead of the shared App Group.
     ///   - authorizer: the AlarmKit permission gate. Injectable so a test can drive
     ///     the granted and refused paths without the system prompt.
+    ///   - scheduler: who hands the alarm to AlarmKit. Defaults to the real one
+    ///     unless `observesAlarmKit` is `false`, in which case nothing is scheduled
+    ///     — so a test gets a safe default and can still pass a spy to assert the
+    ///     start ordering.
+    ///   - widgets: the widget refresh. Injectable because `WidgetCenter` is a
+    ///     process-wide singleton a test cannot observe.
     ///   - observesAlarmKit: when `false`, skips startup reconciliation, the
-    ///     `alarmUpdates` observation task, and alarm scheduling in `start(preset:)`.
-    ///     Tests set this: scheduling would pop a system alert inside the test host
-    ///     process. Reconciliation is still exercisable through `applyLiveAlarms(ids:)`.
+    ///     `alarmUpdates` observation task, and real alarm scheduling in
+    ///     `start(preset:)`. Tests set this: scheduling would pop a system alert
+    ///     inside the test host process. Reconciliation is still exercisable
+    ///     through `applyLiveAlarms(ids:)`.
     init(repo: RunningTimersRepo,
          presetsRepo: PresetsRepo,
          analytics: AnalyticsRepo = NoOpAnalyticsRepo(),
          cancelledTimers: UserDefaults = AppGroup.defaults,
          authorizer: AlarmAuthorizing = AlarmKitAuthorizer(),
+         scheduler: AlarmScheduling? = nil,
+         widgets: WidgetRefreshing = WidgetCenterRefresher(),
          observesAlarmKit: Bool = true) {
         self.repo = repo
         self.presetsRepo = presetsRepo
         self.analytics = analytics
         self.cancelledTimers = cancelledTimers
         self.authorizer = authorizer
+        self.scheduler = scheduler ?? (observesAlarmKit ? AlarmKitScheduler() : NoAlarmScheduler())
+        self.widgets = widgets
         self.observesAlarmKit = observesAlarmKit
         reload()
         guard observesAlarmKit else { return }
@@ -95,7 +108,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         running.removeAll { dismissedSet.contains($0.id) }
         repo.save(running)
         onChange?()
-        WidgetCenter.shared.reloadAllTimelines()
+        widgets.reloadTimelines()
     }
 
     deinit {
@@ -140,7 +153,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             // Couldn't verify liveness — just publish the repo reload.
             if Set(running.map(\.id)) != previousIDs {
                 onChange?()
-                WidgetCenter.shared.reloadAllTimelines()
+                widgets.reloadTimelines()
             }
             return
         }
@@ -166,7 +179,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
 
         if Set(running.map(\.id)) != previousIDs {
             onChange?()
-            WidgetCenter.shared.reloadAllTimelines()
+            widgets.reloadTimelines()
         }
     }
 
@@ -221,7 +234,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         // already says what happened and offers the way back into Settings.
         onAuthorizationDenied?()
         onChange?()
-        WidgetCenter.shared.reloadAllTimelines()
+        widgets.reloadTimelines()
         return true
     }
 
@@ -247,7 +260,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         if changed {
             repo.save(running)
             onChange?()
-            WidgetCenter.shared.reloadAllTimelines()
+            widgets.reloadTimelines()
         }
     }
 
@@ -284,7 +297,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         repo.save(stored)
         running = stored
         onChange?()
-        WidgetCenter.shared.reloadAllTimelines()
+        widgets.reloadTimelines()
     }
 
     /// Pulls in timers that were started outside this use case — the auto-restart
@@ -299,7 +312,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         guard !unknown.isEmpty else { return }
         running.append(contentsOf: unknown)
         onChange?()
-        WidgetCenter.shared.reloadAllTimelines()
+        widgets.reloadTimelines()
     }
 
     /// A timer gone from AlarmKit that was never explicitly cancelled ran to
@@ -338,11 +351,11 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
                 self.onAuthorizationDenied?()
                 return
             }
-            self.commitStart(preset: preset)
+            await self.commitStart(preset: preset)
         }
     }
 
-    private func commitStart(preset: TimerPreset) {
+    private func commitStart(preset: TimerPreset) async {
         let timer = RunningTimer(
             id: UUID(),
             presetID: preset.id,
@@ -366,11 +379,19 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             autoRestart: preset.autoRestartDelaySeconds != nil,
             source: .app
         ))
-        if observesAlarmKit {
-            Task { await schedule(timer) }
-        }
+        // Publish to the app before scheduling: Home owns its own state and must
+        // show the countdown on the same runloop turn as the tap.
         onChange?()
-        WidgetCenter.shared.reloadAllTimelines()
+
+        // The widget must wait. It has no state of its own — it decides which tile
+        // is "running" by intersecting shared storage with AlarmKit's live alarm
+        // list (`RunningTimersMerge.visible`), so a refresh fired before the alarm
+        // is scheduled snapshots a timer AlarmKit has never heard of, drops it, and
+        // draws the tile idle for the whole run: nothing reloads the timeline again
+        // until the timer is stopped. The widget's own start path already orders it
+        // this way — `StartTimerIntent.run` schedules before it writes anything.
+        await scheduler.schedule(timer)
+        widgets.reloadTimelines()
     }
 
     func stop(_ timer: RunningTimer) {
@@ -381,7 +402,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         let timerID = timer.id
         Task { try? AlarmManager.shared.cancel(id: timerID) }
         onChange?()
-        WidgetCenter.shared.reloadAllTimelines()
+        widgets.reloadTimelines()
     }
 
     func pause(_ timer: RunningTimer) {
@@ -394,7 +415,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         let timerID = timer.id
         Task { try? AlarmManager.shared.pause(id: timerID) }
         onChange?()
-        WidgetCenter.shared.reloadAllTimelines()
+        widgets.reloadTimelines()
     }
 
     func resume(_ timer: RunningTimer) {
@@ -407,16 +428,6 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         let timerID = timer.id
         Task { try? AlarmManager.shared.resume(id: timerID) }
         onChange?()
-        WidgetCenter.shared.reloadAllTimelines()
-    }
-
-    private func schedule(_ timer: RunningTimer) async {
-        let configuration = AlarmConfigurationFactory.makeConfiguration(for: timer)
-        do {
-            let scheduled = try await AlarmManager.shared.schedule(id: timer.id, configuration: configuration)
-            print("[AlarmKit] scheduled id=\(timer.id) state=\(scheduled.state)")
-        } catch {
-            print("[AlarmKit] schedule error=\(error)")
-        }
+        widgets.reloadTimelines()
     }
 }
