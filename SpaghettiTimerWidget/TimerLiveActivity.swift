@@ -43,9 +43,11 @@ struct TimerLiveActivity: Widget {
                 // countdown doesn't need instead of splitting the row's width.
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Spacer(minLength: 0)
-                    BannerTitle(text: headerTitle(context.attributes.metadata))
-                        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-                        .layoutPriority(0)
+                    if let title = headerTitle(context.attributes.metadata) {
+                        BannerTitle(text: title)
+                            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                            .layoutPriority(0)
+                    }
                     // The countdown is never truncated: a hidden sample of the
                     // widest digits it can show sets the width — measured by the
                     // text system, not by hand — and the live text rides on top.
@@ -83,29 +85,33 @@ struct TimerLiveActivity: Widget {
             .environment(\.colorScheme, .dark)
         } dynamicIsland: { context in
             let metadata = context.attributes.metadata
+            let title = headerTitle(metadata)
             let isRepeating = metadata?.autoRestartDelaySeconds != nil
             let paused = isPaused(state: context.state)
 
             return DynamicIsland {
-                // Header: timer title — or the app name when the timer is
-                // unnamed — followed by the loop glyph, both left-aligned.
+                // Header: the timer's title — omitted entirely when it has none —
+                // followed by the loop glyph, both left-aligned.
                 DynamicIslandExpandedRegion(.center) {
                     // No `fixedSize` here: the leading region is narrower
                     // than the title's ideal width on some devices, and
                     // pinning the width pushed the whole header out of
                     // bounds instead of letting the title shrink.
                     HStack {
-                        HeaderTitle(text: headerTitle(metadata))
-                            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-                        
+                        if let title {
+                            HeaderTitle(text: title)
+                                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                        }
+
                         if isRepeating {
                             // The name that used to sit beside this glyph now leads
-                            // the header, so the glyph carries its own label.
+                            // the header, so the glyph carries its own label. The
+                            // gap is the title's — with no title the glyph leads.
                             Image(systemName: "arrow.clockwise")
                                 .font(.system(size: 19, weight: .semibold))
                                 .foregroundStyle(LiveActivityStyle.accent)
                                 .accessibilityLabel("Auto-restart")
-                                .padding(.leading, 24)
+                                .padding(.leading, title == nil ? 0 : 24)
                         }
 
                         // Without this the HStack sizes to its content and the
@@ -182,12 +188,13 @@ struct TimerLiveActivity: Widget {
         .clipShape(RoundedRectangle(cornerRadius: LiveActivityStyle.cornerRadius, style: .continuous))
     }
 
-    /// The timer's own title, falling back to the app name when it has none.
-    /// An unnamed one-shot timer stores `""` rather than `nil`, so the
-    /// metadata's optionality alone isn't enough of a check.
-    private func headerTitle(_ metadata: SpaghettiTimerMetadata?) -> String {
+    /// The timer's own title, or `nil` when it has none — an unnamed timer shows
+    /// no title at all rather than falling back to the app name, which read as a
+    /// label the user hadn't chosen. An unnamed one-shot timer stores `""` rather
+    /// than `nil`, so the metadata's optionality alone isn't enough of a check.
+    private func headerTitle(_ metadata: SpaghettiTimerMetadata?) -> String? {
         let name = metadata?.presetName.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return name.isEmpty ? "Spaghetti Timer" : name
+        return name.isEmpty ? nil : name
     }
 
     @ViewBuilder
@@ -510,8 +517,8 @@ private enum LiveActivityPreviewData {
     LiveActivityPreviewData.alert
 }
 
-// An unnamed one-shot timer — the only states where the header and the banner
-// fall back to the app name.
+// An unnamed one-shot timer — the states where the header and the banner drop
+// the title row entirely rather than showing a name the user never chose.
 #Preview("DI Expanded · Unnamed", as: .dynamicIsland(.expanded), using: LiveActivityPreviewData.attributes(name: "")) {
     TimerLiveActivity()
 } contentStates: {
