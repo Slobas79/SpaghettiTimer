@@ -45,8 +45,8 @@ nonisolated enum BannerCountdown {
     /// before the next update — a timer crossing the hour boundary keeps the
     /// wider reservation until then, which shows as a gap, never a clipped digit.
     ///
-    /// `nil` is the alerting and idle states, whose "Done" / "--:--" placeholders
-    /// are shorter than the minute-format sample.
+    /// `nil` is the idle state, whose "--:--" placeholder is shorter than the
+    /// minute-format sample.
     static func sample(remaining: TimeInterval?) -> String {
         guard let remaining, remaining >= 3600 else { return "59:59" }
         return remaining < 36000 ? "9:59:59" : "99:59:59"

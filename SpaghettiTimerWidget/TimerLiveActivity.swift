@@ -335,8 +335,9 @@ struct TimerLiveActivity: Widget {
             Text(timerInterval: Date()...countdown.fireDate, countsDown: true)
         case .paused(let paused):
             Text(BannerCountdown.text(remaining: paused.totalCountdownDuration - paused.previouslyElapsedDuration))
-        case .alert:
-            Text("Done")
+        // `.alert` lands here with the rest: once the alarm is ringing, AlarmKit
+        // draws its own alerting UI from `AlarmPresentation.Alert` and this view
+        // is off screen entirely — same reason `progressRing` ignores it.
         default:
             Text("--:--")
         }
