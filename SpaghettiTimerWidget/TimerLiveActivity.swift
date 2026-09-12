@@ -62,6 +62,25 @@ struct TimerLiveActivity: Widget {
                             countdownText(state: context.state)
                                 .font(LiveActivityStyle.bannerCountdown)
                                 .monospacedDigit()
+                                // The two states align differently inside the sample's
+                                // box without this. The paused branch is a plain string
+                                // and sizes to its content, so the overlay pins it to the
+                                // trailing edge; the running branch is
+                                // `Text(timerInterval:)`, which fills whatever width it
+                                // is offered — making that `.trailing` a no-op and
+                                // leaving its glyphs at the leading edge. Pausing then
+                                // snapped the number right by the sample's spare glyph,
+                                // ~24pt whenever the value has fewer digits than "59:59".
+                                // Aligning the line inside the frame it insists on
+                                // filling puts both states on the same edge.
+                                //
+                                // It belongs here and not in `countdownText`: the
+                                // Dynamic Island's expanded and compact regions share
+                                // that helper and lay the countdown out against a
+                                // `Spacer` and a `maxWidth` instead of a sample, where
+                                // trailing alignment would move the running digits for
+                                // no reason.
+                                .multilineTextAlignment(.trailing)
                                 .foregroundStyle(.white)
                                 .lineLimit(1)
                         }

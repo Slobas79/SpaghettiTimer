@@ -66,6 +66,7 @@ extension StartTimerIntent {
         analytics: AnalyticsRepo,
         now: Date = Date(),
         newID: () -> UUID = UUID.init,
+        scheduleReturned: () -> Date = Date.init,
         schedule: (RunningTimer) async -> Bool
     ) async -> RunningTimer? {
         guard authorization.allowsUnpromptedStart else { return nil }
@@ -85,10 +86,19 @@ extension StartTimerIntent {
 
         guard await schedule(running) else { return nil }
 
+        // Pin the countdown to when AlarmKit actually took the alarm, not to when we
+        // asked. AlarmKit is given a duration and starts counting on acceptance, so
+        // `now` — stamped before the await — is early by the scheduling latency, and
+        // the app's clock would run that far behind the Live Activity's forever
+        // after. See `CountdownAnchor`.
+        let started = running.anchoringStart(
+            to: CountdownAnchor.estimated(callBegan: now, callReturned: scheduleReturned())
+        )
+
         // Append to a fresh read: three other processes write this list, and saving
         // an array read before the alarm was scheduled would drop what they added.
         var timers = runningRepo.load()
-        timers.append(running)
+        timers.append(started)
         runningRepo.save(timers)
 
         analytics.log(.timerStart(
@@ -100,6 +110,6 @@ extension StartTimerIntent {
             source: .widget
         ))
 
-        return running
+        return started
     }
 }

@@ -239,29 +239,38 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     }
 
     private func syncPauseState(from alarms: [Alarm]) {
-        var changed = false
-        let now = Date()
-        for alarm in alarms {
-            guard let index = running.firstIndex(where: { $0.id == alarm.id }) else { continue }
-            let existing = running[index]
-            switch alarm.state {
-            case .paused:
-                guard let paused = existing.paused(at: now) else { continue }
-                running[index] = paused
-                changed = true
-            case .countdown:
-                guard let resumed = existing.resumed(at: now) else { continue }
-                running[index] = resumed
-                changed = true
-            default:
-                continue
-            }
-        }
-        if changed {
-            repo.save(running)
-            onChange?()
-            widgets.reloadTimelines()
-        }
+        applyPauseState(
+            pausedIDs: Set(alarms.filter { $0.state == .paused }.map(\.id)),
+            countingIDs: Set(alarms.filter { $0.state == .countdown }.map(\.id)),
+            now: Date()
+        )
+    }
+
+    /// Reconciles pause state against a snapshot of what AlarmKit currently reports.
+    ///
+    /// Split out of `syncPauseState(from:)` for the same reason as
+    /// `applyLiveAlarms(ids:)`: `AlarmKit.Alarm` has no public memberwise
+    /// initializer, so a test cannot fabricate `[Alarm]` — but the ids and their
+    /// states are all this needs.
+    func applyPauseState(pausedIDs: Set<UUID>, countingIDs: Set<UUID>, now: Date) {
+        // Read disk first. The Lock Screen's Pause/Resume buttons are AppIntents that
+        // run in another process and have already stamped the true transition instant
+        // there; this array has never been told. See `reconcilingPauseState`.
+        let stored = repo.load()
+        let reconciled = RunningTimersMerge.reconcilingPauseState(
+            inMemory: running,
+            disk: stored,
+            pausedAlarmIDs: pausedIDs,
+            countingAlarmIDs: countingIDs,
+            now: now
+        )
+        guard reconciled != running else { return }
+        running = reconciled
+        // Merge on the way back out so a record another process added between that
+        // load and now is not erased by this save.
+        repo.save(RunningTimersMerge.merging(inMemory: reconciled, disk: stored))
+        onChange?()
+        widgets.reloadTimelines()
     }
 
     /// Reconciles against a snapshot of the alarms AlarmKit currently considers live.
@@ -390,8 +399,30 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         // draws the tile idle for the whole run: nothing reloads the timeline again
         // until the timer is stopped. The widget's own start path already orders it
         // this way — `StartTimerIntent.run` schedules before it writes anything.
+        let callBegan = Date()
         await scheduler.schedule(timer)
+        anchorCountdown(of: timer.id, callBegan: callBegan, callReturned: Date())
         widgets.reloadTimelines()
+    }
+
+    /// Re-pins a just-started timer's `startDate` to when AlarmKit actually began
+    /// counting, so Home and the Live Activity show the same number.
+    ///
+    /// Only a correction big enough to change a rendered digit is applied. This runs
+    /// after the timer has already been saved and published — that ordering is the
+    /// point of `commitStart` and is pinned by `StartSideEffectOrderTests` — so
+    /// applying one costs a second save and a second publish. A schedule that
+    /// returned promptly has nothing worth that; the slow ones this exists for (a
+    /// loaded device, or the first start of all, where the call waits behind the
+    /// permission prompt) are exactly the ones that clear the bar.
+    private func anchorCountdown(of id: UUID, callBegan: Date, callReturned: Date) {
+        let anchor = CountdownAnchor.estimated(callBegan: callBegan, callReturned: callReturned)
+        guard anchor.timeIntervalSince(callBegan) >= CountdownAnchor.perceptibleCorrection else { return }
+        running = RunningTimersMerge.merging(inMemory: running, disk: repo.load())
+        guard let index = running.firstIndex(where: { $0.id == id }) else { return }
+        running[index] = running[index].anchoringStart(to: anchor)
+        repo.save(running)
+        onChange?()
     }
 
     func stop(_ timer: RunningTimer) {

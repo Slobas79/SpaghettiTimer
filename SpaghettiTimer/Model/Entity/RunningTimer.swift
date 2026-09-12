@@ -104,3 +104,26 @@ nonisolated extension RunningTimer {
         )
     }
 }
+
+nonisolated extension RunningTimer {
+    /// A copy whose countdown is anchored to `instant` — same duration, shifted
+    /// `endDate`.
+    ///
+    /// Used once, right after AlarmKit has taken the alarm. AlarmKit is handed a
+    /// *duration*, not an end date, and starts counting when it accepts the alarm,
+    /// so a `startDate` stamped before that call is early by the whole scheduling
+    /// latency and the app's clock then runs that far behind the Live Activity's for
+    /// the life of the timer. Both are ticking, so the gap stays invisible until one
+    /// of them freezes on a pause and the two numbers are seen side by side.
+    func anchoringStart(to instant: Date) -> RunningTimer {
+        RunningTimer(
+            id: id,
+            presetID: presetID,
+            name: name,
+            startDate: instant,
+            duration: duration,
+            pausedAt: pausedAt,
+            autoRestartDelaySeconds: autoRestartDelaySeconds
+        )
+    }
+}

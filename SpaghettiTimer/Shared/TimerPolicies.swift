@@ -57,6 +57,36 @@ nonisolated enum AutoRestartPolicy {
     }
 }
 
+/// Where the app's countdown clock is pinned relative to AlarmKit's.
+nonisolated enum CountdownAnchor {
+    /// The instant AlarmKit's countdown began, estimated from the window around the
+    /// `schedule` call.
+    ///
+    /// The exact instant is never reported back: `Alarm` carries a bare `State` with
+    /// no timing, and the only values that do have it — `AlarmPresentationState.Mode`
+    /// — exist in the widget process. So it is bracketed instead. The midpoint of the
+    /// call window halves the worst-case error rather than leaving all of it on one
+    /// side, which is what stamping `startDate` before the call did.
+    /// Below this, a correction cannot change anything the user sees.
+    ///
+    /// Both surfaces render whole seconds, so only an error of half a second or more
+    /// rounds to a different digit. The app path has to pay a second save and a
+    /// second publish to apply a correction — it has already persisted and drawn the
+    /// timer by the time the latency is known — and spending those on a shift nobody
+    /// can perceive is churn. The widget path pays nothing (it saves only after
+    /// scheduling, so it anchors the record it was going to write anyway) and applies
+    /// the correction unconditionally.
+    static let perceptibleCorrection: TimeInterval = 0.5
+
+    static func estimated(callBegan: Date, callReturned: Date) -> Date {
+        let latency = callReturned.timeIntervalSince(callBegan)
+        // A clock that went backwards, or a scheduler that returned before it was
+        // called, is not information — keep the original stamp.
+        guard latency > 0 else { return callBegan }
+        return callBegan.addingTimeInterval(latency / 2)
+    }
+}
+
 nonisolated enum RunningTimersMerge {
     /// The timers a display surface should treat as running, right now.
     ///
@@ -110,6 +140,44 @@ nonisolated enum RunningTimersMerge {
     ) -> [RunningTimer] {
         let known = Set(inMemory.map(\.id))
         return disk.filter { liveAlarmIDs.contains($0.id) && !known.contains($0.id) }
+    }
+
+    /// `inMemory` with each timer's pause state reconciled against AlarmKit's.
+    ///
+    /// `disk` is authoritative for *when* a transition happened. `PauseTimerIntent`
+    /// and `ResumeTimerIntent` run in another process — they are what the Lock
+    /// Screen buttons invoke — and stamp the real instant there. This process hears
+    /// about it only when `alarmUpdates` next gets to run, which, if the app was
+    /// suspended at the tap, is seconds later. Stamping `now` at that point moved
+    /// `pausedAt` forward by the entire suspension and saved it over the intent's
+    /// correct value, so Home showed several seconds less than the Live Activity for
+    /// the rest of the timer's life. On resume the same stale `pausedAt` made the
+    /// `startDate` shift too small, and the error compounded per pause cycle.
+    ///
+    /// `now` is therefore a last resort: it is used only for a transition that no
+    /// one recorded, which is a state AlarmKit reached without going through either
+    /// intent.
+    static func reconcilingPauseState(
+        inMemory: [RunningTimer],
+        disk: [RunningTimer],
+        pausedAlarmIDs: Set<UUID>,
+        countingAlarmIDs: Set<UUID>,
+        now: Date
+    ) -> [RunningTimer] {
+        let recorded = Dictionary(disk.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return inMemory.map { timer in
+            if pausedAlarmIDs.contains(timer.id) {
+                guard !timer.isPaused else { return timer }
+                if let stored = recorded[timer.id], stored.isPaused { return stored }
+                return timer.paused(at: now) ?? timer
+            }
+            if countingAlarmIDs.contains(timer.id) {
+                guard timer.isPaused else { return timer }
+                if let stored = recorded[timer.id], !stored.isPaused { return stored }
+                return timer.resumed(at: now) ?? timer
+            }
+            return timer
+        }
     }
 
     /// Union by id, in-memory order first. Used before persisting: another process
