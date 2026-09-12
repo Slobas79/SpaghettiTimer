@@ -135,6 +135,25 @@ nonisolated final class Captured<Value>: @unchecked Sendable {
     }
 }
 
+// MARK: - Presets stub
+
+/// A fixed preset list, so a test can name exactly what the widget's start
+/// sequence will find (or fail to find) for a given id.
+nonisolated final class StubPresetsRepo: PresetsRepo, @unchecked Sendable {
+    private let presets: [TimerPreset]
+
+    init(_ presets: [TimerPreset]) { self.presets = presets }
+
+    func allPresets() -> [TimerPreset] { presets }
+
+    func loadUserPresets() -> [TimerPreset] { presets }
+    func saveUserPresets(_ presets: [TimerPreset]) {}
+    func loadHiddenBuiltInIDs() -> Set<UUID> { [] }
+    func saveHiddenBuiltInIDs(_ ids: Set<UUID>) {}
+    func loadNextHourPinned() -> Bool { false }
+    func saveNextHourPinned(_ pinned: Bool) {}
+}
+
 // MARK: - Fixtures
 
 extension Date {

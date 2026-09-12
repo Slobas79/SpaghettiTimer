@@ -51,3 +51,16 @@ nonisolated extension AlarmAuthorization {
         }
     }
 }
+
+nonisolated extension AlarmAuthorization {
+    /// Whether a start may be attempted from a process that cannot present the
+    /// permission prompt — the widget extension running `StartTimerIntent`.
+    ///
+    /// `.notDetermined` is not a refusal here. A widget extension has no UI to ask
+    /// with, and AlarmKit reports `.notDetermined` from that process even when the
+    /// containing app already holds the grant — gating a widget tap on it is what
+    /// made the tiles do nothing at all. Only an explicit `.denied` stops the start;
+    /// otherwise the attempt goes to AlarmKit, which is the real arbiter, and the
+    /// timer reaches shared storage only once the alarm is actually scheduled.
+    var allowsUnpromptedStart: Bool { self != .denied }
+}
