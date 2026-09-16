@@ -19,6 +19,7 @@
 //  the sample is never narrower than the value being rendered inside it.
 //
 
+import AlarmKit
 import Foundation
 
 nonisolated enum BannerCountdown {
@@ -50,5 +51,33 @@ nonisolated enum BannerCountdown {
     static func sample(remaining: TimeInterval?) -> String {
         guard let remaining, remaining >= 3600 else { return "59:59" }
         return remaining < 36000 ? "9:59:59" : "99:59:59"
+    }
+}
+
+// MARK: - Progress ring
+
+/// The Live Activity progress ring's geometry, kept apart from the view for the
+/// same reason as `BannerCountdown`: the running and paused rings must be
+/// checkable against each other.
+///
+/// Both must measure the same thing — the share of the whole timer still left —
+/// or the ring jumps when the state flips. AlarmKit's `startDate` is where the
+/// current run segment began, which after a resume is the resume instant, not
+/// the timer's start. Depleting across `startDate...fireDate` therefore drew
+/// every resumed timer as a full ring.
+nonisolated enum CountdownProgress {
+    /// The interval a running ring depletes across: the whole timer, ending at
+    /// `fireDate`. Anchored on `fireDate` rather than `startDate`, which moves on
+    /// every resume, and always a valid range whatever AlarmKit reports.
+    static func ringInterval(for countdown: AlarmPresentationState.Mode.Countdown) -> ClosedRange<Date> {
+        countdown.fireDate.addingTimeInterval(-max(0, countdown.totalCountdownDuration))...countdown.fireDate
+    }
+
+    /// The share of the timer left while paused — what the running ring shows at
+    /// the instant it resumes.
+    static func pausedFraction(for paused: AlarmPresentationState.Mode.Paused) -> Double {
+        guard paused.totalCountdownDuration > 0 else { return 0 }
+        let remaining = paused.totalCountdownDuration - paused.previouslyElapsedDuration
+        return max(0, min(1, remaining / paused.totalCountdownDuration))
     }
 }

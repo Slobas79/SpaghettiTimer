@@ -263,8 +263,10 @@ struct TimerLiveActivity: Widget {
 
             switch state.mode {
             case .countdown(let countdown):
-                // System-updated depleting ring — counts the elapsed fraction down to 0.
-                ProgressView(timerInterval: countdown.startDate...countdown.fireDate, countsDown: true) {
+                // System-updated depleting ring — counts the remaining fraction of
+                // the whole timer down to 0, so a resume continues where the pause
+                // left off. See `CountdownProgress`.
+                ProgressView(timerInterval: CountdownProgress.ringInterval(for: countdown), countsDown: true) {
                     EmptyView()
                 } currentValueLabel: {
                     EmptyView()
@@ -272,11 +274,8 @@ struct TimerLiveActivity: Widget {
                 .progressViewStyle(.circular)
                 .tint(LiveActivityStyle.accent)
             case .paused(let paused):
-                let fraction = paused.totalCountdownDuration > 0
-                    ? max(0, min(1, (paused.totalCountdownDuration - paused.previouslyElapsedDuration) / paused.totalCountdownDuration))
-                    : 0
                 Circle()
-                    .trim(from: 0, to: fraction)
+                    .trim(from: 0, to: CountdownProgress.pausedFraction(for: paused))
                     .stroke(LiveActivityStyle.accent.opacity(0.7),
                             style: StrokeStyle(lineWidth: stroke, lineCap: .round))
                     .rotationEffect(.degrees(-90))
