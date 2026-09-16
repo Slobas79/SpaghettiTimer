@@ -48,42 +48,9 @@ struct TimerLiveActivity: Widget {
                             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                             .layoutPriority(0)
                     }
-                    // The countdown is never truncated: a hidden sample of the
-                    // widest digits it can show sets the width — measured by the
-                    // text system, not by hand — and the live text rides on top.
-                    Text(countdownSample(state: context.state))
-                        .font(LiveActivityStyle.bannerCountdown)
-                        .monospacedDigit()
-                        // Rigid, so the row compresses the title instead of this.
-                        // Safe on a plain string, unlike on `Text(timerInterval:)`.
-                        .fixedSize(horizontal: true, vertical: false)
-                        .hidden()
-                        .overlay(alignment: .trailing) {
-                            countdownText(state: context.state)
-                                .font(LiveActivityStyle.bannerCountdown)
-                                .monospacedDigit()
-                                // The two states align differently inside the sample's
-                                // box without this. The paused branch is a plain string
-                                // and sizes to its content, so the overlay pins it to the
-                                // trailing edge; the running branch is
-                                // `Text(timerInterval:)`, which fills whatever width it
-                                // is offered — making that `.trailing` a no-op and
-                                // leaving its glyphs at the leading edge. Pausing then
-                                // snapped the number right by the sample's spare glyph,
-                                // ~24pt whenever the value has fewer digits than "59:59".
-                                // Aligning the line inside the frame it insists on
-                                // filling puts both states on the same edge.
-                                //
-                                // It belongs here and not in `countdownText`: the
-                                // Dynamic Island's expanded and compact regions share
-                                // that helper and lay the countdown out against a
-                                // `Spacer` and a `maxWidth` instead of a sample, where
-                                // trailing alignment would move the running digits for
-                                // no reason.
-                                .multilineTextAlignment(.trailing)
-                                .foregroundStyle(.white)
-                                .lineLimit(1)
-                        }
+                    sampledCountdown(state: context.state,
+                                     font: LiveActivityStyle.bannerCountdown,
+                                     color: .white)
                         .layoutPriority(1)
                 }
                 .layoutPriority(1)
@@ -172,11 +139,11 @@ struct TimerLiveActivity: Widget {
                              diameter: 22, stroke: 3.2, glyphPointSize: 11)
                     .padding(.leading, 2)
             } compactTrailing: {
-                countdownText(state: context.state)
-                    .font(.system(size: 16, weight: .semibold))
-                    .monospacedDigit()
-                    .foregroundStyle(paused ? .white.opacity(0.6) : .white)
-                    .frame(maxWidth: 60)
+                // Sized by the sample, not a fixed cap: a 60pt `maxWidth` fit
+                // "59:59" but clipped the seconds off "1:00:00".
+                sampledCountdown(state: context.state,
+                                 font: .system(size: 16, weight: .semibold),
+                                 color: paused ? .white.opacity(0.6) : .white)
             } minimal: {
                 progressRing(state: context.state,
                              diameter: 22, stroke: 3, glyphPointSize: 10)
@@ -311,7 +278,7 @@ struct TimerLiveActivity: Widget {
         }
     }
 
-    /// The hidden sizing sample behind the banner countdown. The rule it follows
+    /// The hidden sizing sample behind `sampledCountdown`. The rule it follows
     /// — and why the width has to come from a sample at all — is `BannerCountdown`.
     private func countdownSample(state: AlarmPresentationState) -> String {
         BannerCountdown.sample(remaining: remainingSeconds(state: state))
@@ -325,6 +292,45 @@ struct TimerLiveActivity: Widget {
         let total = Int(min(seconds.rounded(), 8.64e9))
         return Duration.seconds(total)
             .formatted(.units(allowed: [.hours, .minutes, .seconds], width: .wide))
+    }
+
+    /// The countdown wherever it must never be truncated — the banner and the
+    /// compact island. A hidden sample of the widest digits it can show sets the
+    /// width — measured by the text system, not by hand — and the live text
+    /// rides on top.
+    private func sampledCountdown(state: AlarmPresentationState, font: Font, color: Color) -> some View {
+        Text(countdownSample(state: state))
+            .font(font)
+            .monospacedDigit()
+            // Rigid, so the row compresses its neighbours instead of this.
+            // Safe on a plain string, unlike on `Text(timerInterval:)`.
+            .fixedSize(horizontal: true, vertical: false)
+            .hidden()
+            .overlay(alignment: .trailing) {
+                countdownText(state: state)
+                    .font(font)
+                    .monospacedDigit()
+                    // The two states align differently inside the sample's
+                    // box without this. The paused branch is a plain string
+                    // and sizes to its content, so the overlay pins it to the
+                    // trailing edge; the running branch is
+                    // `Text(timerInterval:)`, which fills whatever width it
+                    // is offered — making that `.trailing` a no-op and
+                    // leaving its glyphs at the leading edge. Pausing then
+                    // snapped the number right by the sample's spare glyph
+                    // whenever the value has fewer digits than the sample.
+                    // Aligning the line inside the frame it insists on
+                    // filling puts both states on the same edge.
+                    //
+                    // It belongs here and not in `countdownText`: the
+                    // expanded island shares that helper and lays the
+                    // countdown out against a `Spacer` instead of a sample,
+                    // where trailing alignment would move the running digits
+                    // for no reason.
+                    .multilineTextAlignment(.trailing)
+                    .foregroundStyle(color)
+                    .lineLimit(1)
+            }
     }
 
     @ViewBuilder
@@ -556,6 +562,15 @@ private enum LiveActivityPreviewData {
     LiveActivityPreviewData.countdown(remaining: 125)
     LiveActivityPreviewData.paused(remaining: 125)
     LiveActivityPreviewData.alert
+}
+
+// Over an hour — the H:MM:SS width the compact countdown must fit unclipped.
+#Preview("DI Compact · Hours", as: .dynamicIsland(.compact), using: LiveActivityPreviewData.attributes(name: "Pasta")) {
+    TimerLiveActivity()
+} contentStates: {
+    LiveActivityPreviewData.countdown(remaining: 5025, total: 7200)
+    LiveActivityPreviewData.paused(remaining: 5025, total: 7200)
+    LiveActivityPreviewData.countdown(remaining: 45_296, total: 86_400)
 }
 
 #Preview("DI Minimal", as: .dynamicIsland(.minimal), using: LiveActivityPreviewData.attributes(name: "Pasta")) {
