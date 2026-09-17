@@ -46,6 +46,30 @@ nonisolated enum TutorialTargetID: Hashable, Sendable {
     case autoRestartRow
 }
 
+// MARK: - Stand-in tile
+
+/// The preset the Home tour brings with it when the grid is empty.
+///
+/// Tips 1 and 2 spotlight a preset tile and its pin badge. Unpinning deletes a
+/// preset, so a user who unpins everything — built-ins included — leaves the
+/// grid with nothing to point at, and the overlay's "target not on screen"
+/// filter quietly drops both tips: the tour then opens on the running-banner
+/// artwork and never explains the tile it is named after. So the tour supplies
+/// its own tile instead.
+///
+/// It is not a preset in any real sense: it is rendered only while the tour is
+/// on screen, is never written to `PresetsRepo`, is never startable, and its id
+/// is outside the built-in roster so nothing can mistake it for stored state.
+/// Name and duration match the running-banner artwork ("Al Dente", 8:00) so the
+/// tips read as one story.
+nonisolated enum TutorialSample {
+    /// Distinct from every built-in id and from `NextHour.presetID`, in the
+    /// same `11111111-…` reserved namespace.
+    static let presetID = UUID(uuidString: "11111111-1111-1111-1111-00000000000B")!
+
+    static let preset = TimerPreset(id: presetID, name: "Al Dente", duration: 480)
+}
+
 /// A feature that isn't on screen during the tour, rendered as artwork inside
 /// a centered hint card instead of being spotlighted (no cutout/connector).
 nonisolated enum TutorialArt: Sendable {

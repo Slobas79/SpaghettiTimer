@@ -35,6 +35,16 @@ struct TimersView: View {
         GridItem(.flexible(), spacing: Theme.gridGap)
     ]
 
+    /// Whether the tour has to supply its own tile to spotlight. Unpinning
+    /// deletes a preset, so the grid really can end up empty — and tips 1 and 2
+    /// point at a preset tile and its pin badge. Rather than let the overlay
+    /// drop both tips as "target not on screen", we stand a sample tile in the
+    /// grid for the length of the tour. It is never saved and never starts
+    /// anything; see `TutorialSample`.
+    private var showsTourSampleTile: Bool {
+        showingTour && viewModel.presetTiles.isEmpty
+    }
+
     /// Home's secondary actions, behind the ••• corner menu — the single
     /// entry point for Replay tips, the direct paywall and Restore Purchases.
     @ViewBuilder
@@ -99,6 +109,10 @@ struct TimersView: View {
                                     onPin: nil
                                 )
                                 .tutorialTarget(.presetTile)
+                            }
+
+                            if showsTourSampleTile {
+                                TourSampleTile()
                             }
                         }
                     }
@@ -215,6 +229,23 @@ struct TimersView: View {
     }
 }
 
+// MARK: - Tour sample tile
+
+/// The stand-in tile the Home tour spotlights when every preset has been
+/// unpinned. A real `TimerTile` — same face, same pin badge, so tips 1 and 2
+/// point at exactly what they describe — but inert: its actions are empty, hit
+/// testing is off so it can't be tapped even if the scrim ever let a touch
+/// through, and VoiceOver skips it (the tip card carries the meaning). It lives
+/// and dies with the tour and never reaches `PresetsRepo`.
+private struct TourSampleTile: View {
+    var body: some View {
+        TimerTile(preset: TutorialSample.preset, onStart: {}, onUnpin: {}, onPin: nil)
+            .tutorialTarget(.presetTile)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
 // MARK: - Add-timer FAB
 
 /// The floating "New timer" action button — a 60pt accent circle pinned to the
@@ -270,6 +301,9 @@ private struct TimersPreviewHarness: View {
     var tour = false
     /// Set true to render the dynamic "To next hour" tile in the first cell.
     var nextHourPinned = false
+    /// Set true to drop every preset, reproducing the all-unpinned grid the
+    /// tour has to stand its own sample tile in.
+    var emptyGrid = false
     @State private var showingTour = false
     @State private var homeSteps: [TutorialStep] = []
 
@@ -300,9 +334,12 @@ private struct TimersPreviewHarness: View {
                         if nextHourPinned {
                             NextHourTile(now: .now, onStart: {}, onUnpin: {})
                         }
-                        ForEach(TimerPreset.builtIns) { preset in
+                        ForEach(emptyGrid ? [] : TimerPreset.builtIns) { preset in
                             TimerTile(preset: preset, onStart: {}, onUnpin: {}, onPin: nil)
                                 .tutorialTarget(.presetTile)
+                        }
+                        if showingTour && emptyGrid {
+                            TourSampleTile()
                         }
                     }
                 }
@@ -343,4 +380,10 @@ private struct TimersPreviewHarness: View {
 
 #Preview("To next hour pinned") {
     TimersPreviewHarness(nextHourPinned: true)
+}
+
+/// Every preset unpinned: the tour must still open on the tile tip, spotlighting
+/// the sample tile it brings with it.
+#Preview("Home tour · empty grid") {
+    TimersPreviewHarness(tour: true, emptyGrid: true)
 }
