@@ -10,7 +10,14 @@ import AppIntents
 import Foundation
 import WidgetKit
 
-struct PauseTimerIntent: AppIntent {
+/// A `LiveActivityIntent` for the same reason as `CancelTimerIntent`: performed in
+/// the widget extension, its `reloadAllTimelines()` was ignored, and the Home Screen
+/// widget kept a timeline that turned the tile idle at the original end time while
+/// the timer sat paused. The widget no longer reloads on its own, so nothing would
+/// have brought the tile back.
+///
+/// `nonisolated` for the same reason as `CancelTimerIntent`'s conformance.
+struct PauseTimerIntent: nonisolated LiveActivityIntent {
     nonisolated static let title: LocalizedStringResource = "Pause Timer"
     nonisolated static let description = IntentDescription("Pauses the running countdown timer.")
 

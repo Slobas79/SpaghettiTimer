@@ -74,6 +74,7 @@
 				Shared/BannerCountdown.swift,
 				Shared/CancelTimerIntent.swift,
 				Shared/PauseTimerIntent.swift,
+				Shared/PresetsWidgetTimeline.swift,
 				Shared/RepeatTimerIntent.swift,
 				Shared/ResumeTimerIntent.swift,
 				Shared/StartTimerIntent.swift,

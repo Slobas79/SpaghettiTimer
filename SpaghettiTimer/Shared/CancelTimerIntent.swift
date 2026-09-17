@@ -10,7 +10,16 @@ import AppIntents
 import Foundation
 import WidgetKit
 
-struct CancelTimerIntent: AppIntent {
+/// A `LiveActivityIntent`, not a plain `AppIntent`, so the system performs it in the
+/// app's process rather than the widget extension's. From the extension, the
+/// `reloadAllTimelines()` below was silently ignored: a timer cancelled from the
+/// Dynamic Island stayed drawn as "Running" on the Home Screen widget until its
+/// original end time, although shared storage was already correct.
+///
+/// The conformance is `nonisolated` on purpose. Under the project's MainActor
+/// default isolation the compiler otherwise infers a MainActor-isolated
+/// conformance, which generic code over `LiveActivityIntent` cannot use.
+struct CancelTimerIntent: nonisolated LiveActivityIntent {
     nonisolated static let title: LocalizedStringResource = "Cancel Timer"
     nonisolated static let description = IntentDescription("Cancels the running countdown timer.")
 

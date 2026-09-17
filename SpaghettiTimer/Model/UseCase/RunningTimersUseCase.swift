@@ -126,6 +126,14 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     }
 
     func reconcileOnForeground() {
+        let liveIDs = (try? AlarmManager.shared.alarms).map { Set($0.map(\.id)) }
+        reconcileOnForeground(liveAlarmIDs: liveIDs, now: Date())
+    }
+
+    /// The foreground pass against a snapshot of AlarmKit's live alarm ids, or `nil`
+    /// when AlarmKit could not be queried. Split out for the same reason as
+    /// `applyLiveAlarms(ids:)`: a test cannot fabricate `[Alarm]`.
+    func reconcileOnForeground(liveAlarmIDs: Set<UUID>?, now: Date) {
         // Alarms can be turned off in Settings while the app is backgrounded, which
         // silently breaks every timer already scheduled without removing any of them.
         // Foregrounding is the only moment we can notice — AlarmKit publishes no
@@ -135,6 +143,14 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         // because that pass structurally cannot catch a revocation: see
         // `AlarmAuthorization.revokesScheduledTimers`.
         if purgeIfAlarmsRevoked() { return }
+
+        // Always, not only when this pass changes something. The Home Screen widget can
+        // be stale while this array is not: a timer started from the widget and cancelled
+        // from the Dynamic Island never passed through here, so the id sets below match
+        // and nothing looked worth refreshing — yet the cancel's own reload came from the
+        // background, where WidgetKit may refuse it. A reload from the foreground is not
+        // charged to the widget's budget, so this is the free moment to repair it.
+        defer { widgets.reloadTimelines() }
 
         // AppIntents (Stop / Repeat / Start) run in other processes and write directly to the
         // shared repo while the app is backgrounded. Re-load it on foreground so out-of-process
@@ -149,15 +165,13 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         // including a fired-then-stopped one (`isFinished`). We can't depend on the custom
         // StopTimerIntent for this: it doesn't run in every context (e.g. the Simulator) and can
         // fail on device. Keying off the alarm list self-heals regardless.
-        guard let alarms = try? AlarmManager.shared.alarms else {
+        guard let liveIDs = liveAlarmIDs else {
             // Couldn't verify liveness — just publish the repo reload.
             if Set(running.map(\.id)) != previousIDs {
                 onChange?()
-                widgets.reloadTimelines()
             }
             return
         }
-        let liveIDs = Set(alarms.map(\.id))
 
         // Prune a timer when its alarm is gone from AlarmKit AND either we've already observed it
         // live or it has finished. The `isFinished` arm catches the case the `seenAlarmIDs` guard
@@ -167,7 +181,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         // seen, so it's preserved; an actively ringing alarm is still in `liveIDs`, so it's kept.
         // (Mirrors `removeTimers(notIn:)`.)
         let dismissed = RunningTimersMerge.dismissed(
-            in: running, liveAlarmIDs: liveIDs, seenIDs: seenAlarmIDs, now: Date()
+            in: running, liveAlarmIDs: liveIDs, seenIDs: seenAlarmIDs, now: now
         )
         if !dismissed.isEmpty {
             logCompletions(for: dismissed)
@@ -179,7 +193,6 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
 
         if Set(running.map(\.id)) != previousIDs {
             onChange?()
-            widgets.reloadTimelines()
         }
     }
 
@@ -254,7 +267,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     /// states are all this needs.
     func applyPauseState(pausedIDs: Set<UUID>, countingIDs: Set<UUID>, now: Date) {
         // Read disk first. The Lock Screen's Pause/Resume buttons are AppIntents that
-        // run in another process and have already stamped the true transition instant
+        // bypass this use case and have already stamped the true transition instant
         // there; this array has never been told. See `reconcilingPauseState`.
         let stored = repo.load()
         let reconciled = RunningTimersMerge.reconcilingPauseState(

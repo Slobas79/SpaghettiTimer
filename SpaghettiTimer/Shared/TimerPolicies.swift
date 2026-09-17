@@ -145,9 +145,10 @@ nonisolated enum RunningTimersMerge {
     /// `inMemory` with each timer's pause state reconciled against AlarmKit's.
     ///
     /// `disk` is authoritative for *when* a transition happened. `PauseTimerIntent`
-    /// and `ResumeTimerIntent` run in another process — they are what the Lock
-    /// Screen buttons invoke — and stamp the real instant there. This process hears
-    /// about it only when `alarmUpdates` next gets to run, which, if the app was
+    /// and `ResumeTimerIntent` — what the Lock Screen buttons invoke — write shared
+    /// storage directly, bypassing the use case, and stamp the real instant there.
+    /// The in-memory array hears about it only when `alarmUpdates` next gets to run,
+    /// which, if the app was
     /// suspended at the tap, is seconds later. Stamping `now` at that point moved
     /// `pausedAt` forward by the entire suspension and saved it over the intent's
     /// correct value, so Home showed several seconds less than the Live Activity for

@@ -10,7 +10,14 @@ import AppIntents
 import Foundation
 import WidgetKit
 
-struct ResumeTimerIntent: AppIntent {
+/// A `LiveActivityIntent` for the same reason as `CancelTimerIntent`: performed in
+/// the widget extension, its `reloadAllTimelines()` was ignored, and the Home Screen
+/// widget kept the timeline built while paused — one entry, no end — so the tile
+/// read "Running" long after the resumed countdown finished. The widget no longer
+/// reloads on its own, so nothing would have corrected it.
+///
+/// `nonisolated` for the same reason as `CancelTimerIntent`'s conformance.
+struct ResumeTimerIntent: nonisolated LiveActivityIntent {
     nonisolated static let title: LocalizedStringResource = "Resume Timer"
     nonisolated static let description = IntentDescription("Resumes the paused countdown timer.")
 

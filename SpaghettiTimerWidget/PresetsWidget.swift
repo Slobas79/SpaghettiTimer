@@ -29,7 +29,7 @@ struct PresetsProvider: TimelineProvider {
                                                now: now)
         completion(PresetsEntry(date: now,
                                 presets: presets,
-                                activePresetIDs: Self.activeIDs(in: timers, at: now)))
+                                activePresetIDs: PresetsWidgetTimeline.activePresetIDs(in: timers, at: now)))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<PresetsEntry>) -> Void) {
@@ -39,30 +39,10 @@ struct PresetsProvider: TimelineProvider {
                                                liveAlarmIDs: Self.liveAlarmIDs(),
                                                now: now)
 
-        let transitionDates = timers
-            .filter { !$0.isPaused && $0.endDate > now }
-            .map { $0.endDate }
-            .sorted()
-
-        var entries: [PresetsEntry] = [
-            PresetsEntry(date: now,
-                         presets: presets,
-                         activePresetIDs: Self.activeIDs(in: timers, at: now))
-        ]
-        for date in transitionDates {
-            let entryDate = date.addingTimeInterval(0.5)
-            entries.append(
-                PresetsEntry(date: entryDate,
-                             presets: presets,
-                             activePresetIDs: Self.activeIDs(in: timers, at: entryDate))
-            )
+        let entries = PresetsWidgetTimeline.entries(for: timers, now: now).map {
+            PresetsEntry(date: $0.date, presets: presets, activePresetIDs: $0.activePresetIDs)
         }
-
-        completion(Timeline(entries: entries, policy: .atEnd))
-    }
-
-    private static func activeIDs(in timers: [RunningTimer], at date: Date) -> Set<UUID> {
-        Set(timers.filter { $0.isPaused || !$0.isFinished(at: date) }.map { $0.presetID })
+        completion(Timeline(entries: entries, policy: PresetsWidgetTimeline.reloadPolicy))
     }
 
     /// Live alarm ids, or `nil` when AlarmKit can't be queried from this process.
