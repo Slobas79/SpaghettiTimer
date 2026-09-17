@@ -2,9 +2,11 @@
 //  RunningTimersMergeTests.swift
 //  SpaghettiTimerTests
 //
-//  Guards the cross-process reconciliation rules. Shared storage is written by the
-//  app, the widget and four AppIntents with no lock between them, so every rule
-//  here exists to stop one process erasing another's work.
+//  Guards the reconciliation rules for shared storage. It is written by the app's
+//  use case and by six AppIntents with no lock between them — `StartTimerIntent`
+//  from the widget extension, the Live Activity and alarm intents from the app's
+//  process but outside the use case — while the widget only reads it. Every rule
+//  here exists to stop one writer erasing another's work.
 //
 
 import Foundation
@@ -145,12 +147,12 @@ struct RunningTimersMergeTests {
         #expect(dismissed.isEmpty)
     }
 
-    // MARK: Not clobbering other processes
+    // MARK: Not clobbering other writers
 
     @Test("Removal applies to the disk snapshot, so another process's write survives")
     func removingDismissedOperatesOnTheDiskSnapshot() {
         // B is the next auto-restart iteration, written to disk by StopTimerIntent
-        // in another process while this one still held a stale array containing A.
+        // outside the use case while the use case still held a stale array containing A.
         let a = RunningTimer.fixture(name: "old")
         let b = RunningTimer.fixture(name: "next iteration")
         let kept = RunningTimersMerge.removingDismissed(disk: [a, b], dismissedIDs: [a.id])

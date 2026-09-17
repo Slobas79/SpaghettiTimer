@@ -19,10 +19,11 @@ struct PauseClockSyncTests {
 
     @Test("A Lock Screen pause keeps the instant the intent recorded, not the instant we heard about it")
     func adoptsThePauseRecordedByTheIntent() {
-        // The user taps Pause on the Lock Screen at t0+60. `PauseTimerIntent` runs in
-        // another process and stamps that. The app is suspended and does not get to
-        // run the `alarmUpdates` emission until t0+63 — the three seconds that used
-        // to be written straight over the intent's value.
+        // The user taps Pause on the Lock Screen at t0+60. `PauseTimerIntent` stamps
+        // that instant straight into shared storage, bypassing the use case, so the
+        // in-memory array still shows the timer counting. The `alarmUpdates` emission
+        // that tells the use case is handled later — here at t0+63 — and those three
+        // seconds used to be written straight over the intent's value.
         let stale = RunningTimer.fixture(startDate: .t0, duration: 300)
         let recorded = stale.paused(at: Date.t0.addingTimeInterval(60))!
 
@@ -114,7 +115,7 @@ struct PauseClockSyncTests {
 
     @Test("A timer missing from disk falls back to the current instant")
     func stampsWhenDiskHasNoRecord() {
-        // Another process can delete the record between the emission and our load.
+        // A cancel or stop intent can delete the record between the emission and our load.
         // The in-memory timer is still the one on screen, so it still has to move.
         let running = RunningTimer.fixture(startDate: .t0, duration: 300)
 

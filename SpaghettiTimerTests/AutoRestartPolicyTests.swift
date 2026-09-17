@@ -35,9 +35,10 @@ struct AutoRestartPolicyTests {
 
     @Test("The alarm's baked-in delay restarts the chain when the stored record lost it")
     func bakedDelaySurvivesErasedRecord() {
-        // This is the backstop for every way shared storage can lose the field:
-        // the widget rewriting the list, a pause/resume rebuild, a stale in-memory
-        // array being saved over it.
+        // This is the backstop for every way shared storage can lose the field: a
+        // pause/resume rebuild that forgets to copy it, a stale in-memory array being
+        // saved over it. The widget used to rewrite the list as well; it only reads
+        // it now.
         #expect(AutoRestartPolicy.resolvedDelay(stored: nil, parameter: 5) == 5)
     }
 

@@ -8,11 +8,12 @@
 //
 //  The cancel ran in the widget extension, and WidgetKit ignored the reload it
 //  requested from there; it now runs in the app (`CancelTimerIntent` is a
-//  `LiveActivityIntent`). Two related gaps are pinned here. The widget's timeline
-//  asked WidgetKit to reload `.atEnd`, which with nothing running meant "straight
-//  away", all day, wasting the reload budget background reloads depend on. And
-//  foregrounding the app refreshed the widget only when the app's own timer list
-//  changed, which it never does for a timer the app never knew about.
+//  `LiveActivityIntent`), and so do the Live Activity's pause and resume, which
+//  had the same flaw. Two related gaps are pinned here as well. The widget's
+//  timeline asked WidgetKit to reload `.atEnd`, which with nothing running meant
+//  "straight away", all day, wasting the reload budget background reloads depend
+//  on. And foregrounding the app refreshed the widget only when the app's own
+//  timer list changed, which it never does for a timer the app never knew about.
 //
 
 import AppIntents

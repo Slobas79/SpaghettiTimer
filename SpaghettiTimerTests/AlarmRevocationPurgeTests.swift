@@ -96,8 +96,8 @@ struct AlarmRevocationPurgeTests {
     @Test("A revocation clears a timer only another process knows about")
     func revocationClearsTimersWrittenElsewhere() {
         // The QA 6.9 case exactly: the auto-restart iteration was written to shared
-        // storage by `StopTimerIntent` in another process, so the in-memory array has
-        // never heard of it. Purging memory alone would leave it on disk, and the next
+        // storage by `StopTimerIntent`, which bypasses the use case, so the in-memory
+        // array has never heard of it. Purging memory alone would leave it on disk, and the next
         // foreground would read it straight back in.
         let scratch = ScratchDefaults()
         let repo = RecordingRunningTimersRepo()

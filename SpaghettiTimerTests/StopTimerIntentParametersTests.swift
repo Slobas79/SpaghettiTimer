@@ -3,7 +3,7 @@
 //  SpaghettiTimerTests
 //
 //  The parameters baked into the alarm are the only copy of the timer that
-//  survives another process erasing the shared-storage record.
+//  survives another writer erasing the shared-storage record.
 //
 
 import AppIntents
