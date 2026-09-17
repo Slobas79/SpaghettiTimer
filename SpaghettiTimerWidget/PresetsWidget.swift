@@ -18,7 +18,9 @@ struct PresetsEntry: TimelineEntry {
 
 struct PresetsProvider: TimelineProvider {
     func placeholder(in context: Context) -> PresetsEntry {
-        PresetsEntry(date: Date(), presets: TimerPreset.builtIns, activePresetIDs: [])
+        // The stored list, not `TimerPreset.builtIns`: a deleted built-in must not
+        // come back, even in a placeholder.
+        PresetsEntry(date: Date(), presets: PresetsRepoImpl().allPresets(), activePresetIDs: [])
     }
 
     func getSnapshot(in context: Context, completion: @escaping (PresetsEntry) -> Void) {

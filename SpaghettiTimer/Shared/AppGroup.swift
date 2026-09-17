@@ -18,7 +18,11 @@ nonisolated enum AppGroup {
 }
 
 nonisolated enum AppGroupKey {
+    /// Every preset on the home grid, built-ins included. Unpinning removes the entry.
+    static let presets = "presets.all"
+    /// Older format, read only until `presets` is first written.
     static let userPresets = "presets.user"
+    /// Older format, read only until `presets` is first written.
     static let hiddenBuiltInPresets = "presets.hiddenBuiltIns"
     static let nextHourPinned = "presets.nextHourPinned"
     static let runningTimers = "runningTimers"

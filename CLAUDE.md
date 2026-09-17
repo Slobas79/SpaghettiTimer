@@ -37,8 +37,8 @@ View / ViewModel  →  UseCase (protocol + impl)  →  Repo (protocol + impl)
 ```
 
 - **Entities** (`SpaghettiTimer/Model/Entity/`): `TimerPreset` and `RunningTimer` — plain `nonisolated` structs, `Codable`, `Sendable`.
-- **Repos** (`SpaghettiTimer/Repository/Disc/`): Read/write `UserDefaults` in the shared App Group (`group.sloba.SpaghettiTimer`). `PresetsRepo` manages user presets and hidden built-in IDs. `RunningTimersRepo` persists active timers.
-- **Use Cases** (`SpaghettiTimer/Model/UseCase/`): `@MainActor` classes that own the in-memory state and call into AlarmKit. `RunningTimersUseCaseImpl` drives the AlarmKit lifecycle (schedule, pause, resume, cancel) and observes `AlarmManager.shared.alarmUpdates` to reconcile state. `TimerPresetsUseCaseImpl` merges built-in presets with user-created ones.
+- **Repos** (`SpaghettiTimer/Repository/Disc/`): Read/write `UserDefaults` in the shared App Group (`group.sloba.SpaghettiTimer`). `PresetsRepo` stores the full preset list (built-ins included, seeded from `TimerPreset.builtIns` until first saved; the older user-presets + hidden-built-in-IDs format is still read until then). Unpinning deletes a preset from the list. `RunningTimersRepo` persists active timers.
+- **Use Cases** (`SpaghettiTimer/Model/UseCase/`): `@MainActor` classes that own the in-memory state and call into AlarmKit. `RunningTimersUseCaseImpl` drives the AlarmKit lifecycle (schedule, pause, resume, cancel) and observes `AlarmManager.shared.alarmUpdates` to reconcile state. `TimerPresetsUseCaseImpl` adds, pins and deletes presets in that list.
 - **ViewModel** (`TimersViewModel`): `@Observable @MainActor` class. Single instance created at app launch and injected through `HomeView`. Subscribes to `onChange` callbacks from both use cases to republish state. Exposes `tiles: [TileItem]` — running-timers-first ordering merged with the preset list.
 - **Views**: `TimersView` is the main screen — a `LazyVGrid` of `TimerTile`s refreshed every 0.25 s via `TimelineView`. `NewTimerSheet` creates either a pinned preset or an ephemeral one-shot timer.
 

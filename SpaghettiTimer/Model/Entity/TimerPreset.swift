@@ -52,9 +52,12 @@ nonisolated extension TimerPreset {
     /// fresh install's grid shows what the app is *for*, rather than four arbitrary
     /// durations named after themselves.
     ///
-    /// The ids are load-bearing and must not change: `presets.hiddenBuiltIns` stores
-    /// them, and `Analytics.safePresetName` uses membership here as its allowlist for
-    /// reporting a preset name off-device.
+    /// This is only the starting list: once the grid is saved, built-ins live in
+    /// shared storage like any other preset, and unpinning one deletes it.
+    ///
+    /// The ids are load-bearing and must not change: the stored preset list and the
+    /// older `presets.hiddenBuiltIns` hold them, and `Analytics.safePresetName` uses
+    /// membership here as its allowlist for reporting a preset name off-device.
     static let builtIns: [TimerPreset] = [
         TimerPreset(id: UUID(uuidString: "11111111-1111-1111-1111-000000000001")!, name: "Al Dente",  duration: 480,  isBuiltIn: true),
         TimerPreset(id: UUID(uuidString: "11111111-1111-1111-1111-000000000002")!, name: "Rest Set",  duration: 90,   isBuiltIn: true),

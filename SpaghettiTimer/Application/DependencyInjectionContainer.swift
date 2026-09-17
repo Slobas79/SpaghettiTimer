@@ -8,7 +8,7 @@
 @MainActor
 final class DependencyInjectionContainer {
     // Repos
-    private lazy var presetsRepo: PresetsRepo = PresetsRepoImpl()
+    private lazy var presetsRepo: PresetsEditingRepo = PresetsRepoImpl()
     private lazy var runningTimersRepo: RunningTimersRepo = RunningTimersRepoImpl()
     private(set) lazy var analyticsRepo: AnalyticsRepo = AnalyticsBootstrap.makeRepo()
 

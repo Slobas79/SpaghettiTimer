@@ -30,10 +30,10 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
     private(set) var isNextHourPinned: Bool = false
     var onChange: (() -> Void)?
 
-    private let repo: PresetsRepo
+    private let repo: PresetsEditingRepo
     private let analytics: AnalyticsRepo
 
-    init(repo: PresetsRepo, analytics: AnalyticsRepo = NoOpAnalyticsRepo()) {
+    init(repo: PresetsEditingRepo, analytics: AnalyticsRepo = NoOpAnalyticsRepo()) {
         self.repo = repo
         self.analytics = analytics
         reload()
@@ -53,9 +53,9 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
             isBuiltIn: false,
             autoRestartDelaySeconds: autoRestartDelaySeconds
         )
-        var user = repo.loadUserPresets()
-        user.append(preset)
-        repo.saveUserPresets(user)
+        var all = repo.allPresets()
+        all.append(preset)
+        repo.savePresets(all)
         analytics.log(.presetCreate(durationSeconds: Int(duration), autoRestart: autoRestartDelaySeconds != nil))
         reload()
         WidgetCenter.shared.reloadAllTimelines()
@@ -63,34 +63,29 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
     }
 
     func pinPreset(_ preset: TimerPreset) {
-        var user = repo.loadUserPresets()
-        guard !user.contains(where: { $0.id == preset.id }) else { return }
+        var all = repo.allPresets()
+        guard !all.contains(where: { $0.id == preset.id }) else { return }
         // `pinnedCopy()` carries every field forward — pinning must not quietly
         // turn a repeating timer into a one-shot.
-        user.append(preset.pinnedCopy())
-        repo.saveUserPresets(user)
+        all.append(preset.pinnedCopy())
+        repo.savePresets(all)
         analytics.log(.presetPin())
         reload()
         WidgetCenter.shared.reloadAllTimelines()
     }
 
+    /// Deletes the preset from storage. Built-ins are deleted too, not hidden.
     func deletePreset(_ preset: TimerPreset) {
-        if preset.isBuiltIn {
-            var hidden = repo.loadHiddenBuiltInIDs()
-            hidden.insert(preset.id)
-            repo.saveHiddenBuiltInIDs(hidden)
-        } else {
-            var user = repo.loadUserPresets()
-            user.removeAll { $0.id == preset.id }
-            repo.saveUserPresets(user)
-        }
+        var all = repo.allPresets()
+        all.removeAll { $0.id == preset.id }
+        repo.savePresets(all)
         analytics.log(.presetDelete(isBuiltIn: preset.isBuiltIn))
         reload()
         WidgetCenter.shared.reloadAllTimelines()
     }
 
     /// Shows / hides the dynamic "To next hour" tile. It stores no duration, so
-    /// it never lands in `userPresets` and never reaches the widget — the
+    /// it never lands in the stored preset list and never reaches the widget — the
     /// countdown only makes sense against a live clock.
     func setNextHourPinned(_ pinned: Bool) {
         guard pinned != repo.loadNextHourPinned() else { return }
