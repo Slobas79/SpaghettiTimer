@@ -23,6 +23,26 @@ nonisolated enum AppGroupKey {
     static let nextHourPinned = "presets.nextHourPinned"
     static let runningTimers = "runningTimers"
     static let userCancelledTimers = "runningTimers.userCancelled"
+    static let widgetStartRefusedForPermission = "runningTimers.widgetStartRefusedForPermission"
+}
+
+/// A widget start that AlarmKit permission turned away, left for the app to explain.
+///
+/// The widget has no UI to explain it with. `StartTimerIntent` sets the flag and
+/// hands off to the app, and the app clears it on becoming active and shows its
+/// "Alarms are turned off" alert. It lives in shared storage rather than being
+/// passed along because the app may not be running yet when the hand-off happens.
+nonisolated enum WidgetStartRefusal {
+    static func record(in defaults: UserDefaults = AppGroup.defaults) {
+        defaults.set(true, forKey: AppGroupKey.widgetStartRefusedForPermission)
+    }
+
+    /// Whether a refusal was waiting. Clears it, so each refusal is explained once.
+    static func consume(in defaults: UserDefaults = AppGroup.defaults) -> Bool {
+        let was = defaults.bool(forKey: AppGroupKey.widgetStartRefusedForPermission)
+        if was { defaults.removeObject(forKey: AppGroupKey.widgetStartRefusedForPermission) }
+        return was
+    }
 }
 
 nonisolated enum UserCancelledTimers {

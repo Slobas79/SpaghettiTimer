@@ -29,6 +29,11 @@ protocol RunningTimersUseCase: AnyObject {
     func pause(_ timer: RunningTimer)
     func resume(_ timer: RunningTimer)
     func reconcileOnForeground()
+    /// Shows the permission alert for a widget start that was refused while the app
+    /// was elsewhere, if one is waiting. Returns a task for the same reason as
+    /// `start(preset:)`.
+    @discardableResult
+    func explainRefusedWidgetStart() -> Task<Void, Never>
 }
 
 @MainActor
@@ -41,6 +46,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     private let presetsRepo: PresetsRepo
     private let analytics: AnalyticsRepo
     private let cancelledTimers: UserDefaults
+    private let widgetRefusals: UserDefaults
     private let authorizer: AlarmAuthorizing
     private let scheduler: AlarmScheduling
     private let widgets: WidgetRefreshing
@@ -52,6 +58,8 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     /// - Parameters:
     ///   - cancelledTimers: the suite backing `UserCancelledTimers`. Injectable so a
     ///     test can use a scratch suite instead of the shared App Group.
+    ///   - widgetRefusals: the suite backing `WidgetStartRefusal`, injectable for the
+    ///     same reason.
     ///   - authorizer: the AlarmKit permission gate. Injectable so a test can drive
     ///     the granted and refused paths without the system prompt.
     ///   - scheduler: who hands the alarm to AlarmKit. Defaults to the real one
@@ -69,6 +77,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
          presetsRepo: PresetsRepo,
          analytics: AnalyticsRepo = NoOpAnalyticsRepo(),
          cancelledTimers: UserDefaults = AppGroup.defaults,
+         widgetRefusals: UserDefaults = AppGroup.defaults,
          authorizer: AlarmAuthorizing = AlarmKitAuthorizer(),
          scheduler: AlarmScheduling? = nil,
          widgets: WidgetRefreshing = WidgetCenterRefresher(),
@@ -77,6 +86,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
         self.presetsRepo = presetsRepo
         self.analytics = analytics
         self.cancelledTimers = cancelledTimers
+        self.widgetRefusals = widgetRefusals
         self.authorizer = authorizer
         self.scheduler = scheduler ?? (observesAlarmKit ? AlarmKitScheduler() : NoAlarmScheduler())
         self.widgets = widgets
@@ -193,6 +203,20 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
 
         if Set(running.map(\.id)) != previousIDs {
             onChange?()
+        }
+    }
+
+    @discardableResult
+    func explainRefusedWidgetStart() -> Task<Void, Never> {
+        // `StartTimerIntent` records the refusal and opens the app, but the widget
+        // cannot show the alert, so the app shows it here. The permission check is
+        // repeated because the user may have turned alarms back on before returning,
+        // and in that case there is nothing to explain. `resolve()` rather than
+        // `current`: an undecided state is the question the widget could not ask.
+        Task { [weak self] in
+            guard let self, WidgetStartRefusal.consume(in: self.widgetRefusals) else { return }
+            guard await self.authorizer.resolve() != .authorized else { return }
+            self.onAuthorizationDenied?()
         }
     }
 

@@ -16,6 +16,14 @@ struct StartTimerIntent: AppIntent {
     nonisolated static let title: LocalizedStringResource = "Start Timer"
     nonisolated static let description = IntentDescription("Starts a countdown timer for the selected preset.")
 
+    /// Background by default, with the option to bring the app forward. A tap
+    /// refused for want of permission used to do nothing at all: the widget has no
+    /// way to offer the path into Settings, and the app does. Allowing a foreground
+    /// continuation also means the system performs this intent in the app's process,
+    /// not the widget extension's, so the permission state read below is the app's
+    /// own.
+    nonisolated static let supportedModes: IntentModes = [.background, .foreground(.dynamic)]
+
     @Parameter(title: "Preset ID")
     var presetID: String
 
@@ -26,9 +34,10 @@ struct StartTimerIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult {
+        let manager = AlarmManager.shared
         let started = await Self.run(
             presetID: presetID,
-            authorization: AlarmAuthorization(AlarmManager.shared.authorizationState),
+            authorization: AlarmAuthorization(manager.authorizationState),
             presetsRepo: PresetsRepoImpl(),
             runningRepo: RunningTimersRepoImpl(),
             analytics: PendingAnalyticsQueueRepoImpl()
@@ -37,7 +46,23 @@ struct StartTimerIntent: AppIntent {
             return (try? await AlarmManager.shared.schedule(id: running.id, configuration: configuration)) != nil
         }
 
-        if started != nil { WidgetCenter.shared.reloadAllTimelines() }
+        if started != nil {
+            WidgetCenter.shared.reloadAllTimelines()
+            return .result()
+        }
+
+        // Nothing started. When permission is why, open the app to say so: the tile
+        // otherwise just sits there. Read again after the attempt rather than
+        // reusing the value above, because scheduling is what settles an
+        // undecided state.
+        if Self.needsPermissionHandOff(afterAttempt: AlarmAuthorization(manager.authorizationState)) {
+            // Record before handing off. The app reads the flag once it becomes
+            // active, which can happen before this call returns.
+            WidgetStartRefusal.record()
+            if systemContext.currentMode.canContinueInForeground {
+                try? await continueInForeground(alwaysConfirm: false)
+            }
+        }
         return .result()
     }
 }
@@ -49,15 +74,18 @@ extension StartTimerIntent {
     ///
     /// Two rules, in this order, and both are load-bearing:
     ///
-    /// 1. Only an explicit `.denied` refuses. This runs in the widget extension,
-    ///    which has no UI to prompt with and which AlarmKit reports `.notDetermined`
-    ///    to even when the containing app holds the grant — demanding `.authorized`
-    ///    here is what made every tile tap do nothing at all.
+    /// 1. Only an explicit `.denied` refuses. This used to run in the widget
+    ///    extension, which AlarmKit reports `.notDetermined` to even when the
+    ///    containing app holds the grant — demanding `.authorized` there is what
+    ///    made every tile tap do nothing at all. An undecided state still goes to
+    ///    AlarmKit, and a start it drops is handed to the app.
     /// 2. Nothing is written until AlarmKit has taken the alarm. *That*, not the
     ///    permission flag, is what keeps a phantom timer off Home: a countdown the
     ///    app draws and ticks down to a ring that never comes.
     ///
     /// Returns the started timer, or `nil` when the start was refused or dropped.
+    /// A `nil` caused by permission is passed to the app; see
+    /// `needsPermissionHandOff(afterAttempt:)`.
     static func run(
         presetID: String,
         authorization: AlarmAuthorization,
@@ -111,5 +139,16 @@ extension StartTimerIntent {
         ))
 
         return started
+    }
+
+    /// Whether a dropped start should open the app, given the permission state read
+    /// after the attempt.
+    ///
+    /// Anything short of a grant does. `.denied` gets the app's "Alarms are turned
+    /// off" alert and its Open Settings button. `.notDetermined` means the question
+    /// was never asked, and only the app can ask it. A dropped start under a grant
+    /// was not about permission, and opening the app would explain nothing.
+    static func needsPermissionHandOff(afterAttempt authorization: AlarmAuthorization) -> Bool {
+        authorization != .authorized
     }
 }

@@ -44,6 +44,14 @@ struct SpaghettiTimerApp: App {
                         Task { await store.refreshEntitlements() }
                     }
                 }
+                // Separate from the pass above because it needs `initial`. A widget
+                // tap can cold-launch the app straight into `.active`, and without
+                // `initial` that first activation would go unobserved.
+                .onChange(of: scenePhase, initial: true) { _, phase in
+                    if phase == .active {
+                        runningUseCase.explainRefusedWidgetStart()
+                    }
+                }
         }
     }
 }
