@@ -391,7 +391,6 @@ struct NewTimerSheet: View {
             optionRow(
                 icon: "pin",
                 title: "Pin timer",
-                description: "Keep this timer permanently available.",
                 isOn: pinnedBinding
             )
         }
@@ -403,7 +402,7 @@ struct NewTimerSheet: View {
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
-    private func optionRow(icon: String, title: LocalizedStringKey, description: LocalizedStringKey, isOn: Binding<Bool>) -> some View {
+    private func optionRow(icon: String, title: LocalizedStringKey, description: LocalizedStringKey? = nil, isOn: Binding<Bool>) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
                 .font(.system(size: 22))
@@ -415,11 +414,13 @@ struct NewTimerSheet: View {
                 Text(title)
                     .font(.system(size: optionTitleSize, weight: .semibold))
                     .foregroundStyle(.white)
-                Text(description)
-                    .font(.system(size: optionDescSize))
-                    .foregroundStyle(Theme.mutedTime)
-                    .lineSpacing(optionDescSize * 0.35)
-                    .fixedSize(horizontal: false, vertical: true)
+                if let description {
+                    Text(description)
+                        .font(.system(size: optionDescSize))
+                        .foregroundStyle(Theme.mutedTime)
+                        .lineSpacing(optionDescSize * 0.35)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             // The toggle below carries the title as its label and the
             // description as its hint, so the visual text is redundant to VO.
@@ -431,7 +432,7 @@ struct NewTimerSheet: View {
                 .labelsHidden()
                 .tint(Theme.accent)
                 .accessibilityLabel(title)
-                .accessibilityHint(description)
+                .accessibilityHint(description.map { Text($0) } ?? Text(verbatim: ""))
         }
         .padding(16)
     }
