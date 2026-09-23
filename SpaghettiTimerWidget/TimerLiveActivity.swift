@@ -338,6 +338,10 @@ struct TimerLiveActivity: Widget {
         switch state.mode {
         case .countdown(let countdown):
             Text(timerInterval: Date()...countdown.fireDate, countsDown: true)
+                // The system formats this with the locale's time separator
+                // (sr, fi, da give "2.05"). Pin it so every language shows the
+                // same M:SS as the paused text and the in-app tiles.
+                .environment(\.locale, BannerCountdown.clockLocale)
         case .paused(let paused):
             Text(BannerCountdown.text(remaining: paused.totalCountdownDuration - paused.previouslyElapsedDuration))
         // `.alert` lands here with the rest: once the alarm is ringing, AlarmKit

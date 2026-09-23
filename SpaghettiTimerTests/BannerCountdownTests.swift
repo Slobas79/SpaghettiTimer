@@ -98,3 +98,16 @@ struct BannerCountdownTextTests {
         #expect(BannerCountdown.text(remaining: 1e30) == "2400000:00:00")
     }
 }
+
+/// The live countdown is formatted by the system in `clockLocale`. Some
+/// languages' own separator is a dot (sr, fi, da give "2.05"), so the pinned
+/// locale must produce a colon — the same M:SS the paused text draws.
+@Suite("Banner countdown · clock locale")
+struct BannerCountdownLocaleTests {
+    @Test("The pinned locale separates minutes and seconds with a colon")
+    func pinnedLocaleUsesColon() {
+        let format = Duration.TimeFormatStyle(pattern: .minuteSecond).locale(BannerCountdown.clockLocale)
+        #expect(Duration.seconds(125).formatted(format) == "2:05")
+        #expect(Duration.seconds(125).formatted(format) == BannerCountdown.text(remaining: 125))
+    }
+}

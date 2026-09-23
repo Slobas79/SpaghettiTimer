@@ -23,6 +23,10 @@ import AlarmKit
 import Foundation
 
 nonisolated enum BannerCountdown {
+    /// The locale the live countdown is formatted in, so it reads `M:SS` in
+    /// every language — matching `text(remaining:)`, which is locale-free.
+    static let clockLocale = Locale(identifier: "en_US_POSIX")
+
     /// The rendered countdown for a paused timer, which shows a frozen value
     /// rather than a live one.
     static func text(remaining seconds: TimeInterval) -> String {
