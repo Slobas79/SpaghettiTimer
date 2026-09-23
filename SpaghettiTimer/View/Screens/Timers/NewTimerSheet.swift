@@ -796,7 +796,7 @@ struct NewTimerSheet: View {
                 title: "Pin timer",
                 // A clock target can't be pinned as-is, so say what pinning
                 // actually leaves on the home grid.
-                description: "Adds a “To next hour” tile that always counts down to the next full hour.",
+                description: "Adds a “To next hour” timer that always counts down to the next full hour.",
                 isOn: nextHourPinnedBinding
             )
         }

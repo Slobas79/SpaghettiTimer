@@ -265,7 +265,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ у току"
+            "value" : "%@ u toku"
           }
         },
         "sv" : {
@@ -406,7 +406,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Аутоматско поновно покретање"
+            "value" : "Automatsko ponovno pokretanje"
           }
         },
         "sv" : {
@@ -681,7 +681,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Откажи тајмер"
+            "value" : "Otkaži tajmer"
           }
         },
         "sv" : {
@@ -818,7 +818,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Отказује покренути одбројавајући тајмер."
+            "value" : "Otkazuje pokrenuti odbrojavajući tajmer."
           }
         },
         "sv" : {
@@ -1094,7 +1094,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Готово"
+            "value" : "Gotovo"
           }
         },
         "sv" : {
@@ -1650,7 +1650,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Паузирај тајмер"
+            "value" : "Pauziraj tajmer"
           }
         },
         "sv" : {
@@ -1923,7 +1923,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Паузира покренути одбројавајући тајмер."
+            "value" : "Pauzira pokrenuti odbrojavajući tajmer."
           }
         },
         "sv" : {
@@ -2198,7 +2198,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Брзо покретање"
+            "value" : "Brzo pokretanje"
           }
         },
         "sv" : {
@@ -2473,7 +2473,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Понови тајмер"
+            "value" : "Ponovi tajmer"
           }
         },
         "sv" : {
@@ -2748,7 +2748,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Поново покреће исти тајмер од почетка."
+            "value" : "Ponovo pokreće isti tajmer od početka."
           }
         },
         "sv" : {
@@ -3161,7 +3161,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Настави тајмер"
+            "value" : "Nastavi tajmer"
           }
         },
         "sv" : {
@@ -3298,7 +3298,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Наставља паузирани одбројавајући тајмер."
+            "value" : "Nastavlja pauzirani odbrojavajući tajmer."
           }
         },
         "sv" : {
@@ -3435,7 +3435,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "У току"
+            "value" : "U toku"
           }
         },
         "sv" : {
@@ -3848,7 +3848,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Покрени тајмер"
+            "value" : "Pokreni tajmer"
           }
         },
         "sv" : {
@@ -3985,7 +3985,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Покрените омиљене тајмере директно са почетног екрана."
+            "value" : "Pokrenite omiljene tajmere direktno sa početnog ekrana."
           }
         },
         "sv" : {
@@ -4122,7 +4122,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Покреће одбројавајући тајмер за изабрану поставку."
+            "value" : "Pokreće odbrojavajući tajmer za izabranu postavku."
           }
         },
         "sv" : {
@@ -4533,7 +4533,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Заустави тајмер"
+            "value" : "Zaustavi tajmer"
           }
         },
         "sv" : {
@@ -4670,7 +4670,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Зауставља покренути тајмер и уклања његов индикатор у виџету."
+            "value" : "Zaustavlja pokrenuti tajmer i uklanja njegov indikator u vidžetu."
           }
         },
         "sv" : {
@@ -5084,7 +5084,7 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Тајмер"
+            "value" : "Tajmer"
           }
         },
         "sv" : {
