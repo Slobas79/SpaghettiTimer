@@ -348,6 +348,8 @@ private struct CoachMarksOverlay: View {
         } label: {
             Text("Skip")
                 .font(.system(size: controlSize, weight: .medium))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
                 .foregroundStyle(Theme.mutedTime)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 6)
@@ -383,6 +385,8 @@ private struct CoachMarksOverlay: View {
         } label: {
             Text(isLast ? "Done" : "Next")
                 .font(.system(size: controlSize, weight: .semibold))
+                .lineLimit(1)
+                .fixedSize()
                 .foregroundStyle(.white)
                 .frame(height: 36)
                 .padding(.horizontal, 18)
