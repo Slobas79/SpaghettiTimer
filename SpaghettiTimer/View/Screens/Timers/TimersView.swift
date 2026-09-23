@@ -27,9 +27,9 @@ struct TimersView: View {
     @AppStorage(TutorialScreen.home.rawValue, store: AppGroup.defaults)
     private var homeTourDone = false
 
-    /// Where VoiceOver goes when the element it is on is removed — a
-    /// dismissed running row, an unpinned tile. Left alone, VoiceOver stays
-    /// on the vanished element and appears stuck.
+    /// Home's VoiceOver focus: read to know which element VoiceOver is on,
+    /// written to move it off one that has left the screen. Left alone,
+    /// VoiceOver stays on the vanished element and appears stuck.
     @AccessibilityFocusState private var focus: HomeFocus?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -88,9 +88,9 @@ struct TimersView: View {
                                         now: context.date,
                                         onPause: { viewModel.pause(timer) },
                                         onResume: { viewModel.resume(timer) },
-                                        onCancel: { dismiss(timer) },
-                                        focus: $focus
+                                        onCancel: { viewModel.stop(timer) }
                                     )
+                                    .accessibilityFocused($focus, equals: .running(timer.id))
                                     .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
                                 }
                             }
@@ -103,7 +103,7 @@ struct TimersView: View {
                                 NextHourTile(
                                     now: context.date,
                                     onStart: { viewModel.startNextHour() },
-                                    onUnpin: { unpinNextHour() }
+                                    onUnpin: { viewModel.setNextHourPinned(false) }
                                 )
                                 .accessibilityFocused($focus, equals: .nextHour)
                             }
@@ -112,7 +112,7 @@ struct TimersView: View {
                                 TimerTile(
                                     preset: item.preset,
                                     onStart: { viewModel.start(item.preset) },
-                                    onUnpin: { unpin(item.preset) },
+                                    onUnpin: { viewModel.deletePreset(item.preset) },
                                     onPin: nil
                                 )
                                 .accessibilityFocused($focus, equals: .preset(item.preset.id))
@@ -134,6 +134,9 @@ struct TimersView: View {
                     .animation(reduceMotion ? nil : .easeInOut(duration: 0.25), value: viewModel.runningRows)
                 }
             }
+        }
+        .onChange(of: focusSections) { old, new in
+            repairFocus(from: old, to: new)
         }
         // Floating + FAB, pinned bottom-centre. Sits beneath the coach-mark/
         // splash overlays so the tour scrim covers it — and so tip 3 can
@@ -241,68 +244,69 @@ struct TimersView: View {
 // MARK: - VoiceOver focus hand-off
 
 extension TimersView {
-    private func dismiss(_ timer: RunningTimer) {
-        let rows = viewModel.runningRows
-        var target = firstTileFocus
-        if let i = rows.firstIndex(where: { $0.id == timer.id }), rows.count > 1 {
-            // The row below takes its place; the last row hands back upward.
-            target = .running(rows[i + 1 < rows.count ? i + 1 : i - 1].id)
-        }
-        viewModel.stop(timer)
-        moveFocus(to: target)
+    /// Home's focusable elements in reading order: the running rows, the grid,
+    /// the + button.
+    private var focusSections: [[HomeFocus]] {
+        [
+            viewModel.runningRows.map { .running($0.id) },
+            (viewModel.isNextHourPinned ? [.nextHour] : [])
+                + viewModel.presetTiles.map { .preset($0.preset.id) },
+            [.add],
+        ]
     }
 
-    private func unpin(_ preset: TimerPreset) {
-        let tiles = viewModel.presetTiles
-        var target: HomeFocus = viewModel.isNextHourPinned ? .nextHour : .add
-        if let i = tiles.firstIndex(where: { $0.preset.id == preset.id }), tiles.count > 1 {
-            target = .preset(tiles[i + 1 < tiles.count ? i + 1 : i - 1].preset.id)
-        }
-        viewModel.deletePreset(preset)
-        moveFocus(to: target)
-    }
-
-    private func unpinNextHour() {
-        viewModel.setNextHourPinned(false)
-        moveFocus(to: viewModel.presetTiles.first.map { .preset($0.preset.id) } ?? .add)
-    }
-
-    /// The first grid cell, or the + button when the grid is empty.
-    private var firstTileFocus: HomeFocus {
-        if viewModel.isNextHourPinned { return .nextHour }
-        return viewModel.presetTiles.first.map { .preset($0.preset.id) } ?? .add
-    }
-
-    /// Set after the removal animation, once the layout has settled and the
-    /// old element is gone — set sooner, VoiceOver can land on the element
-    /// that is on its way out.
-    private func moveFocus(to target: HomeFocus) {
+    /// Moves VoiceOver off an element that has just left the screen. Driven by
+    /// the layout rather than by the button that removed it, so it covers every
+    /// way out — Dismiss and Unpin, but also a timer rung out or stopped from
+    /// the Lock Screen, the Live Activity or a widget.
+    private func repairFocus(from old: [[HomeFocus]], to new: [[HomeFocus]]) {
+        guard let removed = focus,
+              let target = HomeFocus.replacement(for: removed, from: old, to: new) else { return }
         Task { @MainActor in
+            // Wait out the removal animation, so the target is where it stays.
             try? await Task.sleep(for: .milliseconds(350))
-            focus = target
+            // VoiceOver stays parked on the removed element's leftover node —
+            // `focus` still reads `removed` — and setting `focus` alone does not
+            // move it; neither does clearing it first or posting a layout
+            // change. A screen change releases it, after which the focus change
+            // lands. (Traced on an iPhone, iOS 26.) One retry covers a slow
+            // release. Stops as soon as VoiceOver is anywhere but `removed`:
+            // landed on `target`, or moved on by the user.
+            for _ in 0..<2 {
+                guard focus == removed else { return }
+                UIAccessibility.post(notification: .screenChanged, argument: nil)
+                try? await Task.sleep(for: .milliseconds(600))
+                focus = target
+                try? await Task.sleep(for: .milliseconds(500))
+            }
         }
     }
 }
 
 /// The Home elements VoiceOver focus can be handed to.
-enum HomeFocus: Hashable {
+nonisolated enum HomeFocus: Hashable {
     case running(UUID)
     case nextHour
     case preset(UUID)
     case add
-}
 
-/// Binds an element to Home's focus when the view has one to bind to.
-struct HomeFocusTarget: ViewModifier {
-    let focus: AccessibilityFocusState<HomeFocus?>.Binding?
-    let value: HomeFocus
-
-    func body(content: Content) -> some View {
-        if let focus {
-            content.accessibilityFocused(focus, equals: value)
-        } else {
-            content
-        }
+    /// Where VoiceOver goes when `removed` leaves Home: the neighbour that takes
+    /// its place in its own section — the one after it, or the one before when
+    /// it was last — else the first element further down the screen. `nil` when
+    /// `removed` is still on screen, so there is nothing to repair.
+    ///
+    /// `old` and `new` are the screen's sections before and after the change.
+    /// Neighbours are looked up in `old`, where `removed` still has a position,
+    /// and kept only if they survive into `new` — several rows can go at once.
+    static func replacement(for removed: HomeFocus, from old: [[HomeFocus]], to new: [[HomeFocus]]) -> HomeFocus? {
+        let surviving = Set(new.joined())
+        guard !surviving.contains(removed),
+              let s = old.firstIndex(where: { $0.contains(removed) }),
+              let i = old[s].firstIndex(of: removed) else { return nil }
+        let section = old[s]
+        if let after = section[(i + 1)...].first(where: surviving.contains) { return after }
+        if let before = section[..<i].last(where: surviving.contains) { return before }
+        return new.dropFirst(s + 1).lazy.compactMap(\.first).first
     }
 }
 

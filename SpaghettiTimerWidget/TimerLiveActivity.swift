@@ -289,9 +289,9 @@ struct TimerLiveActivity: Widget {
         guard let seconds = remainingSeconds(state: state) else {
             return String(localized: "Done")
         }
-        let total = Int(min(seconds.rounded(), 8.64e9))
-        return Duration.seconds(total)
-            .formatted(.units(allowed: [.hours, .minutes, .seconds], width: .wide))
+        // Whole seconds first: the paused readout (`BannerCountdown.text`)
+        // rounds to the nearest second, and VoiceOver should say what it shows.
+        return SpokenTimer.duration(seconds.rounded())
     }
 
     /// The countdown wherever it must never be truncated — the banner and the

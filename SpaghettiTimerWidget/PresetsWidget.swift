@@ -279,18 +279,10 @@ struct PresetsWidgetView: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(name.isEmpty ? Text("Timer") : Text(name))
-        .accessibilityValue(tileAccessibilityValue(preset: preset, isActive: isActive, isRepeat: isRepeat))
+        .accessibilityLabel(SpokenTimer.label(for: name))
+        .accessibilityValue(SpokenTimer.tileValue(preset, isRunning: isActive))
         .accessibilityHint("Starts the timer")
         .accessibilityAddTraits(.isButton)
-    }
-
-    /// Spoken duration plus running / repeats state for a preset tile.
-    private func tileAccessibilityValue(preset: TimerPreset, isActive: Bool, isRepeat: Bool) -> Text {
-        var parts = [spoken(preset.duration)]
-        if isActive { parts.append(String(localized: "Running")) }
-        if isRepeat { parts.append(String(localized: "Repeats")) }
-        return Text(parts.joined(separator: ", "))
     }
 
     private var liveDot: some View {
@@ -325,14 +317,6 @@ struct PresetsWidgetView: View {
         return h > 0
             ? String(format: "%d:%02d:%02d", h, m, s)
             : String(format: "%02d:%02d", m, s)
-    }
-
-    /// Human-readable, localized duration for VoiceOver — mirrors
-    /// `TimerFormatting.spoken` in the app target (not compiled into the widget).
-    private func spoken(_ interval: TimeInterval) -> String {
-        let total = Int(min(max(0, interval.rounded()), 8.64e9))
-        return Duration.seconds(total)
-            .formatted(.units(allowed: [.hours, .minutes, .seconds], width: .wide))
     }
 }
 

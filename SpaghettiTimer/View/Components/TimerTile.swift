@@ -18,13 +18,6 @@ struct TimerTile: View {
     @ScaledMetric(relativeTo: .largeTitle) private var durationSize: CGFloat = 40
     @ScaledMetric(relativeTo: .body) private var pinSize: CGFloat = 18
 
-    /// Spoken duration, with a "Repeats" note when the preset auto-restarts.
-    private var accessibilityValue: String {
-        let duration = TimerFormatting.spoken(preset.duration)
-        guard preset.autoRestartDelaySeconds != nil else { return duration }
-        return duration + ", " + String(localized: "Repeats")
-    }
-
     private var pinTransition: AnyTransition {
         reduceMotion ? .identity : .scale.combined(with: .opacity)
     }
@@ -57,8 +50,8 @@ struct TimerTile: View {
         // element: name as label, spoken duration as value, with pin/unpin
         // reachable as a rotor action rather than a tiny separate target.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(preset.name)
-        .accessibilityValue(accessibilityValue)
+        .accessibilityLabel(SpokenTimer.label(for: preset.name))
+        .accessibilityValue(SpokenTimer.tileValue(preset))
         .accessibilityHint("Starts the timer")
         .accessibilityAddTraits(.isButton)
         .accessibilityAction(.default, onStart)
@@ -165,13 +158,5 @@ enum TimerFormatting {
         return h > 0
             ? String(format: "%d:%02d:%02d", h, m, s)
             : String(format: "%02d:%02d", m, s)
-    }
-
-    /// Human-readable, localized duration for VoiceOver — e.g. "5 minutes",
-    /// "1 hour, 30 seconds" — so screen readers don't spell out "05:00".
-    static func spoken(_ interval: TimeInterval) -> String {
-        let total = Int(min(max(0, interval.rounded()), 8.64e9))
-        return Duration.seconds(total)
-            .formatted(.units(allowed: [.hours, .minutes, .seconds], width: .wide))
     }
 }

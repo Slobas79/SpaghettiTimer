@@ -26,11 +26,6 @@ struct NextHourTile: View {
 
     private var minutes: Int { NextHour.minutesRemaining(at: now) }
 
-    /// e.g. "Until 7 PM, 21 minutes" — the two on-screen strings, spoken.
-    private var accessibilityValue: String {
-        NextHour.label(at: now) + ", " + TimerFormatting.spoken(TimeInterval(minutes * 60))
-    }
-
     var body: some View {
         // Siblings, not nested — see the matching note in `TimerTile`.
         ZStack(alignment: .topTrailing) {
@@ -45,7 +40,7 @@ struct NextHourTile: View {
         // action rather than a separate corner target.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("To next hour")
-        .accessibilityValue(accessibilityValue)
+        .accessibilityValue(SpokenTimer.nextHourValue(label: NextHour.label(at: now), minutes: minutes))
         .accessibilityHint("Starts the timer")
         .accessibilityAddTraits(.isButton)
         .accessibilityAction(.default, onStart)

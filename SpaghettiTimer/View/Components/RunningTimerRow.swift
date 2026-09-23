@@ -11,10 +11,6 @@ struct RunningTimerRow: View {
     let onPause: () -> Void
     let onResume: () -> Void
     let onCancel: () -> Void
-    /// Home's VoiceOver focus, so the screen can put focus on this row's
-    /// countdown when a neighbouring row is dismissed. `nil` where the row is
-    /// only artwork (the tutorial card).
-    var focus: AccessibilityFocusState<HomeFocus?>.Binding? = nil
 
     /// The row is a fixed-height band, so the watermark is sized off that
     /// height rather than off a font size that would overflow and clip.
@@ -30,33 +26,12 @@ struct RunningTimerRow: View {
         reduceMotion ? .identity : .numericText(countsDown: true)
     }
 
-    /// Spoken status + remaining time for the combined name/countdown element.
-    private var statusValue: String {
-        if now < timer.startDate {
-            let starts = TimerFormatting.spoken(timer.startDate.timeIntervalSince(now))
-            return String(localized: "Starts in \(starts)")
-        }
-        let remaining = TimerFormatting.spoken(timer.remaining(at: now))
-        if timer.isPaused {
-            return String(localized: "Paused, \(remaining) remaining")
-        }
-        return String(localized: "\(remaining) remaining")
-    }
-
     var body: some View {
         HStack(spacing: 8) {
             HStack(spacing: 12) {
-                // One button whose content flips, not two in an if/else: a
-                // branch swap replaces the view, and VoiceOver loses the button
-                // it just activated.
                 CircleButton(systemName: timer.isPaused ? "play.fill" : "pause.fill",
-                             action: timer.isPaused ? onResume : onPause)
-                    .accessibilityLabel(timer.isPaused ? Text("Resume timer") : Text("Pause timer"))
-                    .accessibilityHint(timer.isPaused ? Text("Resumes the countdown") : Text("Pauses the countdown"))
-
+                             action: togglePause)
                 CircleButton(systemName: "xmark", action: onCancel)
-                    .accessibilityLabel("Dismiss timer")
-                    .accessibilityHint("Stops and removes the timer")
             }
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -94,13 +69,6 @@ struct RunningTimerRow: View {
                         .layoutPriority(1)
                 }
             }
-            // Read the name + live countdown as a single, frequently-updating
-            // element instead of fragmenting it across glyph/name/digits.
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(timer.name)
-            .accessibilityValue(statusValue)
-            .accessibilityAddTraits(.updatesFrequently)
-            .modifier(HomeFocusTarget(focus: focus, value: .running(timer.id)))
             // Take the row's leftover width as one block, so the name/countdown
             // pair is measured against all of it rather than a share of it.
             .layoutPriority(1)
@@ -114,6 +82,23 @@ struct RunningTimerRow: View {
                 .stroke(Theme.accent, lineWidth: 2)
         )
         .shadow(color: Theme.accent.opacity(0.28), radius: 12, y: 6)
+        // One VoiceOver element per row, like the tiles: the timer is read
+        // first — name, then live status — instead of after two controls whose
+        // labels don't say which timer they belong to. Double-tap pauses or
+        // resumes; Dismiss is a rotor action, so the one destructive control
+        // is never a stray double-tap away.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(SpokenTimer.label(for: timer.name))
+        .accessibilityValue(SpokenTimer.rowValue(timer, at: now))
+        .accessibilityHint(timer.isPaused ? Text("Resumes the countdown") : Text("Pauses the countdown"))
+        .accessibilityAddTraits([.isButton, .updatesFrequently])
+        .accessibilityAction(.default, togglePause)
+        .accessibilityAction(named: timer.isPaused ? Text("Resume timer") : Text("Pause timer"), togglePause)
+        .accessibilityAction(named: Text("Dismiss timer"), onCancel)
+    }
+
+    private func togglePause() {
+        if timer.isPaused { onResume() } else { onPause() }
     }
 
     /// Same auto-repeat watermark the tile uses, so a repeating timer reads the
