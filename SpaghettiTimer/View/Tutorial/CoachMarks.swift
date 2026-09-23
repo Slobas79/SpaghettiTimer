@@ -41,6 +41,9 @@ private struct CoachMarksHost: ViewModifier {
                     GeometryReader { geo in
                         CoachMarksOverlay(steps: steps, anchors: anchors, geo: geo, onTab: onTab) { completed in
                             isActive = false
+                            // The overlay VoiceOver was inside is gone; hand
+                            // focus back to the screen underneath.
+                            UIAccessibility.post(notification: .screenChanged, argument: nil)
                             // Only a completed tour retires the screen's Help
                             // button. Skip just puts the tips away — they stay
                             // on offer until the user has actually seen them
@@ -82,6 +85,11 @@ private struct CoachMarksOverlay: View {
     let onFinish: (_ completed: Bool) -> Void
 
     @State private var index = 0
+    /// VoiceOver focus on the card's text. Every Next/Back rebuilds the card
+    /// somewhere else on screen (and artwork ↔ spotlight tips are different
+    /// views), so the button VoiceOver was on disappears. Without moving focus
+    /// explicitly, VoiceOver is left on nothing.
+    @AccessibilityFocusState private var cardTextFocused: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Stable id for the sample timer shown in the running-banner artwork.
@@ -125,6 +133,13 @@ private struct CoachMarksOverlay: View {
             }
             .onChange(of: i) { _, newIndex in
                 if let tab = steps[min(newIndex, steps.count - 1)].tab { onTab?(tab) }
+            }
+            // Land VoiceOver on the new tip's text on entry and on every step.
+            // Waits out the move animation (and a tab switch's anchor round
+            // trip), since focus can't be set on a card that isn't there yet.
+            .task(id: i) {
+                try? await Task.sleep(for: .milliseconds(400))
+                cardTextFocused = true
             }
             // Keep the stored index inside the filtered range. Without this a
             // shrinking script (a spotlight target leaving the screen) would
@@ -240,22 +255,29 @@ private struct CoachMarksOverlay: View {
                     .padding(.bottom, 12)
             }
 
-            Text(String(localized: "Tip \(i + 1) of \(count)").uppercased())
-                .font(.system(size: eyebrowSize, weight: .bold))
-                .tracking(1)
-                .foregroundStyle(Theme.tourEyebrow)
+            // One VoiceOver element — "Tip 2 of 6, title, body" — so a
+            // step reads in a single stop and Next is two swipes away.
+            VStack(alignment: .leading, spacing: 0) {
+                Text(String(localized: "Tip \(i + 1) of \(count)").uppercased())
+                    .font(.system(size: eyebrowSize, weight: .bold))
+                    .tracking(1)
+                    .foregroundStyle(Theme.tourEyebrow)
 
-            Text(step.title)
-                .font(.system(size: titleSize, weight: .bold))
-                .foregroundStyle(.white)
-                .padding(.top, 5)
+                Text(step.title)
+                    .font(.system(size: titleSize, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.top, 5)
 
-            Text(step.body)
-                .font(.system(size: bodySize))
-                .lineSpacing(bodySize * 0.45)
-                .foregroundStyle(Theme.tourBody)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 4)
+                Text(step.body)
+                    .font(.system(size: bodySize))
+                    .lineSpacing(bodySize * 0.45)
+                    .foregroundStyle(Theme.tourBody)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityFocused($cardTextFocused)
 
             // Footer order: step dots · Skip (always) · ‹ Back (tip ≥ 2) · Next/Done.
             HStack(spacing: 12) {

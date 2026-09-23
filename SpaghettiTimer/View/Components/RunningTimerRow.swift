@@ -11,6 +11,10 @@ struct RunningTimerRow: View {
     let onPause: () -> Void
     let onResume: () -> Void
     let onCancel: () -> Void
+    /// Home's VoiceOver focus, so the screen can put focus on this row's
+    /// countdown when a neighbouring row is dismissed. `nil` where the row is
+    /// only artwork (the tutorial card).
+    var focus: AccessibilityFocusState<HomeFocus?>.Binding? = nil
 
     /// The row is a fixed-height band, so the watermark is sized off that
     /// height rather than off a font size that would overflow and clip.
@@ -42,15 +46,13 @@ struct RunningTimerRow: View {
     var body: some View {
         HStack(spacing: 8) {
             HStack(spacing: 12) {
-                if timer.isPaused {
-                    CircleButton(systemName: "play.fill", action: onResume)
-                        .accessibilityLabel("Resume timer")
-                        .accessibilityHint("Resumes the countdown")
-                } else {
-                    CircleButton(systemName: "pause.fill", action: onPause)
-                        .accessibilityLabel("Pause timer")
-                        .accessibilityHint("Pauses the countdown")
-                }
+                // One button whose content flips, not two in an if/else: a
+                // branch swap replaces the view, and VoiceOver loses the button
+                // it just activated.
+                CircleButton(systemName: timer.isPaused ? "play.fill" : "pause.fill",
+                             action: timer.isPaused ? onResume : onPause)
+                    .accessibilityLabel(timer.isPaused ? Text("Resume timer") : Text("Pause timer"))
+                    .accessibilityHint(timer.isPaused ? Text("Resumes the countdown") : Text("Pauses the countdown"))
 
                 CircleButton(systemName: "xmark", action: onCancel)
                     .accessibilityLabel("Dismiss timer")
@@ -98,6 +100,7 @@ struct RunningTimerRow: View {
             .accessibilityLabel(timer.name)
             .accessibilityValue(statusValue)
             .accessibilityAddTraits(.updatesFrequently)
+            .modifier(HomeFocusTarget(focus: focus, value: .running(timer.id)))
             // Take the row's leftover width as one block, so the name/countdown
             // pair is measured against all of it rather than a share of it.
             .layoutPriority(1)

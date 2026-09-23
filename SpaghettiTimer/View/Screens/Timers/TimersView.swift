@@ -27,6 +27,11 @@ struct TimersView: View {
     @AppStorage(TutorialScreen.home.rawValue, store: AppGroup.defaults)
     private var homeTourDone = false
 
+    /// Where VoiceOver goes when the element it is on is removed — a
+    /// dismissed running row, an unpinned tile. Left alone, VoiceOver stays
+    /// on the vanished element and appears stuck.
+    @AccessibilityFocusState private var focus: HomeFocus?
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.openURL) private var openURL
 
@@ -83,7 +88,8 @@ struct TimersView: View {
                                         now: context.date,
                                         onPause: { viewModel.pause(timer) },
                                         onResume: { viewModel.resume(timer) },
-                                        onCancel: { viewModel.stop(timer) }
+                                        onCancel: { dismiss(timer) },
+                                        focus: $focus
                                     )
                                     .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
                                 }
@@ -97,17 +103,19 @@ struct TimersView: View {
                                 NextHourTile(
                                     now: context.date,
                                     onStart: { viewModel.startNextHour() },
-                                    onUnpin: { viewModel.setNextHourPinned(false) }
+                                    onUnpin: { unpinNextHour() }
                                 )
+                                .accessibilityFocused($focus, equals: .nextHour)
                             }
 
                             ForEach(viewModel.presetTiles) { item in
                                 TimerTile(
                                     preset: item.preset,
                                     onStart: { viewModel.start(item.preset) },
-                                    onUnpin: { viewModel.deletePreset(item.preset) },
+                                    onUnpin: { unpin(item.preset) },
                                     onPin: nil
                                 )
+                                .accessibilityFocused($focus, equals: .preset(item.preset.id))
                                 .tutorialTarget(.presetTile)
                             }
 
@@ -134,6 +142,7 @@ struct TimersView: View {
         // ••• menu bottom-left.
         .overlay(alignment: .bottom) {
             AddTimerFAB(action: { showingNew = true })
+                .accessibilityFocused($focus, equals: .add)
                 .tutorialTarget(.addTile)
                 .padding(.bottom, 34)
         }
@@ -225,6 +234,74 @@ struct TimersView: View {
             if !TutorialFlags.isDone(.splash) {
                 showingSplash = true
             }
+        }
+    }
+}
+
+// MARK: - VoiceOver focus hand-off
+
+extension TimersView {
+    private func dismiss(_ timer: RunningTimer) {
+        let rows = viewModel.runningRows
+        var target = firstTileFocus
+        if let i = rows.firstIndex(where: { $0.id == timer.id }), rows.count > 1 {
+            // The row below takes its place; the last row hands back upward.
+            target = .running(rows[i + 1 < rows.count ? i + 1 : i - 1].id)
+        }
+        viewModel.stop(timer)
+        moveFocus(to: target)
+    }
+
+    private func unpin(_ preset: TimerPreset) {
+        let tiles = viewModel.presetTiles
+        var target: HomeFocus = viewModel.isNextHourPinned ? .nextHour : .add
+        if let i = tiles.firstIndex(where: { $0.preset.id == preset.id }), tiles.count > 1 {
+            target = .preset(tiles[i + 1 < tiles.count ? i + 1 : i - 1].preset.id)
+        }
+        viewModel.deletePreset(preset)
+        moveFocus(to: target)
+    }
+
+    private func unpinNextHour() {
+        viewModel.setNextHourPinned(false)
+        moveFocus(to: viewModel.presetTiles.first.map { .preset($0.preset.id) } ?? .add)
+    }
+
+    /// The first grid cell, or the + button when the grid is empty.
+    private var firstTileFocus: HomeFocus {
+        if viewModel.isNextHourPinned { return .nextHour }
+        return viewModel.presetTiles.first.map { .preset($0.preset.id) } ?? .add
+    }
+
+    /// Set after the removal animation, once the layout has settled and the
+    /// old element is gone — set sooner, VoiceOver can land on the element
+    /// that is on its way out.
+    private func moveFocus(to target: HomeFocus) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(350))
+            focus = target
+        }
+    }
+}
+
+/// The Home elements VoiceOver focus can be handed to.
+enum HomeFocus: Hashable {
+    case running(UUID)
+    case nextHour
+    case preset(UUID)
+    case add
+}
+
+/// Binds an element to Home's focus when the view has one to bind to.
+struct HomeFocusTarget: ViewModifier {
+    let focus: AccessibilityFocusState<HomeFocus?>.Binding?
+    let value: HomeFocus
+
+    func body(content: Content) -> some View {
+        if let focus {
+            content.accessibilityFocused(focus, equals: value)
+        } else {
+            content
         }
     }
 }
