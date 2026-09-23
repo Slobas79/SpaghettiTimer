@@ -280,12 +280,27 @@ struct NewTimerSheet: View {
 
     // MARK: - Nav bar
 
+    /// VoiceOver reads the sheet as a form: the title, Cancel and Show tips,
+    /// the fields top to bottom, then Start. Left to itself SwiftUI read the
+    /// nav bar left to right, so the sheet opened on Cancel and offered Start
+    /// before a single field. The title comes first so the sheet announces
+    /// itself; Start comes last, after everything it commits — which also puts
+    /// it under VoiceOver's four-finger tap near the bottom of the screen.
+    /// Higher reads first; the form keeps the default 0.
+    private enum ReadingOrder {
+        static let title: Double = 3
+        static let cancel: Double = 2
+        static let tips: Double = 1
+        static let start: Double = -1
+    }
+
     private var navBar: some View {
         ZStack {
             Text("New Timer")
                 .font(.system(size: titleSize, weight: .bold))
                 .foregroundStyle(.white)
                 .accessibilityAddTraits(.isHeader)
+                .accessibilitySortPriority(ReadingOrder.title)
 
             HStack {
                 Button {
@@ -299,11 +314,13 @@ struct NewTimerSheet: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Cancel")
+                .accessibilitySortPriority(ReadingOrder.cancel)
 
                 // Persistent Help trigger — replays the tour anytime.
                 TutorialHelpButton(style: .nav) {
                     showingTour = true
                 }
+                .accessibilitySortPriority(ReadingOrder.tips)
                 .padding(.leading, 14)
 
                 Spacer()
@@ -323,6 +340,7 @@ struct NewTimerSheet: View {
                 .buttonStyle(.plain)
                 .disabled(!canSave)
                 .accessibilityHint("Starts the timer with these settings")
+                .accessibilitySortPriority(ReadingOrder.start)
             }
         }
         .frame(height: 56)

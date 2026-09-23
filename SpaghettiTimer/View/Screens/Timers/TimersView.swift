@@ -146,6 +146,7 @@ struct TimersView: View {
         .overlay(alignment: .bottom) {
             AddTimerFAB(action: { showingNew = true })
                 .accessibilityFocused($focus, equals: .add)
+                .accessibilitySortPriority(ReadingOrder.add)
                 .tutorialTarget(.addTile)
                 .padding(.bottom, 34)
         }
@@ -161,6 +162,7 @@ struct TimersView: View {
                 TutorialHelpButton(style: .corner) {
                     showingTour = true
                 }
+                .accessibilitySortPriority(ReadingOrder.tips)
                 .padding(.leading, 20)
                 .padding(.bottom, 45)
             }
@@ -179,6 +181,7 @@ struct TimersView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("More options")
+                .accessibilitySortPriority(ReadingOrder.more)
                 .padding(.trailing, 20)
                 .padding(.bottom, 45)
             }
@@ -238,6 +241,22 @@ struct TimersView: View {
                 showingSplash = true
             }
         }
+    }
+}
+
+// MARK: - VoiceOver reading order
+
+extension TimersView {
+    /// Home's floating controls, in the order VoiceOver reads them: after the
+    /// timers, the primary action first, then the two corner pucks left to
+    /// right. Left to itself SwiftUI read all three *before* the ScrollView,
+    /// so the screen opened on "Show tips" rather than on a running timer.
+    /// Higher reads first; the scroll content — running rows, then the grid —
+    /// keeps the default 0.
+    fileprivate enum ReadingOrder {
+        static let add: Double = -1
+        static let tips: Double = -2
+        static let more: Double = -3
     }
 }
 
