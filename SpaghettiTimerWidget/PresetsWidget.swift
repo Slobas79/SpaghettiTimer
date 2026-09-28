@@ -101,8 +101,22 @@ struct PresetsWidgetView: View {
     private let gridColumns = 2
     private let gridGap: CGFloat = 10
 
-    private var labelSize: CGFloat { isSmall ? 15 : (isLarge ? 18 : 17) }
-    private var subSize: CGFloat { isSmall ? 12 : 14 }
+    // Text follows the Text Size setting. At the default size each metric returns
+    // its base value, so the widget renders exactly as the fixed-size version did.
+    // Growth is capped in `PresetsWidget`, because the tiles can't grow with it.
+    @ScaledMetric(relativeTo: .body) private var labelSizeSmall: CGFloat = 15
+    @ScaledMetric(relativeTo: .body) private var labelSizeMedium: CGFloat = 17
+    @ScaledMetric(relativeTo: .body) private var labelSizeLarge: CGFloat = 18
+    @ScaledMetric(relativeTo: .subheadline) private var subSizeSmall: CGFloat = 12
+    @ScaledMetric(relativeTo: .subheadline) private var subSizeRegular: CGFloat = 14
+    @ScaledMetric(relativeTo: .body) private var loopSize: CGFloat = 18
+    @ScaledMetric(relativeTo: .body) private var loopOnlySizeSmall: CGFloat = 22
+    @ScaledMetric(relativeTo: .body) private var loopOnlySizeRegular: CGFloat = 26
+    @ScaledMetric(relativeTo: .headline) private var headerTitleSize: CGFloat = 15
+    @ScaledMetric(relativeTo: .footnote) private var headerStatusSize: CGFloat = 12.5
+
+    private var labelSize: CGFloat { isSmall ? labelSizeSmall : (isLarge ? labelSizeLarge : labelSizeMedium) }
+    private var subSize: CGFloat { isSmall ? subSizeSmall : subSizeRegular }
     private var rowGap: CGFloat { isSmall ? 1 : 3 }
     private var sidePadding: CGFloat { isSmall ? 12 : 16 }
 
@@ -162,8 +176,10 @@ struct PresetsWidgetView: View {
                 .shadow(color: WidgetStyle.accent.opacity(0.45), radius: 3, y: 2)
 
             Text("Spaghetti Timer")
-                .font(.system(size: 15, weight: .bold))
+                .font(.system(size: headerTitleSize, weight: .bold))
                 .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
 
             Spacer(minLength: 8)
 
@@ -178,9 +194,11 @@ struct PresetsWidgetView: View {
                     Text("Quick start")
                 }
             }
-            .font(.system(size: 12.5, weight: .semibold))
+            .font(.system(size: headerStatusSize, weight: .semibold))
             .foregroundStyle(WidgetStyle.muted)
             .monospacedDigit()
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
         }
         .padding(.horizontal, 2)
         .padding(.top, 2)
@@ -211,7 +229,8 @@ struct PresetsWidgetView: View {
                 HStack(spacing: 6) {
                     if isRepeat {
                         Image(systemName: "arrow.clockwise")
-                            .font(.system(size: iconOnly ? (isSmall ? 22 : 26) : 18, weight: .semibold))
+                            .font(.system(size: iconOnly ? (isSmall ? loopOnlySizeSmall : loopOnlySizeRegular) : loopSize,
+                                          weight: .semibold))
                             .foregroundStyle(isActive ? Color.white : WidgetStyle.accent)
                             .accessibilityHidden(true)
                     }
@@ -326,6 +345,10 @@ struct PresetsWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: PresetsProvider()) { entry in
             PresetsWidgetView(entry: entry)
+                // Set outside the view so its `@ScaledMetric`s see the cap. The
+                // tiles are about 60 pt tall; past the largest standard size the
+                // two text lines no longer fit in one.
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                 .containerBackground(for: .widget) { WidgetStyle.containerGradient }
                 .environment(\.colorScheme, .dark)
         }
