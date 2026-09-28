@@ -330,7 +330,7 @@ struct PresetsWidget: Widget {
                 .environment(\.colorScheme, .dark)
         }
         .contentMarginsDisabled()
-        .configurationDisplayName("SpaghettiTimer")
+        .configurationDisplayName("Spaghetti Timer")
         .description("Start your favorite timers right from the Home Screen.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }

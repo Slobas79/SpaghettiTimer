@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSAlarmKitUsageDescription</key>
-	<string>SpaghettiTimer uses alarms to ring when your timers finish.</string>
+	<string>Spaghetti Timer uses alarms to ring when your timers finish.</string>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionPointIdentifier</key>

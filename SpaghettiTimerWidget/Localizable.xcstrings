@@ -194,7 +194,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ restant"
+            "value" : "Il reste %@"
           }
         },
         "hu" : {
@@ -278,6 +278,7 @@
       }
     },
     "%@ running" : {
+      "comment" : "Widget header while a timer runs. The argument is the timer’s name.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
@@ -487,7 +488,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "自動再開までの時間"
+            "value" : "自動再スタートまでの時間"
           }
         },
         "nb" : {
@@ -553,6 +554,7 @@
       }
     },
     "Auto-restart" : {
+      "comment" : "Name of the feature that restarts a timer automatically after a cooldown once it finishes.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
@@ -624,7 +626,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "自動再開"
+            "value" : "自動再スタート"
           }
         },
         "nb" : {
@@ -828,12 +830,13 @@
       }
     },
     "Cancel Timer" : {
+      "comment" : "Shortcuts / App Intent title.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "إلغاء المؤقّت"
+            "value" : "إلغاء المؤقت"
           }
         },
         "bg" : {
@@ -965,12 +968,13 @@
       }
     },
     "Cancels the running countdown timer." : {
+      "comment" : "Shortcuts / App Intent description.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يلغي مؤقّت العدّ التنازلي قيد التشغيل."
+            "value" : "يلغي مؤقت العدّ التنازلي قيد التشغيل."
           }
         },
         "bg" : {
@@ -1102,6 +1106,7 @@
       }
     },
     "Done" : {
+      "comment" : "Live Activity status once the countdown has finished.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
@@ -1257,7 +1262,7 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trvání"
+            "value" : "Délka"
           }
         },
         "da" : {
@@ -1371,7 +1376,7 @@
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Varaktighet"
+            "value" : "Längd"
           }
         }
       }
@@ -1611,7 +1616,7 @@
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Colocar temporizador em pausa"
+            "value" : "Pausar temporizador"
           }
         },
         "ro" : {
@@ -1635,7 +1640,7 @@
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zaustavi časovnik"
+            "value" : "Začasno ustavi časovnik"
           }
         },
         "sr" : {
@@ -1653,12 +1658,13 @@
       }
     },
     "Pause Timer" : {
+      "comment" : "Shortcuts / App Intent title.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "إيقاف المؤقّت مؤقتًا"
+            "value" : "إيقاف المؤقت مؤقتًا"
           }
         },
         "bg" : {
@@ -1790,6 +1796,7 @@
       }
     },
     "Paused" : {
+      "comment" : "VoiceOver label of the paused indicator on the Live Activity.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1908,7 +1915,7 @@
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zaustavljeno"
+            "value" : "Začasno ustavljeno"
           }
         },
         "sr" : {
@@ -1980,7 +1987,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "En pause, %@ restant"
+            "value" : "En pause, il reste %@"
           }
         },
         "hu" : {
@@ -2046,7 +2053,7 @@
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zaustavljeno, preostane %@"
+            "value" : "Začasno ustavljeno, preostane %@"
           }
         },
         "sr" : {
@@ -2064,12 +2071,13 @@
       }
     },
     "Pauses the running countdown timer." : {
+      "comment" : "Shortcuts / App Intent description.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يوقف مؤقّت العدّ التنازلي قيد التشغيل مؤقتًا."
+            "value" : "يوقف مؤقت العدّ التنازلي قيد التشغيل مؤقتًا."
           }
         },
         "bg" : {
@@ -2243,7 +2251,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ID del ajuste"
+            "value" : "ID del preajuste"
           }
         },
         "fi" : {
@@ -2291,7 +2299,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Identyfikator ustawienia"
+            "value" : "Identyfikator presetu"
           }
         },
         "pt-PT" : {
@@ -2339,6 +2347,7 @@
       }
     },
     "Quick start" : {
+      "comment" : "Widget header when no timer is running.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
@@ -2614,12 +2623,13 @@
       }
     },
     "Repeat Timer" : {
+      "comment" : "Shortcuts / App Intent title.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "تكرار المؤقّت"
+            "value" : "تكرار المؤقت"
           }
         },
         "bg" : {
@@ -2871,7 +2881,7 @@
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se ponavlja"
+            "value" : "Ponavlja se"
           }
         },
         "sr" : {
@@ -2889,12 +2899,13 @@
       }
     },
     "Restarts the same timer from the beginning." : {
+      "comment" : "Shortcuts / App Intent description.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يعيد تشغيل المؤقّت نفسه من البداية."
+            "value" : "يعيد تشغيل المؤقت نفسه من البداية."
           }
         },
         "bg" : {
@@ -2954,7 +2965,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Riavvia lo stesso timer dall'inizio."
+            "value" : "Riavvia lo stesso timer dall’inizio."
           }
         },
         "ja" : {
@@ -3230,7 +3241,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Riprendi timer"
+            "value" : "Riprendi il timer"
           }
         },
         "ja" : {
@@ -3242,7 +3253,7 @@
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fortsett tidtaker"
+            "value" : "Gjenoppta tidtaker"
           }
         },
         "nl" : {
@@ -3272,7 +3283,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Продолжить таймер"
+            "value" : "Возобновить таймер"
           }
         },
         "sk" : {
@@ -3302,12 +3313,13 @@
       }
     },
     "Resume Timer" : {
+      "comment" : "Shortcuts / App Intent title.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "استئناف المؤقّت"
+            "value" : "استئناف المؤقت"
           }
         },
         "bg" : {
@@ -3439,12 +3451,13 @@
       }
     },
     "Resumes the paused countdown timer." : {
+      "comment" : "Shortcuts / App Intent description.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يستأنف مؤقّت العدّ التنازلي المتوقّف مؤقتًا."
+            "value" : "يستأنف مؤقت العدّ التنازلي المتوقّف مؤقتًا."
           }
         },
         "bg" : {
@@ -3576,6 +3589,7 @@
       }
     },
     "Running" : {
+      "comment" : "Status of an active timer, read by VoiceOver and shown on widget tiles.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
@@ -3850,151 +3864,14 @@
         }
       }
     },
-    "SpaghettiTimer" : {
-      "comment" : "The name of the widget configuration displayed in the Home Screen.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "bg" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "fi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "nb" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "ro" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "sk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "sl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SpaghettiTimer"
-          }
-        }
-      }
-    },
     "Start Timer" : {
+      "comment" : "Shortcuts / App Intent title.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "بدء المؤقّت"
+            "value" : "بدء المؤقت"
           }
         },
         "bg" : {
@@ -4126,12 +4003,13 @@
       }
     },
     "Start your favorite timers right from the Home Screen." : {
+      "comment" : "Widget gallery description.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ابدأ مؤقّتاتك المفضّلة مباشرةً من الشاشة الرئيسية."
+            "value" : "ابدأ مؤقتاتك المفضّلة مباشرةً من الشاشة الرئيسية."
           }
         },
         "bg" : {
@@ -4179,13 +4057,13 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Démarrez vos minuteurs favoris depuis l'écran d'accueil."
+            "value" : "Démarrez vos minuteurs favoris depuis l’écran d’accueil."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Indítsd kedvenc időzítőidet közvetlenül a kezdőképernyőről."
+            "value" : "Indítsa kedvenc időzítőit közvetlenül a kezdőképernyőről."
           }
         },
         "it" : {
@@ -4263,18 +4141,19 @@
       }
     },
     "Starts a countdown timer for the selected preset." : {
+      "comment" : "Shortcuts / App Intent description. A preset is a saved, pinned timer.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يبدأ مؤقّت عدّ تنازلي للإعداد المحدّد."
+            "value" : "يبدأ مؤقت عدّ تنازلي للإعداد المسبق المحدّد."
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Стартира таймер за обратно броене за избраната настройка."
+            "value" : "Стартира таймер за обратно броене за избрания шаблон."
           }
         },
         "cs" : {
@@ -4286,13 +4165,13 @@
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Starter en nedtællingstimer for den valgte forudindstilling."
+            "value" : "Starter en nedtællingstimer for den valgte forindstilling."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Startet einen Countdown-Timer für die ausgewählte Vorgabe."
+            "value" : "Startet einen Countdown-Timer für das ausgewählte Preset."
           }
         },
         "el" : {
@@ -4304,7 +4183,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inicia un temporizador de cuenta atrás para el ajuste seleccionado."
+            "value" : "Inicia un temporizador de cuenta atrás para el preajuste seleccionado."
           }
         },
         "fi" : {
@@ -4322,7 +4201,7 @@
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Visszaszámláló időzítőt indít a kiválasztott beállításhoz."
+            "value" : "Visszaszámláló időzítőt indít a kiválasztott előbeállításhoz."
           }
         },
         "it" : {
@@ -4340,19 +4219,19 @@
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Starter en nedtellingstidtaker for det valgte forhåndsvalget."
+            "value" : "Starter en nedtellingstidtaker for den valgte forhåndsinnstillingen."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start een afteltimer voor de geselecteerde voorinstelling."
+            "value" : "Start een afteltimer voor de geselecteerde preset."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uruchamia minutnik odliczający dla wybranego ustawienia."
+            "value" : "Uruchamia minutnik odliczający dla wybranego presetu."
           }
         },
         "pt-PT" : {
@@ -4370,7 +4249,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Запускает таймер обратного отсчёта для выбранной настройки."
+            "value" : "Запускает таймер обратного отсчёта для выбранного пресета."
           }
         },
         "sk" : {
@@ -4388,13 +4267,13 @@
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pokreće odbrojavajući tajmer za izabranu postavku."
+            "value" : "Pokreće odbrojavajući tajmer za izabrani preset."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Startar en nedräkningstimer för den valda förinställningen."
+            "value" : "Startar en nedräkningstimer för det valda förvalet."
           }
         }
       }
@@ -4502,7 +4381,7 @@
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Începe în %@"
+            "value" : "Începe peste %@"
           }
         },
         "ru" : {
@@ -4520,7 +4399,7 @@
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se začne čez %@"
+            "value" : "Začne se čez %@"
           }
         },
         "sr" : {
@@ -4676,6 +4555,7 @@
       }
     },
     "Stop" : {
+      "comment" : "Stop button on the ringing alarm.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -4812,12 +4692,13 @@
       }
     },
     "Stop Timer" : {
+      "comment" : "Shortcuts / App Intent title.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "إيقاف المؤقّت"
+            "value" : "إيقاف المؤقت"
           }
         },
         "bg" : {
@@ -4949,18 +4830,19 @@
       }
     },
     "Stops the running countdown timer and clears its widget indicator." : {
+      "comment" : "Shortcuts / App Intent description.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يوقف المؤقّت قيد التشغيل ويمسح مؤشّره في الأداة."
+            "value" : "يوقف المؤقت قيد التشغيل ويمسح مؤشّره في الأداة."
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Спира текущия таймер и премахва индикатора му в джаджата."
+            "value" : "Спира текущия таймер и премахва индикатора му в приспособлението."
           }
         },
         "cs" : {
@@ -5008,7 +4890,7 @@
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Leállítja a futó visszaszámláló időzítőt, és törli a widgetjelzőjét."
+            "value" : "Leállítja a futó visszaszámláló időzítőt, és törli a jelzőjét a modulból."
           }
         },
         "it" : {
@@ -5026,7 +4908,7 @@
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stopper den pågående nedtellingstidtakeren og fjerner indikatoren i widgeten."
+            "value" : "Stopper den pågående nedtellingstidtakeren og fjerner indikatoren i modulen."
           }
         },
         "nl" : {
@@ -5224,12 +5106,13 @@
       }
     },
     "Timer" : {
+      "comment" : "Fallback name for a timer that has no name.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "مؤقّت"
+            "value" : "مؤقت"
           }
         },
         "bg" : {

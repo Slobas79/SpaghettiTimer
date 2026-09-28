@@ -25,7 +25,7 @@
 	<key>MinimumOSVersion</key>
 	<string>26.0</string>
 	<key>NSAlarmKitUsageDescription</key>
-	<string>SpaghettiTimer uses alarms to ring when your timers finish.</string>
+	<string>Spaghetti Timer uses alarms to ring when your timers finish.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

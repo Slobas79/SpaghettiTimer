@@ -626,13 +626,7 @@ struct NewTimerSheet: View {
                     .background(Capsule().fill(info.isTomorrow ? Theme.dayTomorrowBG : Theme.dayTodayBG))
                     .foregroundStyle(info.isTomorrow ? Theme.lightText : Theme.dayTodayText)
 
-                (Text(info.durationText)
-                    .font(.system(size: durReadoutSize, weight: .bold))
-                    .foregroundColor(.white)
-                 + Text(verbatim: " ")
-                 + Text("from now")
-                    .font(.system(size: durReadoutSize, weight: .medium))
-                    .foregroundColor(Theme.durMutedText))
+                Text(fromNowAttributed(info))
             }
             .padding(.top, 14)
         }
@@ -644,14 +638,28 @@ struct NewTimerSheet: View {
         .accessibilityLabel(readoutAccessibilityLabel(info))
     }
 
-    /// e.g. "Timer ends 11:00 AM, Tomorrow, 21 hr 49 min from now" — composed from
+    /// "21 hr 49 min from now" as one localized format, so each language can put its
+    /// word before the duration ("in 21 Std. 49 Min."). The duration keeps the bold
+    /// white weight; the surrounding words stay muted.
+    private func fromNowAttributed(_ info: EndInfo) -> AttributedString {
+        var text = AttributedString(String(localized: "\(info.durationText) from now"))
+        text.font = .system(size: durReadoutSize, weight: .medium)
+        text.foregroundColor = Theme.durMutedText
+        if let range = text.range(of: info.durationText) {
+            text[range].font = .system(size: durReadoutSize, weight: .bold)
+            text[range].foregroundColor = .white
+        }
+        return text
+    }
+
+    /// e.g. "Timer ends at 11:00 AM, Tomorrow, 21 hr 49 min from now" — composed from
     /// the same localized fragments shown on screen.
     private func readoutAccessibilityLabel(_ info: EndInfo) -> String {
         let time = info.ampm.map { "\(info.timeText) \($0)" } ?? info.timeText
         let day = info.isTomorrow ? String(localized: "Tomorrow") : String(localized: "Today")
-        let ends = String(localized: "Timer ends")
-        let fromNow = String(localized: "from now")
-        return "\(ends) \(time), \(day), \(info.durationText) \(fromNow)"
+        let ends = String(localized: "Timer ends at \(time)")
+        let fromNow = String(localized: "\(info.durationText) from now")
+        return "\(ends), \(day), \(fromNow)"
     }
 
     private var clockWheel: some View {

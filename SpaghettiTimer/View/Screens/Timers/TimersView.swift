@@ -226,7 +226,7 @@ struct TimersView: View {
             }
             Button("Not Now", role: .cancel) {}
         } message: {
-            Text("SpaghettiTimer needs permission to schedule alarms — without it a timer can’t ring, so it won’t start. Turn alarms on in Settings, then try again.")
+            Text("Spaghetti Timer needs permission to schedule alarms — without it a timer can’t ring, so it won’t start. Turn alarms on in Settings, then try again.")
         }
         .onAppear {
             viewModel.refresh()

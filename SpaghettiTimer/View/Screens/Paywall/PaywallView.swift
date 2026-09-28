@@ -103,7 +103,7 @@ struct PaywallView: View {
                 .shadow(color: Theme.accent.opacity(0.5), radius: 16, y: 6)
                 .accessibilityHidden(true)
 
-            Text("SpaghettiTimer Pro")
+            Text("Spaghetti Timer Pro")
                 .font(.system(size: titleSize, weight: .bold))
                 .foregroundStyle(.white)
                 .accessibilityAddTraits(.isHeader)
@@ -227,9 +227,9 @@ struct PaywallView: View {
 
     private var unlockAccessibilityLabel: String {
         if let price = store.displayPrice {
-            return String(localized: "Unlock SpaghettiTimer Pro for \(price)")
+            return String(localized: "Unlock Spaghetti Timer Pro for \(price)")
         }
-        return String(localized: "Unlock SpaghettiTimer Pro")
+        return String(localized: "Unlock Spaghetti Timer Pro")
     }
 
     private var restoreButton: some View {
@@ -239,7 +239,7 @@ struct PaywallView: View {
                 if store.isPro { dismiss() }
             }
         } label: {
-            Text("Restore Purchase")
+            Text("Restore Purchases")
                 .font(.system(size: bodySize - 1, weight: .medium))
                 .foregroundStyle(Theme.lightText)
         }
