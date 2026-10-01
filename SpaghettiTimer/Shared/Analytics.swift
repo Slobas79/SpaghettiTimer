@@ -42,6 +42,24 @@ nonisolated enum AnalyticsSource: String, Sendable {
     case alarmAlert = "alarm_alert"
 }
 
+/// How a started timer's duration was chosen.
+nonisolated enum AnalyticsTimerMode: String, Sendable {
+    /// A typed duration — tiles, widget, Duration tab, auto-restart iterations.
+    case duration
+    /// The New Timer sheet's End time tab: a picked clock target.
+    case endTime = "end_time"
+    /// The dynamic "To next hour" home tile.
+    case nextHour = "next_hour"
+}
+
+/// What a pin / delete acted on.
+nonisolated enum AnalyticsPresetKind: String, Sendable {
+    /// A stored preset (built-in or custom).
+    case preset
+    /// The dynamic "To next hour" home tile, which is not a stored preset.
+    case nextHour = "next_hour"
+}
+
 // MARK: - No-op
 
 /// Used in DEBUG builds and SwiftUI previews so development traffic never
@@ -114,6 +132,8 @@ nonisolated extension AnalyticsEvent {
         static let acknowledged = "acknowledged"
         static let isBuiltIn = "is_built_in"
         static let autoRestartIteration = "auto_restart_iteration"
+        static let mode = "mode"
+        static let kind = "kind"
     }
 
     private static func bool(_ value: Bool) -> AnalyticsValue { .string(value ? "true" : "false") }
@@ -131,14 +151,16 @@ nonisolated extension AnalyticsEvent {
         isEphemeral: Bool,
         autoRestart: Bool,
         source: AnalyticsSource,
-        autoRestartIteration: Bool = false
+        autoRestartIteration: Bool = false,
+        mode: AnalyticsTimerMode = .duration
     ) -> AnalyticsEvent {
         var params: [String: AnalyticsValue] = [
             Key.source: .string(source.rawValue),
             Key.presetName: .string(safePresetName(presetID: presetID, name: name)),
             Key.durationSeconds: .int(durationSeconds),
             Key.isEphemeral: bool(isEphemeral),
-            Key.autoRestart: bool(autoRestart)
+            Key.autoRestart: bool(autoRestart),
+            Key.mode: .string(mode.rawValue)
         ]
         if autoRestartIteration {
             params[Key.autoRestartIteration] = bool(true)
@@ -176,14 +198,18 @@ nonisolated extension AnalyticsEvent {
         ])
     }
 
-    static func presetPin() -> AnalyticsEvent {
-        AnalyticsEvent(name: "preset_pin", params: [Key.source: .string(AnalyticsSource.app.rawValue)])
+    static func presetPin(kind: AnalyticsPresetKind = .preset) -> AnalyticsEvent {
+        AnalyticsEvent(name: "preset_pin", params: [
+            Key.source: .string(AnalyticsSource.app.rawValue),
+            Key.kind: .string(kind.rawValue)
+        ])
     }
 
-    static func presetDelete(isBuiltIn: Bool) -> AnalyticsEvent {
+    static func presetDelete(isBuiltIn: Bool, kind: AnalyticsPresetKind = .preset) -> AnalyticsEvent {
         AnalyticsEvent(name: "preset_delete", params: [
             Key.source: .string(AnalyticsSource.app.rawValue),
-            Key.isBuiltIn: bool(isBuiltIn)
+            Key.isBuiltIn: bool(isBuiltIn),
+            Key.kind: .string(kind.rawValue)
         ])
     }
 

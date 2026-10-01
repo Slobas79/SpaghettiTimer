@@ -71,7 +71,14 @@ final class TimersViewModel {
 
     /// The sheet's action button says "Start", so the timer runs either way —
     /// pinning only decides whether it also sticks around as a home tile.
-    func createTimer(name: String, duration: TimeInterval, pinned: Bool, autoRestartDelaySeconds: TimeInterval? = nil) {
+    /// `mode` only tags the `timer_start` analytics event.
+    func createTimer(
+        name: String,
+        duration: TimeInterval,
+        pinned: Bool,
+        autoRestartDelaySeconds: TimeInterval? = nil,
+        mode: AnalyticsTimerMode = .duration
+    ) {
         let preset: TimerPreset
         if pinned {
             preset = presetsUseCase.addPreset(name: name, duration: duration, autoRestartDelaySeconds: autoRestartDelaySeconds)
@@ -83,7 +90,7 @@ final class TimersViewModel {
                 autoRestartDelaySeconds: autoRestartDelaySeconds
             )
         }
-        runningUseCase.start(preset: preset)
+        runningUseCase.start(preset: preset, mode: mode)
     }
 
     func deletePreset(_ preset: TimerPreset) {
@@ -103,7 +110,7 @@ final class TimersViewModel {
     /// Starts a one-shot timer ending at the next full hour, recomputed now —
     /// the tile stores no duration of its own.
     func startNextHour() {
-        runningUseCase.start(preset: NextHour.preset(at: Date()))
+        runningUseCase.start(preset: NextHour.preset(at: Date()), mode: .nextHour)
     }
 
     struct TileItem: Identifiable {

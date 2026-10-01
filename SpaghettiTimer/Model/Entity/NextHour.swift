@@ -12,8 +12,9 @@ import Foundation
 nonisolated enum NextHour {
     /// Stable identity for timers started from the tile. There is no stored
     /// preset behind it — the duration is recomputed on every tap — so this
-    /// only groups those runs together in analytics and the widget's
-    /// active-tile lookup.
+    /// only groups those runs together for the widget's active-tile lookup.
+    /// Analytics can't use it (`safePresetName` reports it as "custom"); those
+    /// starts are tagged `mode: next_hour` instead.
     static let presetID = UUID(uuidString: "11111111-1111-1111-1111-00000000000A")!
 
     /// A one-shot preset counting down from `now` to the next full hour.

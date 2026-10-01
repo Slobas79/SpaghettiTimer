@@ -22,9 +22,10 @@ protocol RunningTimersUseCase: AnyObject {
     ///
     /// The returned task completes when the attempt has settled either way. The UI
     /// discards it — the result arrives through `onChange` / `onAuthorizationDenied`
-    /// — but a test can await it instead of racing the permission hop.
+    /// — but a test can await it instead of racing the permission hop. `mode` only
+    /// tags the `timer_start` analytics event.
     @discardableResult
-    func start(preset: TimerPreset) -> Task<Void, Never>
+    func start(preset: TimerPreset, mode: AnalyticsTimerMode) -> Task<Void, Never>
     func stop(_ timer: RunningTimer)
     func pause(_ timer: RunningTimer)
     func resume(_ timer: RunningTimer)
@@ -34,6 +35,15 @@ protocol RunningTimersUseCase: AnyObject {
     /// `start(preset:)`.
     @discardableResult
     func explainRefusedWidgetStart() -> Task<Void, Never>
+}
+
+extension RunningTimersUseCase {
+    /// A start from a typed duration — every path except the End time tab and
+    /// the "To next hour" tile.
+    @discardableResult
+    func start(preset: TimerPreset) -> Task<Void, Never> {
+        start(preset: preset, mode: .duration)
+    }
 }
 
 @MainActor
@@ -386,7 +396,7 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
     }
 
     @discardableResult
-    func start(preset: TimerPreset) -> Task<Void, Never> {
+    func start(preset: TimerPreset, mode: AnalyticsTimerMode) -> Task<Void, Never> {
         // Permission first, and nothing before it. An unauthorized timer would be
         // persisted, drawn on Home and counted in analytics while AlarmKit stays
         // empty — a countdown that can never ring. The prompt on a first start is
@@ -397,11 +407,11 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
                 self.onAuthorizationDenied?()
                 return
             }
-            await self.commitStart(preset: preset)
+            await self.commitStart(preset: preset, mode: mode)
         }
     }
 
-    private func commitStart(preset: TimerPreset) async {
+    private func commitStart(preset: TimerPreset, mode: AnalyticsTimerMode) async {
         let timer = RunningTimer(
             id: UUID(),
             presetID: preset.id,
@@ -423,7 +433,8 @@ final class RunningTimersUseCaseImpl: RunningTimersUseCase {
             durationSeconds: Int(preset.duration),
             isEphemeral: isEphemeral,
             autoRestart: preset.autoRestartDelaySeconds != nil,
-            source: .app
+            source: .app,
+            mode: mode
         ))
         // Publish to the app before scheduling: Home owns its own state and must
         // show the countdown on the same runloop turn as the tap.

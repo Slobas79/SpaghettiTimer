@@ -72,6 +72,9 @@ struct NewTimerSheet: View {
     /// Current count of user (pinned) presets — what the free pin cap counts.
     let pinnedCount: Int
     let onSave: (String, TimeInterval, Bool, TimeInterval?) -> Void
+    /// Called instead of `onSave` when the End time tab starts its timer: name and
+    /// the duration to the picked clock target. Never pinned, never auto-restarting.
+    let onStartEndTime: (String, TimeInterval) -> Void
     /// Called instead of `onSave` when an End-time timer is pinned: the pin
     /// becomes the dynamic "To next hour" home tile, not a frozen duration.
     let onPinNextHour: () -> Void
@@ -182,8 +185,8 @@ struct NewTimerSheet: View {
             }
             // The button says Start, so the picked clock target runs either
             // way — the pin above only adds the "To next hour" home tile.
-            // Auto-restart is meaningless for a fixed clock target, so it's always nil.
-            onSave(trimmed, endTimeDuration(now: Date()), false, nil)
+            // Auto-restart is meaningless for a fixed clock target, so it never gets one.
+            onStartEndTime(trimmed, endTimeDuration(now: Date()))
         }
         dismiss()
     }
@@ -1174,12 +1177,12 @@ private struct WheelColumn: View {
 // MARK: - Preview
 
 #Preview("Auto-restart ON") {
-    NewTimerSheet(store: .preview, pinnedCount: 0, onSave: { _, _, _, _ in }, onPinNextHour: {})
+    NewTimerSheet(store: .preview, pinnedCount: 0, onSave: { _, _, _, _ in }, onStartEndTime: { _, _ in }, onPinNextHour: {})
         .seededAutoRestart()
 }
 
 #Preview("End time") {
-    NewTimerSheet(store: .preview, pinnedCount: 0, onSave: { _, _, _, _ in }, onPinNextHour: {})
+    NewTimerSheet(store: .preview, pinnedCount: 0, onSave: { _, _, _, _ in }, onStartEndTime: { _, _ in }, onPinNextHour: {})
         .seededEndTime()
 }
 

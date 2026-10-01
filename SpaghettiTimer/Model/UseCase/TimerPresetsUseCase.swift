@@ -90,7 +90,7 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
     func setNextHourPinned(_ pinned: Bool) {
         guard pinned != repo.loadNextHourPinned() else { return }
         repo.saveNextHourPinned(pinned)
-        analytics.log(pinned ? .presetPin() : .presetDelete(isBuiltIn: false))
+        analytics.log(pinned ? .presetPin(kind: .nextHour) : .presetDelete(isBuiltIn: false, kind: .nextHour))
         reload()
     }
 }

@@ -206,6 +206,9 @@ struct TimersView: View {
                 onSave: { name, duration, pinned, autoRestartDelaySeconds in
                     viewModel.createTimer(name: name, duration: duration, pinned: pinned, autoRestartDelaySeconds: autoRestartDelaySeconds)
                 },
+                onStartEndTime: { name, duration in
+                    viewModel.createTimer(name: name, duration: duration, pinned: false, mode: .endTime)
+                },
                 onPinNextHour: { viewModel.setNextHourPinned(true) }
             )
             .presentationBackground(.black)
