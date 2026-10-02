@@ -47,7 +47,7 @@ struct NewTimerSheet: View {
     /// end-time wheel can't get stuck showing a stale hour format.
     @State private var localeChangeTick = 0
     @State private var showingTour = false
-    /// Non-nil while the paywall is shown over the sheet (auto-restart / pin gate).
+    /// Non-nil while the paywall is shown over the sheet (auto-restart / pin / End time gate).
     @State private var paywallTrigger: PaywallTrigger?
     @FocusState private var nameFocused: Bool
 
@@ -67,7 +67,7 @@ struct NewTimerSheet: View {
     @ScaledMetric(relativeTo: .subheadline) private var durReadoutSize: CGFloat = 15
     @ScaledMetric(relativeTo: .subheadline) private var segLabelSize: CGFloat = 15
 
-    /// Drives the premium gates (auto-restart trial, pin cap) and the paywall.
+    /// Drives the premium gates (auto-restart, End time, pin cap) and the paywall.
     let store: StoreUseCase
     /// Current count of user (pinned) presets — what the free pin cap counts.
     let pinnedCount: Int
@@ -97,8 +97,8 @@ struct NewTimerSheet: View {
         autoRestart ? TimeInterval(cooldownTotal) : nil
     }
 
-    /// Auto-restart toggle gated by the free trial: turning it on when no free
-    /// uses remain (and not Pro) opens the paywall instead of flipping the switch.
+    /// Auto-restart toggle, Pro-only: turning it on without Pro opens the
+    /// paywall instead of flipping the switch.
     private var autoRestartBinding: Binding<Bool> {
         Binding(
             get: { autoRestart },
@@ -167,10 +167,14 @@ struct NewTimerSheet: View {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         switch mode {
         case .duration:
-            // Count this against the free auto-restart trial (no-op for Pro).
-            if restartDelay != nil { store.registerAutoRestartUse() }
             onSave(trimmed, duration, isPinnedDuration, restartDelay)
         case .endTime:
+            // Free users can browse the End time tab, but starting from it is
+            // Pro-only — Start is where they meet the paywall.
+            guard store.canUseEndTime() else {
+                paywallTrigger = .endTime
+                return
+            }
             // A pinned clock target can't store a duration — the same "20:00"
             // means something different tomorrow — so the pin installs the
             // dynamic "To next hour" home tile instead.
@@ -511,6 +515,7 @@ struct NewTimerSheet: View {
     private func segButton(_ target: CreationMode, icon: String, title: LocalizedStringKey) -> some View {
         let selected = mode == target
         return Button {
+            // Anyone can browse End time; Start and the pin are what's gated.
             withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.16)) { mode = target }
         } label: {
             HStack(spacing: 7) {

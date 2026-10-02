@@ -3,9 +3,9 @@
 //  SpaghettiTimer
 //
 //  The single, contextual paywall for SpaghettiTimer Pro. Presented at the
-//  point of desire — when a free user taps a fourth pin or reaches for
-//  auto-restart after the trial — and also reachable directly for a plain
-//  "unlock / restore". One SKU, one price, no dark patterns.
+//  point of desire — when a free user taps a fourth pin, reaches for
+//  auto-restart or switches to End time — and also reachable directly for a
+//  plain "unlock / restore". One SKU, one price, no dark patterns.
 //
 
 import SwiftUI
@@ -15,6 +15,7 @@ import SwiftUI
 enum PaywallTrigger: String, Identifiable {
     case autoRestart
     case pinLimit
+    case endTime
     case nextHour
     case general
 
@@ -25,6 +26,7 @@ enum PaywallTrigger: String, Identifiable {
         switch self {
         case .autoRestart: return "Keep your timers looping"
         case .pinLimit:    return "Room for every timer"
+        case .endTime:     return "Finish right on time"
         case .nextHour:    return "Always on the hour"
         case .general:     return "Unlock the full timer"
         }
@@ -32,8 +34,9 @@ enum PaywallTrigger: String, Identifiable {
 
     var subhead: LocalizedStringKey {
         switch self {
-        case .autoRestart: return "You've used auto-restart on the house. Unlock it for good — plus unlimited pinned presets."
+        case .autoRestart: return "Let any timer start over on its own after a cooldown — plus everything else in Pro."
         case .pinLimit:    return "You've filled your free presets. Go unlimited — and unlock auto-restart while you're at it."
+        case .endTime:     return "Pick the exact time a timer should finish — plus everything else in Pro."
         case .nextHour:    return "Pin the “To next hour” tile and stay one tap from the top of the hour — plus everything else in Pro."
         case .general:     return "One upgrade unlocks everything below."
         }
@@ -136,6 +139,12 @@ struct PaywallView: View {
                 icon: "infinity",
                 title: "Unlimited presets",
                 description: "Pin as many timers as you like, always one tap away."
+            )
+            hairline
+            featureRow(
+                icon: "alarm",
+                title: "End time",
+                description: "Set a timer by the clock — choose when it ends and the duration is worked out for you."
             )
             hairline
             featureRow(
@@ -265,6 +274,10 @@ struct PaywallView: View {
 
 #Preview("Pin limit") {
     PaywallView(store: .preview, trigger: .pinLimit)
+}
+
+#Preview("End time") {
+    PaywallView(store: .preview, trigger: .endTime)
 }
 
 #Preview("To next hour") {

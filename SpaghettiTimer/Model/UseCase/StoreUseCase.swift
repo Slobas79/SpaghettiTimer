@@ -4,9 +4,10 @@
 //
 //  Owns the StoreKit 2 lifecycle for the single "Pro" non-consumable: loads
 //  the product, tracks the entitlement (`isPro`), runs purchase / restore, and
-//  answers the two gating questions the UI asks ("can this user pin more?",
-//  "can this user enable auto-restart?"). Observable so views react to the
-//  entitlement flipping on after a purchase or restore.
+//  answers the gating questions the UI asks ("can this user pin more?",
+//  "can this user enable auto-restart?", "can this user set an End time?").
+//  Observable so views react to the entitlement flipping on after a purchase
+//  or restore.
 //
 //  App-target only — the widget extension never imports StoreKit. Premium
 //  features are gated at *creation* time inside the app, so the widget can run
@@ -21,20 +22,17 @@ import Observation
 @Observable
 final class StoreUseCase {
     /// True once the user owns the lifetime Pro unlock. Drives every gate.
-    /// Forced on while `ProConfig.qaUnlockAllPro` is `true` (QA builds only).
-    private(set) var isPro: Bool = ProConfig.qaUnlockAllPro
+    private(set) var isPro: Bool = false
     /// The loaded StoreKit product, or nil until `loadProduct()` succeeds.
     private(set) var product: Product?
     private(set) var isLoadingProduct = false
     /// A purchase or restore is in flight — used to disable the paywall buttons.
     private(set) var purchaseInFlight = false
 
-    @ObservationIgnored private let usageRepo: ProUsageRepo
     @ObservationIgnored private let analytics: AnalyticsRepo
     @ObservationIgnored private var updatesTask: Task<Void, Never>?
 
-    init(usageRepo: ProUsageRepo = ProUsageRepoImpl(), analytics: AnalyticsRepo = NoOpAnalyticsRepo()) {
-        self.usageRepo = usageRepo
+    init(analytics: AnalyticsRepo = NoOpAnalyticsRepo()) {
         self.analytics = analytics
     }
 
@@ -90,7 +88,7 @@ final class StoreUseCase {
                 owned = true
             }
         }
-        isPro = owned || ProConfig.qaUnlockAllPro
+        isPro = owned
     }
 
     // MARK: - Purchase / restore
@@ -148,20 +146,16 @@ final class StoreUseCase {
         isPro
     }
 
-    /// Free auto-restart creations still remaining (0 once the trial is spent).
-    var remainingFreeAutoRestartUses: Int {
-        max(0, ProConfig.freeAutoRestartUses - usageRepo.autoRestartUseCount())
-    }
-
-    /// Auto-restart is allowed for Pro users, or while free uses remain.
+    /// Auto-restart is Pro-only — there is no free trial.
     func canEnableAutoRestart() -> Bool {
-        isPro || remainingFreeAutoRestartUses > 0
+        isPro
     }
 
-    /// Records one auto-restart creation against the free trial. No-op for Pro.
-    func registerAutoRestartUse() {
-        guard !isPro else { return }
-        usageRepo.incrementAutoRestartUse()
+    /// Starting a timer by End time (picking the clock time it finishes at) is
+    /// Pro-only. Free users can still open the End time tab and dial a time —
+    /// Start (and the pin) open the paywall instead.
+    func canUseEndTime() -> Bool {
+        isPro
     }
 
     // MARK: - Analytics

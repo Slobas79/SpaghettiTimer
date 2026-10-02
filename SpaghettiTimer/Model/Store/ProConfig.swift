@@ -11,11 +11,6 @@
 import Foundation
 
 nonisolated enum ProConfig {
-    /// QA KILL SWITCH — set to `true` to unlock every Pro feature without a
-    /// purchase, so the whole app can be exercised end to end. Ship with
-    /// `false`. See `docs/PAYWALL_QA_TOGGLE.md` for how to turn it back off.
-    static let qaUnlockAllPro = true
-
     /// StoreKit product identifier for the lifetime "Pro" unlock (non-consumable).
     /// Must match the product ID in App Store Connect / `SpaghettiTimer.storekit`.
     static let productID = "com.spaghettitimer.pro.lifetime"
@@ -23,8 +18,4 @@ nonisolated enum ProConfig {
     /// Free users may keep up to this many pinned (user) presets. Built-ins
     /// never count against the cap. Pinning past it triggers the paywall.
     static let freePinLimit = 3
-
-    /// Auto-restart is "try before buy": free users may create this many
-    /// auto-restart timers before the paywall takes over.
-    static let freeAutoRestartUses = 3
 }
