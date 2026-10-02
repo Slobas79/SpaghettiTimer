@@ -76,13 +76,18 @@ final class TimersViewModel {
     /// The sheet's action button says "Start", so the timer runs either way —
     /// pinning only decides whether it also sticks around as a home tile.
     /// `mode` only tags the `timer_start` analytics event.
+    ///
+    /// The returned task answers whether the timer really started — false when
+    /// the start was dropped for want of AlarmKit permission — so a free try is
+    /// only spent on a timer that ran.
+    @discardableResult
     func createTimer(
         name: String,
         duration: TimeInterval,
         pinned: Bool,
         autoRestartDelaySeconds: TimeInterval? = nil,
         mode: AnalyticsTimerMode = .duration
-    ) {
+    ) -> Task<Bool, Never> {
         let preset: TimerPreset
         if pinned {
             preset = presetsUseCase.addPreset(name: name, duration: duration, autoRestartDelaySeconds: autoRestartDelaySeconds)
@@ -94,7 +99,11 @@ final class TimersViewModel {
                 autoRestartDelaySeconds: autoRestartDelaySeconds
             )
         }
-        runningUseCase.start(preset: preset, mode: mode)
+        let start = runningUseCase.start(preset: preset, mode: mode)
+        return Task { [runningUseCase] in
+            await start.value
+            return runningUseCase.running.contains { $0.presetID == preset.id }
+        }
     }
 
     func deletePreset(_ preset: TimerPreset) {

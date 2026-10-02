@@ -6,6 +6,7 @@
 //  the product, tracks the entitlement (`isPro`), runs purchase / restore, and
 //  answers the gating questions the UI asks ("can this user pin more?",
 //  "can this user enable auto-restart?", "can this user set an End time?").
+//  Also keeps the one-time free tries of auto-restart and End time.
 //  Observable so views react to the entitlement flipping on after a purchase
 //  or restore.
 //
@@ -28,12 +29,17 @@ final class StoreUseCase {
     private(set) var isLoadingProduct = false
     /// A purchase or restore is in flight — used to disable the paywall buttons.
     private(set) var purchaseInFlight = false
+    /// Free tries already used up. Each is spent once its timer has started.
+    private(set) var spentFreeTries: Set<FreeTry>
 
     @ObservationIgnored private let analytics: AnalyticsRepo
+    @ObservationIgnored private let freeTryRepo: FreeTryRepo
     @ObservationIgnored private var updatesTask: Task<Void, Never>?
 
-    init(analytics: AnalyticsRepo = NoOpAnalyticsRepo()) {
+    init(analytics: AnalyticsRepo = NoOpAnalyticsRepo(), freeTries: FreeTryRepo = InMemoryFreeTryRepo()) {
         self.analytics = analytics
+        self.freeTryRepo = freeTries
+        spentFreeTries = Set(FreeTry.allCases.filter(freeTries.isSpent))
     }
 
     /// Inert instance for SwiftUI previews — no product load, no listeners.
@@ -148,16 +154,37 @@ final class StoreUseCase {
         isPro
     }
 
-    /// Auto-restart is Pro-only — there is no free trial.
+    /// Auto-restart is Pro-only — a free user's single free try aside
+    /// (`hasFreeTry(.autoRestart)`), which can't be pinned.
     func canEnableAutoRestart() -> Bool {
         isPro
     }
 
     /// Starting a timer by End time (picking the clock time it finishes at) is
-    /// Pro-only. Free users can still open the End time tab and dial a time —
-    /// Start (and the pin) open the paywall instead.
+    /// Pro-only — a free user's single free try aside (`hasFreeTry(.endTime)`).
+    /// Free users can still open the End time tab and dial a time — once the
+    /// try is spent, Start (and the pin) open the paywall instead.
     func canUseEndTime() -> Bool {
         isPro
+    }
+
+    /// Whether a free user can still start one unpinned timer with this Pro
+    /// feature. Pro users don't need it, so it's never spent for them.
+    func hasFreeTry(_ freeTry: FreeTry) -> Bool {
+        !spentFreeTries.contains(freeTry)
+    }
+
+    /// Spends `freeTry` once `start` reports the timer actually started, so a
+    /// start dropped at the alarm permission prompt doesn't use it up.
+    @discardableResult
+    func spendFreeTry(_ freeTry: FreeTry, ifStarted start: Task<Bool, Never>) -> Task<Void, Never> {
+        // Holds the store strongly: the sheet that asked is already dismissed,
+        // and a try must be recorded however long the permission prompt takes.
+        Task {
+            guard await start.value else { return }
+            freeTryRepo.markSpent(freeTry)
+            spentFreeTries.insert(freeTry)
+        }
     }
 
     // MARK: - Analytics

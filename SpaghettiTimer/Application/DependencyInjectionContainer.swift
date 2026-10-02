@@ -11,10 +11,11 @@ final class DependencyInjectionContainer {
     private lazy var presetsRepo: PresetsEditingRepo = PresetsRepoImpl()
     private lazy var runningTimersRepo: RunningTimersRepo = RunningTimersRepoImpl()
     private lazy var pinAllowanceRepo: PinAllowanceRepo = KeychainPinAllowanceRepo()
+    private lazy var freeTryRepo: FreeTryRepo = KeychainFreeTryRepo()
     private(set) lazy var analyticsRepo: AnalyticsRepo = AnalyticsBootstrap.makeRepo()
 
     // Use cases
     private(set) lazy var presetsUseCase: TimerPresetsUseCase = TimerPresetsUseCaseImpl(repo: presetsRepo, pinAllowance: pinAllowanceRepo, analytics: analyticsRepo)
     private(set) lazy var runningTimersUseCase: RunningTimersUseCase = RunningTimersUseCaseImpl(repo: runningTimersRepo, presetsRepo: presetsRepo, analytics: analyticsRepo)
-    private(set) lazy var storeUseCase: StoreUseCase = StoreUseCase(analytics: analyticsRepo)
+    private(set) lazy var storeUseCase: StoreUseCase = StoreUseCase(analytics: analyticsRepo, freeTries: freeTryRepo)
 }

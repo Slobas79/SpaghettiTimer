@@ -19,4 +19,7 @@ nonisolated enum ProConfig {
     /// Unpinning doesn't give one back, and built-ins never count against the
     /// cap. Pinning past it triggers the paywall.
     static let freePinLimit = 3
+
+    // Auto-restart and End time have no free cap — just one free try each
+    // (`FreeTry`): a single start, never pinned, then the paywall.
 }

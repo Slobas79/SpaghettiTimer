@@ -67,15 +67,19 @@ struct NewTimerSheet: View {
     @ScaledMetric(relativeTo: .subheadline) private var durReadoutSize: CGFloat = 15
     @ScaledMetric(relativeTo: .subheadline) private var segLabelSize: CGFloat = 15
 
-    /// Drives the premium gates (auto-restart, End time, pin cap) and the paywall.
+    /// Drives the premium gates (auto-restart, End time, pin cap), the free
+    /// tries and the paywall.
     let store: StoreUseCase
     /// User presets ever pinned — what the free pin cap counts. Unpinning
     /// doesn't lower it, so a free user gets `ProConfig.freePinLimit` pins in all.
     let lifetimePinCount: Int
-    let onSave: (String, TimeInterval, Bool, TimeInterval?) -> Void
+    /// Starts the Duration tab's timer: name, duration, pinned, auto-restart
+    /// delay. Its task answers whether the timer really started.
+    let onSave: (String, TimeInterval, Bool, TimeInterval?) -> Task<Bool, Never>
     /// Called instead of `onSave` when the End time tab starts its timer: name and
     /// the duration to the picked clock target. Never pinned, never auto-restarting.
-    let onStartEndTime: (String, TimeInterval) -> Void
+    /// Its task answers whether the timer really started.
+    let onStartEndTime: (String, TimeInterval) -> Task<Bool, Never>
     /// Called instead of `onSave` when an End-time timer is pinned: the pin
     /// becomes the dynamic "To next hour" home tile, not a frozen duration.
     let onPinNextHour: () -> Void
@@ -98,14 +102,25 @@ struct NewTimerSheet: View {
         autoRestart ? TimeInterval(cooldownTotal) : nil
     }
 
+    /// Whether this Start would spend the free auto-restart try rather than Pro.
+    private var isFreeAutoRestart: Bool {
+        restartDelay != nil && !store.canEnableAutoRestart()
+    }
+
     /// Auto-restart toggle, Pro-only: turning it on without Pro opens the
-    /// paywall instead of flipping the switch.
+    /// paywall instead of flipping the switch — unless the free try is still
+    /// unspent. That try is a single unpinned timer, so it unpins this one.
     private var autoRestartBinding: Binding<Bool> {
         Binding(
             get: { autoRestart },
             set: { want in
                 if want && !store.canEnableAutoRestart() {
-                    paywallTrigger = .autoRestart
+                    if store.hasFreeTry(.autoRestart) {
+                        isPinnedDuration = false
+                        autoRestart = true
+                    } else {
+                        paywallTrigger = .autoRestart
+                    }
                 } else {
                     autoRestart = want
                 }
@@ -115,11 +130,15 @@ struct NewTimerSheet: View {
 
     /// Pin toggle gated by the free pin cap: once the free pins are spent (and
     /// not Pro) it opens the paywall instead — even if some were since unpinned.
+    /// The free auto-restart try can't be pinned either: pinning a looping timer
+    /// is Pro, so that opens the auto-restart paywall.
     private var pinnedBinding: Binding<Bool> {
         Binding(
             get: { isPinnedDuration },
             set: { want in
-                if want && !store.canPin(currentUserPresetCount: lifetimePinCount) {
+                if want && isFreeAutoRestart {
+                    paywallTrigger = .autoRestart
+                } else if want && !store.canPin(currentUserPresetCount: lifetimePinCount) {
                     paywallTrigger = .pinLimit
                 } else {
                     isPinnedDuration = want
@@ -168,11 +187,21 @@ struct NewTimerSheet: View {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         switch mode {
         case .duration:
-            onSave(trimmed, duration, isPinnedDuration, restartDelay)
+            let isFreeTry = isFreeAutoRestart
+            // Belt and braces: the toggles already keep the free try unpinned and
+            // unspent, but the entitlement can lapse while the sheet is open.
+            guard !isFreeTry || (store.hasFreeTry(.autoRestart) && !isPinnedDuration) else {
+                paywallTrigger = .autoRestart
+                return
+            }
+            let started = onSave(trimmed, duration, isPinnedDuration, restartDelay)
+            if isFreeTry { store.spendFreeTry(.autoRestart, ifStarted: started) }
         case .endTime:
             // Free users can browse the End time tab, but starting from it is
-            // Pro-only — Start is where they meet the paywall.
-            guard store.canUseEndTime() else {
+            // Pro-only past their one free try — Start is where they meet the
+            // paywall. The try never pins: the "To next hour" pin below is Pro.
+            let isFreeTry = !store.canUseEndTime()
+            guard !isFreeTry || store.hasFreeTry(.endTime) else {
                 paywallTrigger = .endTime
                 return
             }
@@ -191,7 +220,8 @@ struct NewTimerSheet: View {
             // The button says Start, so the picked clock target runs either
             // way — the pin above only adds the "To next hour" home tile.
             // Auto-restart is meaningless for a fixed clock target, so it never gets one.
-            onStartEndTime(trimmed, endTimeDuration(now: Date()))
+            let started = onStartEndTime(trimmed, endTimeDuration(now: Date()))
+            if isFreeTry { store.spendFreeTry(.endTime, ifStarted: started) }
         }
         dismiss()
     }
@@ -1183,12 +1213,12 @@ private struct WheelColumn: View {
 // MARK: - Preview
 
 #Preview("Auto-restart ON") {
-    NewTimerSheet(store: .preview, lifetimePinCount: 0, onSave: { _, _, _, _ in }, onStartEndTime: { _, _ in }, onPinNextHour: {})
+    NewTimerSheet(store: .preview, lifetimePinCount: 0, onSave: { _, _, _, _ in Task { true } }, onStartEndTime: { _, _ in Task { true } }, onPinNextHour: {})
         .seededAutoRestart()
 }
 
 #Preview("End time") {
-    NewTimerSheet(store: .preview, lifetimePinCount: 0, onSave: { _, _, _, _ in }, onStartEndTime: { _, _ in }, onPinNextHour: {})
+    NewTimerSheet(store: .preview, lifetimePinCount: 0, onSave: { _, _, _, _ in Task { true } }, onStartEndTime: { _, _ in Task { true } }, onPinNextHour: {})
         .seededEndTime()
 }
 
