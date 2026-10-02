@@ -134,7 +134,9 @@ final class StoreUseCase {
 
     // MARK: - Gating
 
-    /// Pinning is allowed for Pro users, or while under the free cap.
+    /// Pinning is allowed for Pro users, or while free pins remain. Pass the
+    /// lifetime pin count, not the tiles on the grid — unpinning doesn't hand a
+    /// free pin back.
     func canPin(currentUserPresetCount count: Int) -> Bool {
         isPro || count < ProConfig.freePinLimit
     }

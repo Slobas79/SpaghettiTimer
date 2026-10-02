@@ -15,7 +15,8 @@ nonisolated enum ProConfig {
     /// Must match the product ID in App Store Connect / `SpaghettiTimer.storekit`.
     static let productID = "com.spaghettitimer.pro.lifetime"
 
-    /// Free users may keep up to this many pinned (user) presets. Built-ins
-    /// never count against the cap. Pinning past it triggers the paywall.
+    /// Free users may pin this many (user) presets over the life of the install.
+    /// Unpinning doesn't give one back, and built-ins never count against the
+    /// cap. Pinning past it triggers the paywall.
     static let freePinLimit = 3
 }

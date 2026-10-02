@@ -69,8 +69,9 @@ struct NewTimerSheet: View {
 
     /// Drives the premium gates (auto-restart, End time, pin cap) and the paywall.
     let store: StoreUseCase
-    /// Current count of user (pinned) presets — what the free pin cap counts.
-    let pinnedCount: Int
+    /// User presets ever pinned — what the free pin cap counts. Unpinning
+    /// doesn't lower it, so a free user gets `ProConfig.freePinLimit` pins in all.
+    let lifetimePinCount: Int
     let onSave: (String, TimeInterval, Bool, TimeInterval?) -> Void
     /// Called instead of `onSave` when the End time tab starts its timer: name and
     /// the duration to the picked clock target. Never pinned, never auto-restarting.
@@ -112,13 +113,13 @@ struct NewTimerSheet: View {
         )
     }
 
-    /// Pin toggle gated by the free preset cap: pinning past the limit (and not
-    /// Pro) opens the paywall instead.
+    /// Pin toggle gated by the free pin cap: once the free pins are spent (and
+    /// not Pro) it opens the paywall instead — even if some were since unpinned.
     private var pinnedBinding: Binding<Bool> {
         Binding(
             get: { isPinnedDuration },
             set: { want in
-                if want && !store.canPin(currentUserPresetCount: pinnedCount) {
+                if want && !store.canPin(currentUserPresetCount: lifetimePinCount) {
                     paywallTrigger = .pinLimit
                 } else {
                     isPinnedDuration = want
@@ -1182,12 +1183,12 @@ private struct WheelColumn: View {
 // MARK: - Preview
 
 #Preview("Auto-restart ON") {
-    NewTimerSheet(store: .preview, pinnedCount: 0, onSave: { _, _, _, _ in }, onStartEndTime: { _, _ in }, onPinNextHour: {})
+    NewTimerSheet(store: .preview, lifetimePinCount: 0, onSave: { _, _, _, _ in }, onStartEndTime: { _, _ in }, onPinNextHour: {})
         .seededAutoRestart()
 }
 
 #Preview("End time") {
-    NewTimerSheet(store: .preview, pinnedCount: 0, onSave: { _, _, _, _ in }, onStartEndTime: { _, _ in }, onPinNextHour: {})
+    NewTimerSheet(store: .preview, lifetimePinCount: 0, onSave: { _, _, _, _ in }, onStartEndTime: { _, _ in }, onPinNextHour: {})
         .seededEndTime()
 }
 

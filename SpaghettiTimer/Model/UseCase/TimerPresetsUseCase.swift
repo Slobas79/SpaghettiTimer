@@ -13,6 +13,9 @@ protocol TimerPresetsUseCase: AnyObject {
     var presets: [TimerPreset] { get }
     /// Whether the dynamic "To next hour" tile occupies the first grid cell.
     var isNextHourPinned: Bool { get }
+    /// User presets pinned over the life of the install — what the free pin cap
+    /// counts. Unpinning never lowers it, so deleting a pin doesn't free a slot.
+    var lifetimePinCount: Int { get }
     var onChange: (() -> Void)? { get set }
 
     func reload()
@@ -28,13 +31,18 @@ protocol TimerPresetsUseCase: AnyObject {
 final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
     private(set) var presets: [TimerPreset] = []
     private(set) var isNextHourPinned: Bool = false
+    private(set) var lifetimePinCount: Int = 0
     var onChange: (() -> Void)?
 
     private let repo: PresetsEditingRepo
+    private let pinAllowance: PinAllowanceRepo
     private let analytics: AnalyticsRepo
 
-    init(repo: PresetsEditingRepo, analytics: AnalyticsRepo = NoOpAnalyticsRepo()) {
+    init(repo: PresetsEditingRepo,
+         pinAllowance: PinAllowanceRepo = InMemoryPinAllowanceRepo(),
+         analytics: AnalyticsRepo = NoOpAnalyticsRepo()) {
         self.repo = repo
+        self.pinAllowance = pinAllowance
         self.analytics = analytics
         reload()
     }
@@ -42,7 +50,23 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
     func reload() {
         presets = repo.allPresets()
         isNextHourPinned = repo.loadNextHourPinned()
+        lifetimePinCount = seededLifetimePinCount()
         onChange?()
+    }
+
+    /// Installs from before the lifetime count already have pins on the grid, and
+    /// those were spent too — otherwise unpinning one would hand back a slot that
+    /// was never recorded.
+    private func seededLifetimePinCount() -> Int {
+        let stored = pinAllowance.loadLifetimePinCount()
+        let onGrid = presets.filter { !$0.isBuiltIn }.count
+        guard onGrid > stored else { return stored }
+        pinAllowance.saveLifetimePinCount(onGrid)
+        return onGrid
+    }
+
+    private func recordPin() {
+        pinAllowance.saveLifetimePinCount(pinAllowance.loadLifetimePinCount() + 1)
     }
 
     @discardableResult
@@ -56,6 +80,7 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
         var all = repo.allPresets()
         all.append(preset)
         repo.savePresets(all)
+        recordPin()
         analytics.log(.presetCreate(durationSeconds: Int(duration), autoRestart: autoRestartDelaySeconds != nil))
         reload()
         WidgetCenter.shared.reloadAllTimelines()
@@ -69,6 +94,7 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
         // turn a repeating timer into a one-shot.
         all.append(preset.pinnedCopy())
         repo.savePresets(all)
+        recordPin()
         analytics.log(.presetPin())
         reload()
         WidgetCenter.shared.reloadAllTimelines()

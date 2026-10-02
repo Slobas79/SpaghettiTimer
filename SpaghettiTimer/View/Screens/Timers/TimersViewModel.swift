@@ -15,6 +15,8 @@ final class TimersViewModel {
     private(set) var running: [RunningTimer] = []
     /// Drives the dynamic "To next hour" tile in the first grid cell.
     private(set) var isNextHourPinned: Bool = false
+    /// User presets ever pinned — what the free pin cap counts against.
+    private(set) var lifetimePinCount: Int = 0
     /// Raised when a start was dropped for want of AlarmKit permission. Settable so
     /// the alert's binding can clear it on dismiss.
     var isAlarmPermissionDenied: Bool = false
@@ -29,11 +31,13 @@ final class TimersViewModel {
         presets = presetsUseCase.presets
         running = runningUseCase.running
         isNextHourPinned = presetsUseCase.isNextHourPinned
+        lifetimePinCount = presetsUseCase.lifetimePinCount
 
         presetsUseCase.onChange = { [weak self] in
             guard let self else { return }
             self.presets = presetsUseCase.presets
             self.isNextHourPinned = presetsUseCase.isNextHourPinned
+            self.lifetimePinCount = presetsUseCase.lifetimePinCount
         }
         runningUseCase.onChange = { [weak self] in
             guard let self else { return }
@@ -124,12 +128,6 @@ final class TimersViewModel {
 
     var presetTiles: [TileItem] {
         presets.map { TileItem(preset: $0) }
-    }
-
-    /// User-created (pinned) presets, excluding built-ins — this is what the
-    /// free pin cap counts against.
-    var userPresetCount: Int {
-        presets.filter { !$0.isBuiltIn }.count
     }
 
     func tick(at date: Date) {}

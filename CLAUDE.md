@@ -38,6 +38,7 @@ View / ViewModel  →  UseCase (protocol + impl)  →  Repo (protocol + impl)
 
 - **Entities** (`SpaghettiTimer/Model/Entity/`): `TimerPreset` and `RunningTimer` — plain `nonisolated` structs, `Codable`, `Sendable`.
 - **Repos** (`SpaghettiTimer/Repository/Disc/`): Read/write `UserDefaults` in the shared App Group (`group.sloba.SpaghettiTimer`). `PresetsRepo` stores the full preset list (built-ins included, seeded from `TimerPreset.builtIns` until first saved; the older user-presets + hidden-built-in-IDs format is still read until then). Unpinning deletes a preset from the list. `RunningTimersRepo` persists active timers.
+- **Keychain repo** (`SpaghettiTimer/Repository/Keychain/`, app target only): `PinAllowanceRepo` keeps the lifetime pin count the free pin cap (`ProConfig.freePinLimit`) gates on. Unpinning never lowers it, so a free user gets that many pins in all, and it's in the Keychain so a reinstall doesn't reset it.
 - **Use Cases** (`SpaghettiTimer/Model/UseCase/`): `@MainActor` classes that own the in-memory state and call into AlarmKit. `RunningTimersUseCaseImpl` drives the AlarmKit lifecycle (schedule, pause, resume, cancel) and observes `AlarmManager.shared.alarmUpdates` to reconcile state. `TimerPresetsUseCaseImpl` adds, pins and deletes presets in that list.
 - **ViewModel** (`TimersViewModel`): `@Observable @MainActor` class. Single instance created at app launch and injected through `HomeView`. Subscribes to `onChange` callbacks from both use cases to republish state. Exposes `tiles: [TileItem]` — running-timers-first ordering merged with the preset list.
 - **Views**: `TimersView` is the main screen — a `LazyVGrid` of `TimerTile`s refreshed every 0.25 s via `TimelineView`. `NewTimerSheet` creates either a pinned preset or an ephemeral one-shot timer.
@@ -50,7 +51,7 @@ The app targets iOS 26 (deployment target 26.0–26.2). Timer countdowns are dri
 `AlarmAttributes<SpaghettiTimerMetadata>` is the Live Activity attributes type, where `SpaghettiTimerMetadata` carries `presetName` and `alarmID` (the UUID string of the `RunningTimer`).
 
 ### App Group data sharing
-Both targets read and write the same `UserDefaults` suite via `AppGroup.defaults` (`group.sloba.SpaghettiTimer`). Keys are defined in `AppGroupKey`. This is the only persistence mechanism; there is no CoreData or SwiftData.
+Both targets read and write the same `UserDefaults` suite via `AppGroup.defaults` (`group.sloba.SpaghettiTimer`). Keys are defined in `AppGroupKey`. This is the only shared persistence mechanism; there is no CoreData or SwiftData. The one app-only exception is the free pin allowance, kept in the Keychain (see Keychain repo above).
 
 ### Widget Extension (`SpaghettiTimerWidget` target)
 The widget bundle registers two widgets:
