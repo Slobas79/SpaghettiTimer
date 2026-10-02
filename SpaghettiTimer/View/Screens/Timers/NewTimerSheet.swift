@@ -332,14 +332,11 @@ struct NewTimerSheet: View {
         static let start: Double = -1
     }
 
+    /// The title is centred on the sheet but never runs under the buttons:
+    /// `NavTitleBarLayout` keeps it between them and long translations
+    /// (“Nouveau minuteur”, “Temporizator nou”) shrink to fit.
     private var navBar: some View {
-        ZStack {
-            Text("New Timer")
-                .font(.system(size: titleSize, weight: .bold))
-                .foregroundStyle(.white)
-                .accessibilityAddTraits(.isHeader)
-                .accessibilitySortPriority(ReadingOrder.title)
-
+        NavTitleBarLayout {
             HStack {
                 Button {
                     dismiss()
@@ -360,26 +357,33 @@ struct NewTimerSheet: View {
                 }
                 .accessibilitySortPriority(ReadingOrder.tips)
                 .padding(.leading, 14)
-
-                Spacer()
-
-                Button {
-                    save()
-                } label: {
-                    Text("Start")
-                        .font(.system(size: buttonSize, weight: .semibold))
-                        .foregroundStyle(canSave ? .white : Theme.disabledText)
-                        .padding(.vertical, 9)
-                        .padding(.horizontal, 20)
-                        .background(Capsule().fill(canSave ? Theme.accent : Theme.disabledFill))
-                        .shadow(color: canSave ? Theme.accent.opacity(0.4) : .clear,
-                                radius: 8, y: 4)
-                }
-                .buttonStyle(.plain)
-                .disabled(!canSave)
-                .accessibilityHint("Starts the timer with these settings")
-                .accessibilitySortPriority(ReadingOrder.start)
             }
+
+            Text("New Timer")
+                .font(.system(size: titleSize, weight: .bold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .allowsTightening(true)
+                .minimumScaleFactor(0.7)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilitySortPriority(ReadingOrder.title)
+
+            Button {
+                save()
+            } label: {
+                Text("Start")
+                    .font(.system(size: buttonSize, weight: .semibold))
+                    .foregroundStyle(canSave ? .white : Theme.disabledText)
+                    .padding(.vertical, 9)
+                    .padding(.horizontal, 20)
+                    .background(Capsule().fill(canSave ? Theme.accent : Theme.disabledFill))
+                    .shadow(color: canSave ? Theme.accent.opacity(0.4) : .clear,
+                            radius: 8, y: 4)
+            }
+            .buttonStyle(.plain)
+            .disabled(!canSave)
+            .accessibilityHint("Starts the timer with these settings")
+            .accessibilitySortPriority(ReadingOrder.start)
         }
         .frame(height: 56)
         .padding(.horizontal, 18)
