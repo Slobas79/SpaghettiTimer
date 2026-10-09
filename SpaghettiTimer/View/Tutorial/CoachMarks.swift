@@ -91,6 +91,7 @@ private struct CoachMarksOverlay: View {
     /// explicitly, VoiceOver is left on nothing.
     @AccessibilityFocusState private var cardTextFocused: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.layoutDirection) private var layoutDirection
 
     /// Stable id for the sample timer shown in the running-banner artwork.
     private static let artBannerID = UUID()
@@ -157,7 +158,7 @@ private struct CoachMarksOverlay: View {
     @ViewBuilder
     private func spotlightLayer(step: TutorialStep, index i: Int, count: Int) -> some View {
         if let anchor = step.target.flatMap({ anchors[$0] }) {
-            let spot = geo[anchor].insetBy(dx: -step.padding, dy: -step.padding)
+            let spot = positionable(geo[anchor]).insetBy(dx: -step.padding, dy: -step.padding)
             // Card placement: per-step override, else below the spotlight when
             // there's room (mock: target bottom < 520 on an 844pt frame).
             let below = switch step.place {
@@ -177,6 +178,17 @@ private struct CoachMarksOverlay: View {
             Theme.tourScrim
                 .padding(-200)
         }
+    }
+
+    /// `geo[anchor]` counts x from the left edge in either layout direction,
+    /// but in right-to-left layout `.position(x:)` counts it from the right.
+    /// Unmirrored, the cutout, halo and connector land on the mirror image
+    /// of the target — in Arabic, tip 1 lit up the second tile.
+    private func positionable(_ rect: CGRect) -> CGRect {
+        guard layoutDirection == .rightToLeft else { return rect }
+        var mirrored = rect
+        mirrored.origin.x = geo.size.width - rect.maxX
+        return mirrored
     }
 
     /// Artwork tip: plain full scrim (no cutout) with a card that embeds a
@@ -260,7 +272,7 @@ private struct CoachMarksOverlay: View {
             VStack(alignment: .leading, spacing: 0) {
                 Text(String(localized: "Tip \(i + 1) of \(count)").uppercasedForDisplay())
                     .font(.system(size: eyebrowSize, weight: .bold))
-                    .tracking(1)
+                    .trackingForDisplay(1)
                     .foregroundStyle(Theme.tourEyebrow)
 
                 Text(step.title)
@@ -388,7 +400,9 @@ private struct CoachMarksOverlay: View {
                 .fill(Theme.tourBackFill)
                 .frame(width: 36, height: 36)
                 .overlay(
-                    Image(systemName: "chevron.left")
+                    // Backward, not left: in right-to-left layout it points
+                    // away from Next.
+                    Image(systemName: "chevron.backward")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Theme.tourLightText)
                 )

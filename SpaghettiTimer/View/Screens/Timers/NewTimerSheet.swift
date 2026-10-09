@@ -407,7 +407,7 @@ struct NewTimerSheet: View {
         VStack(alignment: .leading, spacing: 9) {
             Text(String(localized: label).uppercasedForDisplay())
                 .font(.system(size: groupLabelSize, weight: .semibold))
-                .tracking(0.4)
+                .trackingForDisplay(0.4)
                 .foregroundStyle(Theme.mutedTime)
                 .padding(.leading, 4)
                 .accessibilityAddTraits(.isHeader)
@@ -653,7 +653,7 @@ struct NewTimerSheet: View {
         VStack(spacing: 0) {
             Text(String(localized: "Timer ends").uppercasedForDisplay())
                 .font(.system(size: eyebrowSize, weight: .semibold))
-                .tracking(0.6)
+                .trackingForDisplay(0.6)
                 .foregroundStyle(Theme.mutedTime)
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {

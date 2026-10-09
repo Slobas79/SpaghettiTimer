@@ -95,7 +95,7 @@ struct NextHourTile: View {
                 .font(.system(size: badgeGlyphSize, weight: .medium))
             Text("To next hour")
                 .font(.system(size: badgeSize, weight: .bold))
-                .tracking(0.2)
+                .trackingForDisplay(0.2)
                 .lineLimit(1)
                 // Languages that render this far longer than English shrink
                 // to fit the pill rather than getting an ellipsis. German
