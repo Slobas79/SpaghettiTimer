@@ -44,7 +44,7 @@ struct PresetsProvider: TimelineProvider {
         let entries = PresetsWidgetTimeline.entries(for: timers, now: now).map {
             PresetsEntry(date: $0.date, presets: presets, activePresetIDs: $0.activePresetIDs)
         }
-        completion(Timeline(entries: entries, policy: PresetsWidgetTimeline.reloadPolicy))
+        completion(Timeline(entries: entries, policy: PresetsWidgetTimeline.reloadPolicy(for: timers, now: now)))
     }
 
     /// Live alarm ids, or `nil` when AlarmKit can't be queried from this process.

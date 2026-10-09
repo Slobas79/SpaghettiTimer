@@ -23,7 +23,7 @@ nonisolated enum PresetsWidgetTimeline {
     /// tile goes idle on schedule without anyone having to reload the widget.
     static func entries(for timers: [RunningTimer], now: Date) -> [Entry] {
         let transitions = timers
-            .filter { !$0.isPaused && $0.endDate > now }
+            .filter { isCountingDown($0, at: now) }
             .map { $0.endDate.addingTimeInterval(idleLag) }
             .sorted()
         return ([now] + transitions).map { date in
@@ -35,14 +35,27 @@ nonisolated enum PresetsWidgetTimeline {
         Set(timers.filter { $0.isPaused || !$0.isFinished(at: date) }.map(\.presetID))
     }
 
-    /// Never. Every change to the running list — start, pause, resume, cancel,
-    /// stop, auto-restart — reloads the widget explicitly, and the one change that
-    /// happens by itself, a countdown ending, is already an entry above.
+    /// `.atEnd` while a timer counts down, `.never` otherwise.
     ///
-    /// This used to be `.atEnd`. With nothing running the timeline is a single
-    /// entry dated `now`, so `.atEnd` meant "ask again straight away", and WidgetKit
-    /// kept doing so all day, spending the widget's daily reload budget on
-    /// timelines identical to the last one — budget that the reloads requested from
-    /// the background (the Live Activity's buttons, the alarm's Stop) depend on.
-    static var reloadPolicy: TimelineReloadPolicy { .never }
+    /// Every change to the running list — start, pause, resume, cancel, stop,
+    /// auto-restart — reloads the widget explicitly, and the one change that happens
+    /// by itself, a countdown ending, is already an entry above. But the reloads
+    /// requested from the background (the Live Activity's buttons, the alarm's Stop)
+    /// count against WidgetKit's daily budget and can be refused, and under `.never`
+    /// nothing corrects a refused one: an auto-restart's next round, started by Stop,
+    /// stayed drawn as idle for that round and every later one. `.atEnd` asks once
+    /// more after the last countdown ends, which picks up a round started meanwhile.
+    ///
+    /// An idle or paused-only timeline stays `.never`. Its only entry is dated `now`,
+    /// so `.atEnd` would mean "ask again straight away", and WidgetKit kept doing so
+    /// all day, spending the budget on timelines identical to the last one.
+    static func reloadPolicy(for timers: [RunningTimer], now: Date) -> TimelineReloadPolicy {
+        timers.contains { isCountingDown($0, at: now) } ? .atEnd : .never
+    }
+
+    /// The timers that get an idle transition in `entries`. `reloadPolicy` keys off
+    /// the same test, so `.atEnd` is only ever paired with an entry in the future.
+    private static func isCountingDown(_ timer: RunningTimer, at now: Date) -> Bool {
+        !timer.isPaused && timer.endDate > now
+    }
 }

@@ -55,9 +55,38 @@ struct StaleWidgetTileTests {
 
     // MARK: Timeline
 
-    @Test("The widget never schedules a reload of its own")
+    @Test("With nothing running the widget never schedules a reload of its own")
     func timelineNeverPolls() {
-        #expect(PresetsWidgetTimeline.reloadPolicy == .never)
+        #expect(PresetsWidgetTimeline.reloadPolicy(for: [], now: .t0) == .never)
+    }
+
+    @Test("While a timer counts down the widget asks again after its last entry")
+    func countingDownTimelineReloadsAtEnd() {
+        let timer = RunningTimer.fixture(startDate: .t0, duration: 300)
+
+        #expect(PresetsWidgetTimeline.reloadPolicy(for: [timer], now: .t0.addingTimeInterval(10)) == .atEnd)
+    }
+
+    @Test("A paused timer alone schedules no reload")
+    func pausedTimelineNeverPolls() {
+        let timer = RunningTimer.fixture(startDate: .t0, duration: 300, pausedAt: .t0.addingTimeInterval(60))
+
+        #expect(PresetsWidgetTimeline.reloadPolicy(for: [timer], now: .t0.addingTimeInterval(500)) == .never)
+    }
+
+    @Test("A timer past its end schedules no reload")
+    func endedTimelineNeverPolls() {
+        let timer = RunningTimer.fixture(startDate: .t0, duration: 300)
+
+        #expect(PresetsWidgetTimeline.reloadPolicy(for: [timer], now: .t0.addingTimeInterval(301)) == .never)
+    }
+
+    @Test("One counting-down timer among paused ones still reloads at the end")
+    func mixedTimelineReloadsAtEnd() {
+        let paused = RunningTimer.fixture(startDate: .t0, duration: 300, pausedAt: .t0.addingTimeInterval(60))
+        let running = RunningTimer.fixture(startDate: .t0, duration: 900)
+
+        #expect(PresetsWidgetTimeline.reloadPolicy(for: [paused, running], now: .t0.addingTimeInterval(500)) == .atEnd)
     }
 
     @Test("With nothing running the timeline is one idle entry")
