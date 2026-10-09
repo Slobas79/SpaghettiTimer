@@ -1075,19 +1075,20 @@ private struct Wheel: View {
 
             HStack(spacing: 0) {
                 WheelColumn(count: 24, value: $hours, label: "Hours", itemHeight: itemHeight, wheelHeight: wheelHeight, fontSize: fontSize)
-                unitLabel("h")
+                unitLabel(WheelUnit.hours.symbol)
                 WheelColumn(count: 60, value: $minutes, label: "Minutes", itemHeight: itemHeight, wheelHeight: wheelHeight, fontSize: fontSize)
-                unitLabel("m")
+                unitLabel(WheelUnit.minutes.symbol)
                 WheelColumn(count: 60, value: $seconds, label: "Seconds", itemHeight: itemHeight, wheelHeight: wheelHeight, fontSize: fontSize)
-                unitLabel("s")
+                unitLabel(WheelUnit.seconds.symbol)
             }
             // Hold the row inside the band, and give the trailing end the extra it
             // needs to match the leading one. The band should clear the content by
             // the same amount at both ends, but the two ends are not the same
             // shape: the leading end is a flexible column whose centred digits sit
-            // well inside it, while the trailing end is a fixed 28pt unit label
-            // with only its own centring slack. Without the difference added by
-            // hand the band ran out mid-"s".
+            // well inside it, while the trailing end is a 28pt unit label with
+            // only its own centring slack (every language's seconds symbol fits
+            // in 28pt). Without the difference added by hand the band ran out
+            // mid-"s".
             .padding(.horizontal, bandInset)
             .padding(.trailing, unitClearance)
         }
@@ -1095,12 +1096,34 @@ private struct Wheel: View {
         .padding(.horizontal, 12)
     }
 
-    private func unitLabel(_ text: String) -> some View {
-        Text(text)
+    /// At least 28pt wide, and wider for symbols that need it ("min", "時間"),
+    /// taking the room from the flexible columns rather than truncating.
+    private func unitLabel(_ symbol: LocalizedStringResource) -> some View {
+        Text(symbol)
             .font(.system(size: 17, weight: .semibold))
             .foregroundStyle(Theme.unitTint)
-            .frame(width: 28)
+            .lineLimit(1)
+            .fixedSize()
+            .frame(minWidth: 28)
             .accessibilityHidden(true)
+    }
+}
+
+/// The unit beside each wheel column, as each language writes it short:
+/// "h / m / s", "ч / мин / с", "時間 / 分 / 秒". Hidden from VoiceOver, which
+/// reads the column's own "Hours" / "Minutes" / "Seconds" label instead.
+nonisolated enum WheelUnit: CaseIterable {
+    case hours, minutes, seconds
+
+    var symbol: LocalizedStringResource {
+        switch self {
+        case .hours:
+            LocalizedStringResource("h", comment: "Unit symbol beside the hours column of the duration and cooldown wheels. Use the shortest form for hours, e.g. “h”, “ч”, “時間”.")
+        case .minutes:
+            LocalizedStringResource("m", comment: "Unit symbol beside the minutes column of the duration and cooldown wheels. Use the shortest form for minutes, e.g. “m”, “min”, “分”.")
+        case .seconds:
+            LocalizedStringResource("s", comment: "Unit symbol beside the seconds column of the duration and cooldown wheels. Use the shortest form for seconds, e.g. “s”, “с”, “秒”. Keep it to one or two letters: it sits at the wheel's edge.")
+        }
     }
 }
 
