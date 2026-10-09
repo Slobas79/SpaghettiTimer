@@ -80,7 +80,7 @@ final class RecordingRunningTimersRepo: RunningTimersRepo, @unchecked Sendable {
     /// Simulates an intent writing to shared storage without going through the
     /// use case — what `StopTimerIntent` does when it schedules the next
     /// auto-restart iteration while the app is backgrounded.
-    func writeFromAnotherProcess(_ timers: [RunningTimer]) {
+    func writeBypassingUseCase(_ timers: [RunningTimer]) {
         lock.lock(); defer { lock.unlock() }
         storage = timers
     }

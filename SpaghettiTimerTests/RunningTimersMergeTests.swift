@@ -149,7 +149,7 @@ struct RunningTimersMergeTests {
 
     // MARK: Not clobbering other writers
 
-    @Test("Removal applies to the disk snapshot, so another process's write survives")
+    @Test("Removal applies to the disk snapshot, so a write from outside the use case survives")
     func removingDismissedOperatesOnTheDiskSnapshot() {
         // B is the next auto-restart iteration, written to disk by StopTimerIntent
         // outside the use case while the use case still held a stale array containing A.

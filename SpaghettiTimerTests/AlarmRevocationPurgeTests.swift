@@ -93,7 +93,7 @@ struct AlarmRevocationPurgeTests {
         #expect(viewModel.runningRows.isEmpty)
     }
 
-    @Test("A revocation clears a timer only another process knows about")
+    @Test("A revocation clears a timer written outside the use case")
     func revocationClearsTimersWrittenElsewhere() {
         // The QA 6.9 case exactly: the auto-restart iteration was written to shared
         // storage by `StopTimerIntent`, which bypasses the use case, so the in-memory
@@ -107,7 +107,7 @@ struct AlarmRevocationPurgeTests {
         #expect(useCase.running.isEmpty)
 
         let iteration = RunningTimer.fixture(name: "Pasta", autoRestartDelaySeconds: 30)
-        repo.writeFromAnotherProcess([iteration])
+        repo.writeBypassingUseCase([iteration])
 
         #expect(useCase.purgeIfAlarmsRevoked())
         #expect(repo.load().isEmpty)

@@ -126,7 +126,7 @@ struct WidgetStartGateTests {
         let repo = RecordingRunningTimersRepo()
         let savesWhenScheduled = Captured<Int>()
 
-        await StartTimerIntent.run(
+        _ = await StartTimerIntent.run(
             presetID: preset.id.uuidString,
             authorization: .notDetermined,
             presetsRepo: StubPresetsRepo([preset]),
@@ -209,7 +209,7 @@ struct WidgetStartGateTests {
         // is available and an unanswered dialog still means "don't start".
         let scratch = ScratchDefaults()
         let repo = RecordingRunningTimersRepo()
-        let useCase = await RunningTimersUseCaseImpl(
+        let useCase = RunningTimersUseCaseImpl(
             repo: repo,
             presetsRepo: PresetsRepoImpl(defaults: scratch.defaults),
             analytics: SpyAnalyticsRepo(),
