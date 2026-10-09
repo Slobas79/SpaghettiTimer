@@ -298,6 +298,7 @@
 				sk,
 				sl,
 				sr,
+				"sr-Latn",
 				sv,
 			);
 			mainGroup = 7BB56A572E3A2E54006CE2CC;

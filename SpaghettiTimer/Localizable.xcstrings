@@ -133,6 +133,12 @@
             "value" : "za %@"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "za %@"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -266,6 +272,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preostalo %@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preostalo %@"
@@ -445,6 +457,12 @@
             "value" : "%lld h"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld h"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -619,6 +637,12 @@
             "value" : "%lld min"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -752,6 +776,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0 min"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "0 min"
@@ -895,6 +925,12 @@
             "value" : "Naziv poput „Pasta“ prikazuje se na kartici tajmera, u vidžetu i u Dynamic Islandu."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naziv poput „Pasta“ prikazuje se na kartici tajmera, u vidžetu i u Dynamic Islandu."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1028,6 +1064,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivan tajmer stoji na vrhu ovog ekrana. Pauzirajte ga ili zatvorite bez napuštanja mreže."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aktivan tajmer stoji na vrhu ovog ekrana. Pauzirajte ga ili zatvorite bez napuštanja mreže."
@@ -1171,6 +1213,12 @@
             "value" : "Dodajte vidžet"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodajte vidžet"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1309,6 +1357,12 @@
             "value" : "Dodaj tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1442,6 +1496,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaje tajmer „Do punog sata“ koji uvek odbrojava do sledećeg punog sata."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dodaje tajmer „Do punog sata“ koji uvek odbrojava do sledećeg punog sata."
@@ -1590,6 +1650,12 @@
             "value" : "Alarmi su isključeni"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarmi su isključeni"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1722,6 +1788,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uvek pri ruci"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uvek pri ruci"
@@ -1865,6 +1937,12 @@
             "value" : "Uvek u pun sat"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uvek u pun sat"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1998,6 +2076,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AM/PM"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "AM/PM"
@@ -2141,6 +2225,12 @@
             "value" : "Kašnjenje automatskog ponovnog pokretanja"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kašnjenje automatskog ponovnog pokretanja"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2274,6 +2364,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatsko ponovno pokretanje"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Automatsko ponovno pokretanje"
@@ -2417,6 +2513,12 @@
             "value" : "Automatsko ponovno pokretanje po završetku"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatsko ponovno pokretanje po završetku"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2550,6 +2652,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkaži"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Otkaži"
@@ -2693,6 +2801,12 @@
             "value" : "Otkaži tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkaži tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2826,6 +2940,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkazuje pokrenuti odbrojavajući tajmer."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Otkazuje pokrenuti odbrojavajući tajmer."
@@ -2969,6 +3089,12 @@
             "value" : "Izaberite kako da podesite tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Izaberite kako da podesite tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3102,6 +3228,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zatvori"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zatvori"
@@ -3245,6 +3377,12 @@
             "value" : "Pauza pre ponovnog pokretanja"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauza pre ponovnog pokretanja"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3378,6 +3516,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Napravite svoj — postavite trajanje ili izaberite vreme kada treba da se završi."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Napravite svoj — postavite trajanje ili izaberite vreme kada treba da se završi."
@@ -3521,6 +3665,12 @@
             "value" : "Kreira novi tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kreira novi tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3654,6 +3804,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podesite trajanje"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Podesite trajanje"
@@ -3797,6 +3953,12 @@
             "value" : "Zatvori tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zatvori tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3930,6 +4092,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gotovo"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gotovo"
@@ -4073,6 +4241,12 @@
             "value" : "Trajanje"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trajanje"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4206,6 +4380,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "npr. Pasta"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "npr. Pasta"
@@ -4349,6 +4529,12 @@
             "value" : "Vreme završetka"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vreme završetka"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4487,6 +4673,12 @@
             "value" : "Završava savete za ovaj ekran"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Završava savete za ovaj ekran"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4619,6 +4811,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tačno na vreme"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tačno na vreme"
@@ -4762,6 +4960,12 @@
             "value" : "Pripremamo sve"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pripremamo sve"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4895,6 +5099,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odlično za intervale — tajmer se sam ponovo pokreće nakon pauze koju izaberete."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Odlično za intervale — tajmer se sam ponovo pokreće nakon pauze koju izaberete."
@@ -5038,6 +5248,12 @@
             "value" : "Sati"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sati"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5171,6 +5387,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odmah"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Odmah"
@@ -5314,6 +5536,12 @@
             "value" : "Neka vaši tajmeri idu u krug"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neka vaši tajmeri idu u krug"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5451,6 +5679,12 @@
             "value" : "Neka bilo koji tajmer sam krene ispočetka nakon pauze — uz sve ostalo u Pro verziji."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neka bilo koji tajmer sam krene ispočetka nakon pauze — uz sve ostalo u Pro verziji."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5583,6 +5817,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uživo u Dynamic Islandu"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Uživo u Dynamic Islandu"
@@ -5726,6 +5966,12 @@
             "value" : "Učitavanje…"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Učitavanje…"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5859,6 +6105,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponavljajte bilo koji tajmer automatski nakon pauze — savršeno za intervale i serije."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ponavljajte bilo koji tajmer automatski nakon pauze — savršeno za intervale i serije."
@@ -6002,6 +6254,12 @@
             "value" : "Minuti"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minuti"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6134,6 +6392,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Više opcija"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Više opcija"
@@ -6277,6 +6541,12 @@
             "value" : "Naziv"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naziv"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6410,6 +6680,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dajte mu naziv (opciono)"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dajte mu naziv (opciono)"
@@ -6553,6 +6829,12 @@
             "value" : "Novi tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novi tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6691,6 +6973,12 @@
             "value" : "Novi tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novi tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6824,6 +7112,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dalje"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dalje"
@@ -6972,6 +7266,12 @@
             "value" : "Ne sada"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne sada"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7104,6 +7404,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jedna nadogradnja otključava sve ispod."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jedna nadogradnja otključava sve ispod."
@@ -7242,6 +7548,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jednokratna kupovina · Bez pretplate"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jednokratna kupovina · Bez pretplate"
@@ -7390,6 +7702,12 @@
             "value" : "Otvori Podešavanja"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otvori Podešavanja"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7523,6 +7841,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opcije"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opcije"
@@ -7666,6 +7990,12 @@
             "value" : "Ili izaberite vreme završetka"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ili izaberite vreme završetka"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7798,6 +8128,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauza"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pauza"
@@ -7941,6 +8277,12 @@
             "value" : "Pauziraj tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauziraj tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8074,6 +8416,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauziraj tajmer"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pauziraj tajmer"
@@ -8217,6 +8565,12 @@
             "value" : "Pauzirano, preostalo %@"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauzirano, preostalo %@"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8350,6 +8704,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauzira odbrojavanje"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pauzira odbrojavanje"
@@ -8493,6 +8853,12 @@
             "value" : "Pauzira pokrenuti odbrojavajući tajmer."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pauzira pokrenuti odbrojavajući tajmer."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8631,6 +8997,12 @@
             "value" : "Naplata se vrši sa vašeg Apple naloga. Porodično deljenje je omogućeno."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naplata se vrši sa vašeg Apple naloga. Porodično deljenje je omogućeno."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8763,6 +9135,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Izaberite tačno vreme kada tajmer treba da se završi — uz sve ostalo u Pro verziji."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Izaberite tačno vreme kada tajmer treba da se završi — uz sve ostalo u Pro verziji."
@@ -8906,6 +9284,12 @@
             "value" : "Zakačite pločicu koja uvek odbrojava do sledećeg punog sata — bez podešavanja svaki put."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakačite pločicu koja uvek odbrojava do sledećeg punog sata — bez podešavanja svaki put."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9039,6 +9423,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakačite koliko god tajmera želite — uvek na jedan dodir."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zakačite koliko god tajmera želite — uvek na jedan dodir."
@@ -9182,6 +9572,12 @@
             "value" : "Zakačite pločicu „Do punog sata“ i ostanite na jedan dodir od punog sata — uz sve ostalo u Pro verziji."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakačite pločicu „Do punog sata“ i ostanite na jedan dodir od punog sata — uz sve ostalo u Pro verziji."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9315,6 +9711,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakači tajmer"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zakači tajmer"
@@ -9458,6 +9860,12 @@
             "value" : "Zakačite omiljene"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakačite omiljene"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9591,6 +9999,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zakačeni tajmeri ostaju na ovom ekranu i pojavljuju se u vidžetu."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zakačeni tajmeri ostaju na ovom ekranu i pojavljuju se u vidžetu."
@@ -9734,6 +10148,12 @@
             "value" : "ID preseta"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID preseta"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9867,6 +10287,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prethodni savet"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prethodni savet"
@@ -10010,6 +10436,12 @@
             "value" : "Automatski ponovo pokreni ovaj tajmer nakon pauze."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatski ponovo pokreni ovaj tajmer nakon pauze."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10143,6 +10575,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponovi"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ponovi"
@@ -10286,6 +10724,12 @@
             "value" : "Ponovi tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponovi tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10419,6 +10863,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponavlja se"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ponavlja se"
@@ -10562,6 +11012,12 @@
             "value" : "Ponovo prikaži savete"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponovo prikaži savete"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10695,6 +11151,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponovo pokreće isti tajmer od početka."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ponovo pokreće isti tajmer od početka."
@@ -10838,6 +11300,12 @@
             "value" : "Vrati kupovine"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vrati kupovine"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10971,6 +11439,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nastavi"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nastavi"
@@ -11114,6 +11588,12 @@
             "value" : "Nastavi tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nastavi tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11247,6 +11727,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nastavi tajmer"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nastavi tajmer"
@@ -11390,6 +11876,12 @@
             "value" : "Nastavlja odbrojavanje"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nastavlja odbrojavanje"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11523,6 +12015,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nastavlja pauzirani odbrojavajući tajmer."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nastavlja pauzirani odbrojavajući tajmer."
@@ -11666,6 +12164,12 @@
             "value" : "Mesta za svaki tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesta za svaki tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11798,6 +12302,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "U toku"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "U toku"
@@ -11941,6 +12451,12 @@
             "value" : "Pomerajte sate, minute i sekunde. „Pokreni“ zasvetli čim vrednost nije nula."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomerajte sate, minute i sekunde. „Pokreni“ zasvetli čim vrednost nije nula."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12079,6 +12595,12 @@
             "value" : "Sekunde"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sekunde"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12211,6 +12733,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podesite tajmer prema satu — izaberite kada se završava, a trajanje se računa umesto vas."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Podesite tajmer prema satu — izaberite kada se završava, a trajanje se računa umesto vas."
@@ -12354,6 +12882,12 @@
             "value" : "Podesi tajmer prema"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podesi tajmer prema"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12486,6 +13020,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prikaži savete"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prikaži savete"
@@ -12624,6 +13164,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preskoči"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preskoči"
@@ -12772,6 +13318,12 @@
             "value" : "Spaghetti Timer-u je potrebna dozvola za zakazivanje alarma — bez nje tajmer ne može da zazvoni, pa se ne pokreće. Uključite alarme u Podešavanjima i pokušajte ponovo."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spaghetti Timer-u je potrebna dozvola za zakazivanje alarma — bez nje tajmer ne može da zazvoni, pa se ne pokreće. Uključite alarme u Podešavanjima i pokušajte ponovo."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12905,6 +13457,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spaghetti Timer Pro"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Spaghetti Timer Pro"
@@ -13048,6 +13606,12 @@
             "value" : "Pokreni"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokreni"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13181,6 +13745,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokreni tajmer"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pokreni tajmer"
@@ -13324,6 +13894,12 @@
             "value" : "Pokreće odbrojavajući tajmer za izabrani preset."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokreće odbrojavajući tajmer za izabrani preset."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13457,6 +14033,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Počinje za %@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Počinje za %@"
@@ -13600,6 +14182,12 @@
             "value" : "Pokreće tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokreće tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13738,6 +14326,12 @@
             "value" : "Pokreće tajmer sa ovim podešavanjima"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokreće tajmer sa ovim podešavanjima"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13870,6 +14464,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zaustavi"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zaustavi"
@@ -14013,6 +14613,12 @@
             "value" : "Zaustavi tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zaustavi tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14146,6 +14752,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zaustavlja pokrenuti tajmer i uklanja njegov indikator u vidžetu."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zaustavlja pokrenuti tajmer i uklanja njegov indikator u vidžetu."
@@ -14289,6 +14901,12 @@
             "value" : "Pređite na „Vreme završetka“ i izaberite kada tajmer treba da se završi — na primer u 11.00. Trajanje se postavlja umesto vas."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pređite na „Vreme završetka“ i izaberite kada tajmer treba da se završi — na primer u 11.00. Trajanje se postavlja umesto vas."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14427,6 +15045,12 @@
             "value" : "Dodirnite za pokretanje"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodirnite za pokretanje"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14559,6 +15183,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tajmer"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tajmer"
@@ -14702,6 +15332,12 @@
             "value" : "Tajmer se završava"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tajmer se završava"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14834,6 +15470,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tajmer se završava u %@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tajmer se završava u %@"
@@ -14977,6 +15619,12 @@
             "value" : "ID tajmera"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID tajmera"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15110,6 +15758,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naziv tajmera"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Naziv tajmera"
@@ -15253,6 +15907,12 @@
             "value" : "Naziv tajmera"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naziv tajmera"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15386,6 +16046,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tajmeri se pokreću odmah jednim dodirom — bez podešavanja svaki put."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tajmeri se pokreću odmah jednim dodirom — bez podešavanja svaki put."
@@ -15534,6 +16200,12 @@
             "value" : "Savet %lld od %lld"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Savet %lld od %lld"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15666,6 +16338,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do punog sata"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Do punog sata"
@@ -15809,6 +16487,12 @@
             "value" : "Danas"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Danas"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15942,6 +16626,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sutra"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sutra"
@@ -16084,6 +16774,12 @@
             "value" : "Dodirnite i zadržite ostrvo da biste ga proširili — proverite odbrojavanje, pauzirajte ili odbacite bez otvaranja aplikacije."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodirnite i zadržite ostrvo da biste ga proširili — proverite odbrojavanje, pauzirajte ili odbacite bez otvaranja aplikacije."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16216,6 +16912,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nedostupno"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nedostupno"
@@ -16359,6 +17061,12 @@
             "value" : "Neograničeni presetovi"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neograničeni presetovi"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16492,6 +17200,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otključaj — %@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Otključaj — %@"
@@ -16635,6 +17349,12 @@
             "value" : "Otključaj Pro"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otključaj Pro"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16773,6 +17493,12 @@
             "value" : "Otključajte Spaghetti Timer Pro"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otključajte Spaghetti Timer Pro"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16905,6 +17631,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otključajte Spaghetti Timer Pro za %@"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Otključajte Spaghetti Timer Pro za %@"
@@ -17048,6 +17780,12 @@
             "value" : "Otključajte ceo tajmer"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otključajte ceo tajmer"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17181,6 +17919,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkači tajmer"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Otkači tajmer"
@@ -17324,6 +18068,12 @@
             "value" : "Do %@"
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do %@"
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17457,6 +18207,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sve je spremno"
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sve je spremno"
@@ -17600,6 +18356,12 @@
             "value" : "Popunili ste besplatne presetove. Pređite na neograničeno — i usput otključajte automatsko ponovno pokretanje."
           }
         },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Popunili ste besplatne presetove. Pređite na neograničeno — i usput otključajte automatsko ponovno pokretanje."
+          }
+        },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17732,6 +18494,12 @@
           }
         },
         "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaši zakačeni tajmeri na početnom ekranu — dodirnite pločicu da biste ga pokrenuli bez otvaranja aplikacije. Dugo pritisnite početni ekran i dodajte Spaghetti Timer."
+          }
+        },
+        "sr-Latn" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vaši zakačeni tajmeri na početnom ekranu — dodirnite pločicu da biste ga pokrenuli bez otvaranja aplikacije. Dugo pritisnite početni ekran i dodajte Spaghetti Timer."
