@@ -258,7 +258,7 @@ private struct CoachMarksOverlay: View {
             // One VoiceOver element — "Tip 2 of 6, title, body" — so a
             // step reads in a single stop and Next is two swipes away.
             VStack(alignment: .leading, spacing: 0) {
-                Text(String(localized: "Tip \(i + 1) of \(count)").uppercased())
+                Text(String(localized: "Tip \(i + 1) of \(count)").uppercasedForDisplay())
                     .font(.system(size: eyebrowSize, weight: .bold))
                     .tracking(1)
                     .foregroundStyle(Theme.tourEyebrow)

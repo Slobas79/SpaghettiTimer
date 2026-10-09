@@ -405,7 +405,7 @@ struct NewTimerSheet: View {
     @ViewBuilder
     private func fieldGroup<Content: View>(_ label: LocalizedStringResource, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 9) {
-            Text(String(localized: label).uppercased())
+            Text(String(localized: label).uppercasedForDisplay())
                 .font(.system(size: groupLabelSize, weight: .semibold))
                 .tracking(0.4)
                 .foregroundStyle(Theme.mutedTime)
@@ -651,7 +651,7 @@ struct NewTimerSheet: View {
 
     private func endReadout(_ info: EndInfo) -> some View {
         VStack(spacing: 0) {
-            Text(String(localized: "Timer ends").uppercased())
+            Text(String(localized: "Timer ends").uppercasedForDisplay())
                 .font(.system(size: eyebrowSize, weight: .semibold))
                 .tracking(0.6)
                 .foregroundStyle(Theme.mutedTime)
