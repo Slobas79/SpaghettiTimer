@@ -25,6 +25,11 @@ protocol TimerPresetsUseCase: AnyObject {
     func pinPreset(_ preset: TimerPreset)
     func deletePreset(_ preset: TimerPreset)
     func setNextHourPinned(_ pinned: Bool)
+    #if DEBUG
+    /// QA only, compiled out of Release: hands the free pins back. User presets
+    /// still on Home are counted again straight away, so unpin them first.
+    func resetLifetimePinCount()
+    #endif
 }
 
 @MainActor
@@ -64,6 +69,13 @@ final class TimerPresetsUseCaseImpl: TimerPresetsUseCase {
         pinAllowance.saveLifetimePinCount(onGrid)
         return onGrid
     }
+
+    #if DEBUG
+    func resetLifetimePinCount() {
+        pinAllowance.saveLifetimePinCount(0)
+        reload()
+    }
+    #endif
 
     private func recordPin() {
         pinAllowance.saveLifetimePinCount(pinAllowance.loadLifetimePinCount() + 1)

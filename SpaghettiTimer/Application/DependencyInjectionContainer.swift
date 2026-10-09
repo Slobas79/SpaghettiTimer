@@ -10,7 +10,13 @@ final class DependencyInjectionContainer {
     // Repos
     private lazy var presetsRepo: PresetsEditingRepo = PresetsRepoImpl()
     private lazy var runningTimersRepo: RunningTimersRepo = RunningTimersRepoImpl()
-    private lazy var pinAllowanceRepo: PinAllowanceRepo = KeychainPinAllowanceRepo()
+    private lazy var pinAllowanceRepo: PinAllowanceRepo = {
+        let repo = KeychainPinAllowanceRepo()
+        #if DEBUG
+        repo.resetIfRequested()
+        #endif
+        return repo
+    }()
     private lazy var freeTryRepo: FreeTryRepo = KeychainFreeTryRepo()
     private(set) lazy var analyticsRepo: AnalyticsRepo = AnalyticsBootstrap.makeRepo()
 

@@ -147,6 +147,17 @@ struct NewTimerSheet: View {
         )
     }
 
+    /// Free users only: what pinning this timer costs. The pin is spent here,
+    /// and unpinning later doesn't give it back, so say so before it's spent.
+    private var pinAllowanceDescription: LocalizedStringKey? {
+        switch FreePinNotice.current(isPro: store.isPro, lifetimePinCount: lifetimePinCount) {
+        case .spends(let left)?: return "Uses a free pin — you'll have \(left) left. Unpinning doesn't give it back."
+        case .spendsLast?: return "Uses your last free pin. Unpinning doesn't give it back."
+        case .usedUp?: return "You've used all your free pins."
+        case nil: return nil
+        }
+    }
+
     /// End-time mode's pin toggle. Pinning here installs the dynamic "To next
     /// hour" tile, which is Pro-only — no free cap to spend, so a non-Pro user
     /// always gets the paywall.
@@ -451,6 +462,7 @@ struct NewTimerSheet: View {
             optionRow(
                 icon: "pin",
                 title: "Pin timer",
+                description: pinAllowanceDescription,
                 isOn: pinnedBinding
             )
         }

@@ -17794,6 +17794,149 @@
         }
       }
     },
+    "Unpin" : {
+      "comment" : "Destructive button of the unpin alert: removes the timer from the home grid and the widget.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إلغاء التثبيت"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откачи"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odepnout"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frigør"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loslösen"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ξεκαρφίτσωμα"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar de fijar"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poista kiinnitys"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désépingler"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feloldás"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non fissare più"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピン留めを解除"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Løsne"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Losmaken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odepnij"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desafixar"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anulează fixarea"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открепить"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odopnúť"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpni"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkači"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkači"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lossa"
+          }
+        }
+      }
+    },
     "Unpin timer" : {
       "comment" : "Menu item and VoiceOver action on a pinned tile: remove it from the home grid and the widget.",
       "extractionState" : "manual",
@@ -17934,6 +18077,435 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lossa timer"
+          }
+        }
+      }
+    },
+    "Unpin “%@”?" : {
+      "comment" : "Title of the alert shown before a free user unpins a timer tile. The argument is the timer’s name.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إلغاء تثبيت «%@»؟"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Да се откачи ли „%@“?"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odepnout „%@“?"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frigør “%@”?"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„%@“ loslösen?"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ξεκαρφίτσωμα του «%@»;"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Dejar de fijar «%@»?"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poistetaanko ajastimen ”%@” kiinnitys?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désépingler « %@ » ?"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rögzítés feloldása: „%@”?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non fissare più «%@»?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」のピン留めを解除しますか？"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Løsne «%@»?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘%@’ losmaken?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpiąć „%@”?"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desafixar «%@»?"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anulezi fixarea pentru „%@”?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открепить «%@»?"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odopnúť „%@“?"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Želite odpeti »%@«?"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkačiti „%@“?"
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkačiti „%@“?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lossa ”%@”?"
+          }
+        }
+      }
+    },
+    "Unpinning doesn't give back a free pin, and you've used them all — pinning it again needs Pro." : {
+      "comment" : "Message of the unpin alert once every free pin is spent: pinning the timer again would need Pro.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إلغاء التثبيت لا يُعيد تثبيتًا مجانيًا، وقد استخدمتها كلها — تثبيته مجددًا يتطلب Pro."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откачането не връща безплатно закачане, а вие сте използвали всички — за да го закачите отново, ви трябва Pro."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odepnutím se bezplatné připnutí nevrátí a všechna jste už využili — opětovné připnutí vyžaduje Pro."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Når du frigør timeren, får du ikke en gratis fastgørelse igen, og du har brugt dem alle — at fastgøre den igen kræver Pro."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loslösen gibt keinen kostenlosen Pin zurück, und du hast alle verbraucht — erneutes Anheften braucht Pro."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το ξεκαρφίτσωμα δεν επιστρέφει δωρεάν καρφίτσωμα και τα έχετε χρησιμοποιήσει όλα — για να το καρφιτσώσετε ξανά χρειάζεστε το Pro."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar de fijarlo no devuelve una fijación gratuita y ya las has usado todas: volver a fijarlo requiere Pro."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiinnityksen poistaminen ei palauta ilmaista kiinnitystä, ja olet käyttänyt ne kaikki – uudelleen kiinnittäminen vaatii Pron."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le désépingler ne rend pas d’épinglage gratuit, et vous les avez tous utilisés. L’épingler de nouveau nécessitera Pro."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A rögzítés feloldása nem adja vissza az ingyenes rögzítést, és már mindet felhasználta — az újbóli rögzítéshez Pro kell."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Togliere il fissaggio non restituisce un fissaggio gratuito e li hai già usati tutti: per fissarlo di nuovo serve Pro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピン留めを解除しても無料のピン留めは戻らず、すでにすべて使っています。もう一度ピン留めするには Pro が必要です。"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Når du løsner timeren, får du ikke tilbake en gratis festing, og du har brukt alle – å feste den igjen krever Pro."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Losmaken geeft geen gratis vastzetting terug en je hebt ze allemaal gebruikt — opnieuw vastzetten vereist Pro."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpięcie nie zwraca darmowego przypięcia, a wszystkie zostały już wykorzystane — ponowne przypięcie wymaga Pro."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desafixar não devolve uma fixação gratuita e já as usou todas — voltar a fixá-lo requer o Pro."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anularea fixării nu returnează o fixare gratuită și le-ai folosit pe toate — pentru a-l fixa din nou ai nevoie de Pro."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открепление не возвращает бесплатное закрепление, а вы уже использовали все — чтобы закрепить его снова, нужен Pro."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odopnutím sa bezplatné pripnutie nevráti a všetky ste už využili — opätovné pripnutie vyžaduje Pro."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Z odpenjanjem se brezplačno pripenjanje ne vrne, vsa pa ste že porabili – za ponovno pripenjanje potrebujete Pro."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkačinjanje ne vraća besplatno kačenje, a sva ste već iskoristili — za ponovno kačenje potreban je Pro."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkačinjanje ne vraća besplatno kačenje, a sva ste već iskoristili — za ponovno kačenje potreban je Pro."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Att lossa timern ger inte tillbaka en gratis fastnålning, och du har använt alla – att nåla fast den igen kräver Pro."
+          }
+        }
+      }
+    },
+    "Unpinning doesn't give back a free pin, so pinning it again later uses one." : {
+      "comment" : "Message of the unpin alert while free pins remain: unpinning deletes the tile, doesn’t give back a free pin, and pinning the timer again would spend one.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إلغاء التثبيت لا يُعيد تثبيتًا مجانيًا، لذا فإن تثبيته مجددًا لاحقًا يستخدم واحدًا."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Откачането не връща безплатно закачане, така че ако го закачите отново по-късно, ще използвате едно."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odepnutím se bezplatné připnutí nevrátí, takže opětovné připnutí později jedno spotřebuje."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Når du frigør timeren, får du ikke en gratis fastgørelse igen, så hvis du fastgør den igen senere, bruger du en."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loslösen gibt keinen kostenlosen Pin zurück — wenn du ihn später wieder anheftest, verbrauchst du einen."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Το ξεκαρφίτσωμα δεν επιστρέφει δωρεάν καρφίτσωμα, οπότε αν το καρφιτσώσετε ξανά αργότερα, θα χρησιμοποιήσετε ένα."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar de fijarlo no devuelve una fijación gratuita, así que volver a fijarlo más tarde usará una."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiinnityksen poistaminen ei palauta ilmaista kiinnitystä, joten sen kiinnittäminen myöhemmin uudelleen käyttää yhden."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le désépingler ne rend pas d’épinglage gratuit, donc l’épingler de nouveau plus tard en utilisera un."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A rögzítés feloldása nem adja vissza az ingyenes rögzítést, így ha később újra rögzíti, az egyet felhasznál."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Togliere il fissaggio non restituisce un fissaggio gratuito, quindi fissarlo di nuovo in seguito ne userà uno."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピン留めを解除しても無料のピン留めは戻らないため、後でもう一度ピン留めすると1回分を使います。"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Når du løsner timeren, får du ikke tilbake en gratis festing, så å feste den igjen senere bruker en."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Losmaken geeft geen gratis vastzetting terug, dus als je hem later weer vastzet, gebruik je er een."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpięcie nie zwraca darmowego przypięcia, więc ponowne przypięcie później wykorzysta jedno."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desafixar não devolve uma fixação gratuita, por isso voltar a fixá-lo mais tarde usa uma."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anularea fixării nu returnează o fixare gratuită, așa că dacă îl fixezi din nou mai târziu, vei folosi una."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открепление не возвращает бесплатное закрепление, поэтому если закрепить его снова, будет использовано ещё одно."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odopnutím sa bezplatné pripnutie nevráti, takže opätovné pripnutie neskôr jedno spotrebuje."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Z odpenjanjem se brezplačno pripenjanje ne vrne, zato ponovno pripenjanje pozneje porabi eno."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkačinjanje ne vraća besplatno kačenje, pa će ponovno kačenje kasnije potrošiti jedno."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otkačinjanje ne vraća besplatno kačenje, pa će ponovno kačenje kasnije potrošiti jedno."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Att lossa timern ger inte tillbaka en gratis fastnålning, så om du nålar fast den igen senare används en."
           }
         }
       }
@@ -18082,6 +18654,752 @@
         }
       }
     },
+    "Uses a free pin — you'll have %lld left. Unpinning doesn't give it back." : {
+      "comment" : "New Timer sheet, under the Pin toggle, free users only: pinning spends one of the free pins (3 in all), and unpinning never gives it back. The argument is how many free pins are left after this one.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم تثبيتًا مجانيًا — سيتبقى لك %lld. إلغاء التثبيت لا يُعيده."
+          }
+        },
+        "bg" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Използва едно безплатно закачане — ще ви остане %lld. Откачането не го връща."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Използва едно безплатно закачане — ще ви останат %lld. Откачането не го връща."
+                }
+              }
+            }
+          }
+        },
+        "cs" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Využije jedno bezplatné připnutí — zbude vám %lld. Odepnutím se nevrátí."
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Využije jedno bezplatné připnutí — zbudou vám %lld. Odepnutím se nevrátí."
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Využije jedno bezplatné připnutí — zbude vám %lld. Odepnutím se nevrátí."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Využije jedno bezplatné připnutí — zbude vám %lld. Odepnutím se nevrátí."
+                }
+              }
+            }
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruger én gratis fastgørelse — så har du %lld tilbage. Den kommer ikke igen, hvis du frigør timeren."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutzt einen kostenlosen Pin — danach hast du noch %lld. Loslösen gibt ihn nicht zurück."
+          }
+        },
+        "el" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Χρησιμοποιεί ένα δωρεάν καρφίτσωμα — θα σας μείνει %lld. Το ξεκαρφίτσωμα δεν το επιστρέφει."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Χρησιμοποιεί ένα δωρεάν καρφίτσωμα — θα σας μείνουν %lld. Το ξεκαρφίτσωμα δεν το επιστρέφει."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Usa una fijación gratuita: te quedará %lld. Dejar de fijarlo no te la devuelve."
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Usa una fijación gratuita: te quedarán %lld. Dejar de fijarlo no te la devuelve."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Usa una fijación gratuita: te quedarán %lld. Dejar de fijarlo no te la devuelve."
+                }
+              }
+            }
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Käyttää yhden ilmaisen kiinnityksen – sinulle jää %lld. Kiinnityksen poistaminen ei palauta sitä."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilise un épinglage gratuit. Il vous en restera %lld, et le désépingler ne vous le rend pas."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Felhasznál egy ingyenes rögzítést — utána %lld marad. A rögzítés feloldása nem adja vissza."
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Usa un fissaggio gratuito: te ne resterà %lld. Togliere il fissaggio non lo restituisce."
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Usa un fissaggio gratuito: te ne resteranno %lld. Togliere il fissaggio non lo restituisce."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Usa un fissaggio gratuito: te ne resteranno %lld. Togliere il fissaggio non lo restituisce."
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無料のピン留めを1回使い、残りは%lld回になります。ピン留めを解除しても戻りません。"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruker én gratis festing – så har du %lld igjen. Den kommer ikke tilbake om du løsner timeren."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruikt een gratis vastzetting — daarna heb je er nog %lld. Losmaken geeft hem niet terug."
+          }
+        },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wykorzystuje jedno darmowe przypięcie — zostanie Ci %lld. Odpięcie go nie zwraca."
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wykorzystuje jedno darmowe przypięcie — zostaną Ci %lld. Odpięcie go nie zwraca."
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wykorzystuje jedno darmowe przypięcie — zostanie Ci %lld. Odpięcie go nie zwraca."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Wykorzystuje jedno darmowe przypięcie — zostanie Ci %lld. Odpięcie go nie zwraca."
+                }
+              }
+            }
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa uma fixação gratuita — ficará com %lld. Desafixar não a devolve."
+          }
+        },
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Folosește o fixare gratuită — îți va mai rămâne %lld. Anularea fixării nu o returnează."
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Folosește o fixare gratuită — îți vor mai rămâne %lld. Anularea fixării nu o returnează."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Folosește o fixare gratuită — îți vor mai rămâne %lld. Anularea fixării nu o returnează."
+                }
+              }
+            }
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использует одно бесплатное закрепление — у вас останется %lld. Открепление его не вернёт."
+          }
+        },
+        "sk" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Využije jedno bezplatné pripnutie — zostane vám %lld. Odopnutím sa nevráti."
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Využije jedno bezplatné pripnutie — zostanú vám %lld. Odopnutím sa nevráti."
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Využije jedno bezplatné pripnutie — zostane vám %lld. Odopnutím sa nevráti."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Využije jedno bezplatné pripnutie — zostane vám %lld. Odopnutím sa nevráti."
+                }
+              }
+            }
+          }
+        },
+        "sl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Porabi eno brezplačno pripenjanje – potem ostane še %lld. Z odpenjanjem se ne vrne."
+                }
+              },
+              "two" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Porabi eno brezplačno pripenjanje – potem ostaneta še %lld. Z odpenjanjem se ne vrne."
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Porabi eno brezplačno pripenjanje – potem ostanejo še %lld. Z odpenjanjem se ne vrne."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Porabi eno brezplačno pripenjanje – potem jih ostane še %lld. Z odpenjanjem se ne vrne."
+                }
+              }
+            }
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koristi jedno besplatno kačenje — ostaće vam još %lld. Otkačinjanje ga ne vraća."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koristi jedno besplatno kačenje — ostaće vam još %lld. Otkačinjanje ga ne vraća."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Använder en gratis fastnålning – sedan har du %lld kvar. Den kommer inte tillbaka om du lossar timern."
+          }
+        }
+      }
+    },
+    "Uses your last free pin. Unpinning doesn't give it back." : {
+      "comment" : "New Timer sheet, under the Pin toggle, free users only: pinning this timer spends the last free pin, and unpinning never gives it back.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم آخر تثبيت مجاني لديك. إلغاء التثبيت لا يُعيده."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Използва последното ви безплатно закачане. Откачането не го връща."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Využije vaše poslední bezplatné připnutí. Odepnutím se nevrátí."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruger din sidste gratis fastgørelse. Den kommer ikke igen, hvis du frigør timeren."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutzt deinen letzten kostenlosen Pin. Loslösen gibt ihn nicht zurück."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χρησιμοποιεί το τελευταίο δωρεάν καρφίτσωμά σας. Το ξεκαρφίτσωμα δεν το επιστρέφει."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa tu última fijación gratuita. Dejar de fijarlo no te la devuelve."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Käyttää viimeisen ilmaisen kiinnityksesi. Kiinnityksen poistaminen ei palauta sitä."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilise votre dernier épinglage gratuit. Le désépingler ne vous le rend pas."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Felhasználja az utolsó ingyenes rögzítését. A rögzítés feloldása nem adja vissza."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa il tuo ultimo fissaggio gratuito. Togliere il fissaggio non lo restituisce."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最後の無料ピン留めを使います。ピン留めを解除しても戻りません。"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bruker din siste gratis festing. Den kommer ikke tilbake om du løsner timeren."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruikt je laatste gratis vastzetting. Losmaken geeft hem niet terug."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wykorzystuje Twoje ostatnie darmowe przypięcie. Odpięcie go nie zwraca."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa a sua última fixação gratuita. Desafixar não a devolve."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folosește ultima ta fixare gratuită. Anularea fixării nu o returnează."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использует ваше последнее бесплатное закрепление. Открепление его не вернёт."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Využije vaše posledné bezplatné pripnutie. Odopnutím sa nevráti."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porabi vaše zadnje brezplačno pripenjanje. Z odpenjanjem se ne vrne."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koristi vaše poslednje besplatno kačenje. Otkačinjanje ga ne vraća."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Koristi vaše poslednje besplatno kačenje. Otkačinjanje ga ne vraća."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Använder din sista gratis fastnålning. Den kommer inte tillbaka om du lossar timern."
+          }
+        }
+      }
+    },
+    "You've used all your free pins." : {
+      "comment" : "New Timer sheet, under the Pin toggle, free users only: every free pin is spent, so the toggle opens the paywall.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدمت كل تثبيتاتك المجانية."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Използвахте всички безплатни закачания."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Využili jste všechna bezplatná připnutí."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du har brugt alle dine gratis fastgørelser."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du hast alle kostenlosen Pins verbraucht."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χρησιμοποιήσατε όλα τα δωρεάν καρφιτσώματα."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has usado todas tus fijaciones gratuitas."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Olet käyttänyt kaikki ilmaiset kiinnityksesi."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous avez utilisé tous vos épinglages gratuits."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Felhasználta az összes ingyenes rögzítését."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hai usato tutti i fissaggi gratuiti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無料のピン留めをすべて使いました。"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du har brukt alle de gratis festingene dine."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je hebt al je gratis vastzettingen gebruikt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wykorzystano wszystkie darmowe przypięcia."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Já usou todas as suas fixações gratuitas."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ai folosit toate fixările gratuite."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы использовали все бесплатные закрепления."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Využili ste všetky bezplatné pripnutia."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porabili ste vsa brezplačna pripenjanja."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iskoristili ste sva besplatna kačenja."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iskoristili ste sva besplatna kačenja."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du har använt alla dina gratis fastnålningar."
+          }
+        }
+      }
+    },
+    "You've used all your free pins. Go unlimited — and unlock auto-restart while you're at it." : {
+      "comment" : "A subheadline for the \"pin limit\" paywall trigger: every free pin is spent.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدمت كل تثبيتاتك المجانية. انتقل إلى غير المحدود — وافتح إعادة التشغيل التلقائي في الوقت نفسه."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Използвахте всички безплатни закачания. Преминете към неограничени — и отключете авторестарта в същото време."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Využili jste všechna bezplatná připnutí. Přejděte na neomezené — a rovnou odemkněte i automatický restart."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du har brugt alle dine gratis fastgørelser. Få ubegrænset — og lås automatisk genstart op samtidig."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du hast alle kostenlosen Pins verbraucht. Hol dir unbegrenzt viele — und schalte den Auto-Neustart gleich mit frei."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Χρησιμοποιήσατε όλα τα δωρεάν καρφιτσώματα. Περάστε σε απεριόριστες — και ξεκλειδώστε παράλληλα την αυτόματη επανεκκίνηση."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has usado todas tus fijaciones gratuitas. Pásate a ilimitados y desbloquea de paso el reinicio automático."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Olet käyttänyt kaikki ilmaiset kiinnityksesi. Siirry rajattomiin – ja avaa samalla automaattinen uudelleenkäynnistys."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous avez utilisé tous vos épinglages gratuits. Passez à l’illimité et débloquez au passage le redémarrage automatique."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Felhasználta az összes ingyenes rögzítését. Váltson korlátlanra — és oldja fel közben az automatikus újraindítást is."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hai usato tutti i fissaggi gratuiti. Passa a illimitati e sblocca anche il riavvio automatico."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無料のピン留めをすべて使いました。無制限にして、ついでに自動再スタートもロック解除しましょう。"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du har brukt alle de gratis festingene dine. Gå for ubegrenset – og lås opp automatisk omstart samtidig."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je hebt al je gratis vastzettingen gebruikt. Kies voor onbeperkt — en ontgrendel meteen automatisch herstarten."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wykorzystano wszystkie darmowe przypięcia. Przejdź na nielimitowane — i przy okazji odblokuj automatyczny restart."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Já usou todas as suas fixações gratuitas. Passe para ilimitadas — e desbloqueie já o reinício automático."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ai folosit toate fixările gratuite. Treci la nelimitat — și deblochează totodată și repornirea automată."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вы использовали все бесплатные закрепления. Переходите на безлимит — и заодно откройте автоперезапуск."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Využili ste všetky bezplatné pripnutia. Prejdite na neobmedzené — a rovno odomknite aj automatický reštart."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Porabili ste vsa brezplačna pripenjanja. Preklopite na neomejeno – in obenem odklenite samodejni vnovični zagon."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iskoristili ste sva besplatna kačenja. Pređite na neograničeno — i usput otključajte automatsko ponovno pokretanje."
+          }
+        },
+        "sr-Latn" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iskoristili ste sva besplatna kačenja. Pređite na neograničeno — i usput otključajte automatsko ponovno pokretanje."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du har använt alla dina gratis fastnålningar. Kör obegränsat – och lås upp automatisk omstart på köpet."
+          }
+        }
+      }
+    },
     "You’re all set" : {
       "comment" : "The text in the \"You're all set\" toast.",
       "isCommentAutoGenerated" : true,
@@ -18222,150 +19540,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Allt är klart"
-          }
-        }
-      }
-    },
-    "You've filled your free presets. Go unlimited — and unlock auto-restart while you're at it." : {
-      "comment" : "A subheadline for the \"pin limit\" paywall trigger.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "امتلأت إعداداتك المسبقة المجانية. انتقل إلى غير المحدود — وافتح إعادة التشغيل التلقائي في الوقت نفسه."
-          }
-        },
-        "bg" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Запълнихте безплатните си шаблони. Преминете към неограничени — и отключете авторестарта в същото време."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bezplatné předvolby máte plné. Přejděte na neomezené — a rovnou odemkněte i automatický restart."
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dine gratis forindstillinger er fyldt op. Få ubegrænset — og lås automatisk genstart op samtidig."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine kostenlosen Presets sind voll. Hol dir unbegrenzt viele — und schalte den Auto-Neustart gleich mit frei."
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Γεμίσατε τις δωρεάν προεπιλογές σας. Περάστε σε απεριόριστες — και ξεκλειδώστε παράλληλα την αυτόματη επανεκκίνηση."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Has llenado tus preajustes gratuitos. Pásate a ilimitados y desbloquea de paso el reinicio automático."
-          }
-        },
-        "fi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ilmaiset esiasetuksesi ovat täynnä. Siirry rajattomiin – ja avaa samalla automaattinen uudelleenkäynnistys."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vos préréglages gratuits sont pleins. Passez à l’illimité et débloquez au passage le redémarrage automatique."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Betelt az ingyenes előbeállítások helye. Váltson korlátlanra — és oldja fel közben az automatikus újraindítást is."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hai esaurito i preset gratuiti. Passa a illimitati e sblocca anche il riavvio automatico."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "無料のプリセットがいっぱいになりました。無制限にして、ついでに自動再スタートもロック解除しましょう。"
-          }
-        },
-        "nb" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "De gratis forhåndsinnstillingene dine er fulle. Gå for ubegrenset – og lås opp automatisk omstart samtidig."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Je gratis presets zitten vol. Kies voor onbeperkt — en ontgrendel meteen automatisch herstarten."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wykorzystano wszystkie darmowe presety. Przejdź na nielimitowane — i przy okazji odblokuj automatyczny restart."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esgotou as suas predefinições gratuitas. Passe para ilimitadas — e desbloqueie já o reinício automático."
-          }
-        },
-        "ro" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ți-ai umplut presetările gratuite. Treci la nelimitat — și deblochează totodată și repornirea automată."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Бесплатные пресеты закончились. Переходите на безлимит — и заодно откройте автоперезапуск."
-          }
-        },
-        "sk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bezplatné predvoľby máte plné. Prejdite na neobmedzené — a rovno odomknite aj automatický reštart."
-          }
-        },
-        "sl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Brezplačne prednastavitve so polne. Preklopite na neomejeno – in obenem odklenite samodejni vnovični zagon."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Popunili ste besplatne presetove. Pređite na neograničeno — i usput otključajte automatsko ponovno pokretanje."
-          }
-        },
-        "sr-Latn" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Popunili ste besplatne presetove. Pređite na neograničeno — i usput otključajte automatsko ponovno pokretanje."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dina gratis förval är fulla. Kör obegränsat – och lås upp automatisk omstart på köpet."
           }
         }
       }

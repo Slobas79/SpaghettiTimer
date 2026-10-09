@@ -35,7 +35,7 @@ enum PaywallTrigger: String, Identifiable {
     var subhead: LocalizedStringKey {
         switch self {
         case .autoRestart: return "Let any timer start over on its own after a cooldown — plus everything else in Pro."
-        case .pinLimit:    return "You've filled your free presets. Go unlimited — and unlock auto-restart while you're at it."
+        case .pinLimit:    return "You've used all your free pins. Go unlimited — and unlock auto-restart while you're at it."
         case .endTime:     return "Pick the exact time a timer should finish — plus everything else in Pro."
         case .nextHour:    return "Pin the “To next hour” tile and stay one tap from the top of the hour — plus everything else in Pro."
         case .general:     return "One upgrade unlocks everything below."

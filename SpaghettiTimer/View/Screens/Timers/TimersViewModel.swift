@@ -110,6 +110,13 @@ final class TimersViewModel {
         presetsUseCase.deletePreset(preset)
     }
 
+    #if DEBUG
+    /// QA only — see `TimerPresetsUseCase.resetLifetimePinCount()`.
+    func resetFreePins() {
+        presetsUseCase.resetLifetimePinCount()
+    }
+    #endif
+
     func pin(_ preset: TimerPreset) {
         presetsUseCase.pinPreset(preset)
     }

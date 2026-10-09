@@ -15,6 +15,11 @@ struct TimersView: View {
     @State private var showingSplash = false
     @State private var showingTour = false
     @State private var directPaywall: PaywallTrigger?
+    /// The preset a free user asked to unpin, held while they confirm: unpinning
+    /// deletes it, and the free pin it used doesn't come back. Kept after the
+    /// alert closes so its title doesn't blank out while it animates away.
+    @State private var unpinCandidate: TimerPreset?
+    @State private var confirmingUnpin = false
     /// The Home tour script, resolved once in `onAppear`. Kept in state rather
     /// than recomputed in `body`: `TutorialTour.home` asks the device whether
     /// it has a Dynamic Island, which reads `false` until the key window is
@@ -71,6 +76,22 @@ struct TimersView: View {
         } label: {
             Label("Restore Purchases", systemImage: "arrow.clockwise.circle")
         }
+        #if DEBUG
+        // QA only, compiled out of Release — so verbatim, never in the catalog.
+        // Shows the count the pin cap uses, which a reinstall can't reset. Pro
+        // pins without a cap, so there is nothing to reset.
+        if !store.isPro {
+            Button {
+                viewModel.resetFreePins()
+            } label: {
+                Label {
+                    Text(verbatim: "Reset free pins (\(viewModel.lifetimePinCount) of \(ProConfig.freePinLimit) used)")
+                } icon: {
+                    Image(systemName: "pin.slash")
+                }
+            }
+        }
+        #endif
     }
 
     var body: some View {
@@ -112,7 +133,7 @@ struct TimersView: View {
                                 TimerTile(
                                     preset: item.preset,
                                     onStart: { viewModel.start(item.preset) },
-                                    onUnpin: { viewModel.deletePreset(item.preset) },
+                                    onUnpin: { requestUnpin(item.preset) },
                                     onPin: nil
                                 )
                                 .accessibilityFocused($focus, equals: .preset(item.preset.id))
@@ -231,6 +252,24 @@ struct TimersView: View {
         } message: {
             Text("Spaghetti Timer needs permission to schedule alarms — without it a timer can’t ring, so it won’t start. Turn alarms on in Settings, then try again.")
         }
+        .alert(
+            Text("Unpin “\(SpokenTimer.label(for: unpinCandidate?.name ?? ""))”?"),
+            isPresented: $confirmingUnpin,
+            presenting: unpinCandidate
+        ) { preset in
+            Button("Unpin", role: .destructive) {
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+                    viewModel.deletePreset(preset)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: { _ in
+            if FreePinNotice.current(isPro: store.isPro, lifetimePinCount: viewModel.lifetimePinCount) == .usedUp {
+                Text("Unpinning doesn't give back a free pin, and you've used them all — pinning it again needs Pro.")
+            } else {
+                Text("Unpinning doesn't give back a free pin, so pinning it again later uses one.")
+            }
+        }
         .onAppear {
             viewModel.refresh()
             // Resolve the tour script now that the window is laid out, so the
@@ -244,6 +283,21 @@ struct TimersView: View {
                 showingSplash = true
             }
         }
+    }
+}
+
+// MARK: - Unpinning
+
+extension TimersView {
+    /// Unpinning deletes the preset. Pro unpins at once; a free user confirms
+    /// first, since getting the timer back would cost a free pin.
+    private func requestUnpin(_ preset: TimerPreset) {
+        guard FreePinNotice.current(isPro: store.isPro, lifetimePinCount: viewModel.lifetimePinCount) != nil else {
+            viewModel.deletePreset(preset)
+            return
+        }
+        unpinCandidate = preset
+        confirmingUnpin = true
     }
 }
 

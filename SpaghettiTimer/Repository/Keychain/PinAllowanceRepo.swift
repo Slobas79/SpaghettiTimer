@@ -63,6 +63,21 @@ nonisolated final class KeychainPinAllowanceRepo: PinAllowanceRepo {
     }
 }
 
+#if DEBUG
+extension KeychainPinAllowanceRepo {
+    /// QA only, compiled out of Release. Reinstalling can't hand the free pins
+    /// back, so launching with this argument (Edit Scheme ▸ Run ▸ Arguments)
+    /// zeroes the count instead. User presets still on Home are counted again
+    /// at launch, so unpin them first to get every free pin back.
+    static let resetLaunchArgument = "-resetFreePins"
+
+    func resetIfRequested(arguments: [String] = ProcessInfo.processInfo.arguments) {
+        guard arguments.contains(Self.resetLaunchArgument) else { return }
+        saveLifetimePinCount(0)
+    }
+}
+#endif
+
 /// Holds the count for the life of the instance only. The presets use case's
 /// default, so one built without an allowance — tests, previews — never touches
 /// the real Keychain item; the app passes `KeychainPinAllowanceRepo`.
