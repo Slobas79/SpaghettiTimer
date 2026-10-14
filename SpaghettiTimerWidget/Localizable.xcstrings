@@ -1310,7 +1310,7 @@
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Продължителност"
+            "value" : "Времетраене"
           }
         },
         "cs" : {
@@ -4315,7 +4315,7 @@
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Starta dina favorittimers direkt från hemskärmen."
+            "value" : "Starta dina favorittimrar direkt från hemskärmen."
           }
         }
       }

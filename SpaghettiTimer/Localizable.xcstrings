@@ -2456,7 +2456,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "終了後に自動で再スタート"
+            "value" : "自動で再スタート"
           }
         },
         "nb" : {
@@ -4124,7 +4124,7 @@
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Продължителност"
+            "value" : "Времетраене"
           }
         },
         "cs" : {
@@ -4490,7 +4490,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Godzina zakończenia"
+            "value" : "Godzina końca"
           }
         },
         "pt-PT" : {
@@ -5688,7 +5688,7 @@
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Låt dina timers gå i loop"
+            "value" : "Låt dina timrar gå i loop"
           }
         }
       }
@@ -8207,7 +8207,7 @@
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vagy válasszon befejezési időpontot"
+            "value" : "Vagy válasszon befejezési időt"
           }
         },
         "it" : {
@@ -9669,7 +9669,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zet zoveel timers vast als je wilt — altijd één tik verwijderd."
+            "value" : "Zet zoveel timers vast als je wilt — altijd met één tik bereikbaar."
           }
         },
         "pl" : {
@@ -9723,7 +9723,7 @@
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nåla fast hur många timers du vill – alltid ett tryck bort."
+            "value" : "Nåla fast hur många timrar du vill – alltid ett tryck bort."
           }
         }
       }
@@ -10299,7 +10299,7 @@
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fastnålade timers stannar på den här skärmen och visas i widgeten."
+            "value" : "Fastnålade timrar stannar på den här skärmen och visas i widgeten."
           }
         }
       }
@@ -10665,7 +10665,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "クールダウン後にこのタイマーを自動的に再実行します。"
+            "value" : "このタイマーをクールダウン後に自動で再実行します。"
           }
         },
         "nb" : {
@@ -15255,7 +15255,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Passez à « Heure de fin » et choisissez quand le minuteur doit se terminer, par exemple 11 h 00. La durée est calculée pour vous."
+            "value" : "Passez à « Heure de fin » et choisissez quand le minuteur doit se terminer, par exemple 11 h 00. La durée est calculée pour vous."
           }
         },
         "hu" : {
@@ -15291,7 +15291,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Przełącz na „Godzinę zakończenia” i wybierz, kiedy minutnik ma się skończyć — na przykład o 11:00. Czas trwania ustawi się sam."
+            "value" : "Przełącz na „Godzinę końca” i wybierz, kiedy minutnik ma się skończyć — na przykład o 11:00. Czas trwania ustawi się sam."
           }
         },
         "pt-PT" : {
@@ -16489,7 +16489,7 @@
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Timers startar direkt med ett tryck – ingen inställning varje gång."
+            "value" : "Timrar startar direkt med ett tryck – ingen inställning varje gång."
           }
         }
       }
@@ -20111,7 +20111,7 @@
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dina fastnålade timers på hemskärmen – tryck på en ruta för att starta den utan att öppna appen. Håll ned på hemskärmen och lägg till Spaghetti Timer."
+            "value" : "Dina fastnålade timrar på hemskärmen – tryck på en ruta för att starta den utan att öppna appen. Håll ned på hemskärmen och lägg till Spaghetti Timer."
           }
         }
       }
