@@ -47,18 +47,27 @@ nonisolated enum AlarmConfigurationFactory {
     /// A repeating timer gets a Stop button only. Offering "Repeat" as well would be
     /// redundant, and `RepeatTimerIntent` has no cooldown handling — so the secondary
     /// button is withheld and `RepeatTimerIntent` is reachable for one-shots only.
+    ///
+    /// From iOS 26.1 the system draws the alert's Stop button itself and ignores a
+    /// `stopButton`, so ours is passed on 26.0 only.
     static func makeAlert(for timer: RunningTimer) -> AlarmPresentation.Alert {
-        if timer.autoRestartDelaySeconds != nil {
+        let title = LocalizedStringResource(stringLiteral: timer.name)
+        let repeatButton: AlarmButton? = timer.autoRestartDelaySeconds == nil
+            ? .init(text: "Repeat", textColor: .white, systemImageName: "repeat")
+            : nil
+        let repeatBehavior: AlarmPresentation.Alert.SecondaryButtonBehavior? = repeatButton == nil ? nil : .custom
+        if #available(iOS 26.1, *) {
             return AlarmPresentation.Alert(
-                title: LocalizedStringResource(stringLiteral: timer.name),
-                stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill")
+                title: title,
+                secondaryButton: repeatButton,
+                secondaryButtonBehavior: repeatBehavior
             )
         }
         return AlarmPresentation.Alert(
-            title: LocalizedStringResource(stringLiteral: timer.name),
+            title: title,
             stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill"),
-            secondaryButton: .init(text: "Repeat", textColor: .white, systemImageName: "repeat"),
-            secondaryButtonBehavior: .custom
+            secondaryButton: repeatButton,
+            secondaryButtonBehavior: repeatBehavior
         )
     }
 

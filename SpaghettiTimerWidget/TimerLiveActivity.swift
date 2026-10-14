@@ -475,10 +475,15 @@ private enum LiveActivityPreviewData {
     /// Attributes mirror `AlarmConfigurationFactory.makeConfiguration` so the
     /// preview metadata (name, auto-restart glyph) matches production.
     static func attributes(name: String, autoRestart: Bool = false) -> AlarmAttributes<SpaghettiTimerMetadata> {
-        let alert = AlarmPresentation.Alert(
-            title: LocalizedStringResource(stringLiteral: name),
-            stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill")
-        )
+        let alert: AlarmPresentation.Alert
+        if #available(iOS 26.1, *) {
+            alert = AlarmPresentation.Alert(title: LocalizedStringResource(stringLiteral: name))
+        } else {
+            alert = AlarmPresentation.Alert(
+                title: LocalizedStringResource(stringLiteral: name),
+                stopButton: .init(text: "Stop", textColor: .white, systemImageName: "stop.fill")
+            )
+        }
         let countdown = AlarmPresentation.Countdown(
             title: LocalizedStringResource(stringLiteral: name),
             pauseButton: .init(text: "Pause", textColor: .white, systemImageName: "pause.fill")

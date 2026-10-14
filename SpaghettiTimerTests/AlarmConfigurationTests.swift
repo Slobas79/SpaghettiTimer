@@ -42,6 +42,12 @@ struct AlarmConfigurationTests {
         #expect(alert.secondaryButton == nil)
     }
 
+    @Test("The alert is titled with the timer's name", arguments: [nil, 5] as [TimeInterval?])
+    func alertTitleIsTheTimerName(autoRestartDelaySeconds: TimeInterval?) {
+        let timer = RunningTimer.fixture(name: "Pasta", autoRestartDelaySeconds: autoRestartDelaySeconds)
+        #expect(AlarmConfigurationFactory.makeAlert(for: timer).title.key == "Pasta")
+    }
+
     // MARK: Metadata carried to the Live Activity
 
     @Test("Metadata carries the auto-restart delay")
