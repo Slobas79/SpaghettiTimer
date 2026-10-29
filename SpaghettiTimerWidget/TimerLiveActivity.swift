@@ -51,6 +51,9 @@ struct TimerLiveActivity: Widget {
                     sampledCountdown(state: context.state,
                                      font: LiveActivityStyle.bannerCountdown,
                                      color: .white)
+                        .modifier(DimmedSecondsHidden(isRunning: isRunning(state: context.state),
+                                                      font: LiveActivityStyle.bannerCountdown,
+                                                      color: .white))
                         .layoutPriority(1)
                 }
                 .layoutPriority(1)
@@ -266,6 +269,11 @@ struct TimerLiveActivity: Widget {
         return false
     }
 
+    private func isRunning(state: AlarmPresentationState) -> Bool {
+        if case .countdown = state.mode { return true }
+        return false
+    }
+
     /// Seconds left on the clock, or `nil` in the states that have no countdown.
     private func remainingSeconds(state: AlarmPresentationState) -> TimeInterval? {
         switch state.mode {
@@ -350,6 +358,61 @@ struct TimerLiveActivity: Widget {
         default:
             Text("--:--")
         }
+    }
+}
+
+// MARK: - Dimmed lock screen
+
+/// Hides the seconds of the banner's running countdown while the lock screen is
+/// dimmed (Always-On), so it reads "4:--" like the system's own dimmed timers.
+///
+/// iOS draws a dimmed and a normal version of the banner up front and swaps
+/// them as the screen dims and wakes. On iOS 27, waking briefly shows the
+/// dimmed version at full brightness with a stale countdown: "4:00", then a
+/// jump to the real "3:56". Nothing that ticks in the dimmed version avoids
+/// that, so this keeps the stale frame to minutes ("4:--"), which stays
+/// roughly right. Showing the ring time instead fixed the jump, but a rough
+/// time left was judged more useful than the end time.
+///
+/// The countdown is right-aligned, so its seconds are always the last two
+/// digits. Laid out left to right in every language: the digits are, and in a
+/// right-to-left layout the mask would cover the minutes instead.
+private struct DimmedSecondsHidden: ViewModifier {
+    let isRunning: Bool
+    let font: Font
+    let color: Color
+    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
+
+    func body(content: Content) -> some View {
+        if isLuminanceReduced && isRunning {
+            content
+                .mask(alignment: .trailing) {
+                    HStack(spacing: 0) {
+                        Rectangle()
+                        secondsSlot.hidden()
+                    }
+                }
+                .overlay(alignment: .trailing) {
+                    secondsSlot
+                        .hidden()
+                        .overlay {
+                            Text(verbatim: "--")
+                                .font(font)
+                                .foregroundStyle(color)
+                        }
+                }
+                .environment(\.layoutDirection, .leftToRight)
+        } else {
+            content
+        }
+    }
+
+    /// Exactly as wide as the countdown's two seconds digits.
+    private var secondsSlot: some View {
+        Text(verbatim: "00")
+            .font(font)
+            .monospacedDigit()
+            .fixedSize()
     }
 }
 

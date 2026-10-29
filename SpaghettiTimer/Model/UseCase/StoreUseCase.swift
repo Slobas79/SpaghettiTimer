@@ -23,7 +23,8 @@ import Observation
 @Observable
 final class StoreUseCase {
     /// True once the user owns the lifetime Pro unlock. Drives every gate.
-    private(set) var isPro: Bool = false
+    var isPro: Bool { entitlement.isPro }
+    private var entitlement = ProEntitlement()
     /// The loaded StoreKit product, or nil until `loadProduct()` succeeds.
     private(set) var product: Product?
     private(set) var isLoadingProduct = false
@@ -84,7 +85,8 @@ final class StoreUseCase {
         }
     }
 
-    /// Recomputes `isPro` from the current set of StoreKit entitlements.
+    /// Recomputes `isPro` from the current set of StoreKit entitlements. Never
+    /// takes back a purchase made this session (see `ProEntitlement`).
     func refreshEntitlements() async {
         var owned = false
         for await result in Transaction.currentEntitlements {
@@ -94,7 +96,7 @@ final class StoreUseCase {
                 owned = true
             }
         }
-        isPro = owned
+        entitlement.readEntitlements(owned: owned)
     }
 
     // MARK: - Purchase / restore
@@ -132,8 +134,12 @@ final class StoreUseCase {
 
     private func handle(_ verification: VerificationResult<Transaction>) async {
         guard case .verified(let transaction) = verification else { return }
-        if transaction.productID == ProConfig.productID, transaction.revocationDate == nil {
-            isPro = true
+        if transaction.productID == ProConfig.productID {
+            let revoked = transaction.revocationDate != nil
+            entitlement.receivedTransaction(revoked: revoked)
+            // A refund lifts this purchase only — another entitlement (Family
+            // Sharing) may still hold Pro.
+            if revoked { await refreshEntitlements() }
         }
         await transaction.finish()
     }
