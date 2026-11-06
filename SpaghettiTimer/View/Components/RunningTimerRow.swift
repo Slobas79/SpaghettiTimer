@@ -34,15 +34,22 @@ struct RunningTimerRow: View {
                 CircleButton(systemName: "xmark", action: onCancel)
             }
 
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
+            // No stack spacing: it also put 8pt between the spacer and the
+            // name, which the name needs on a narrow row. The name carries the
+            // gap to the countdown.
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
                 Spacer(minLength: 0)
                 // The countdown must always be fully visible, so the name is the
-                // element that gives way: it truncates instead of squeezing the digits.
+                // element that gives way: it shrinks a little, then truncates,
+                // instead of squeezing the digits. A name that fits is unchanged.
                 Text(timer.name)
                     .font(.system(size: nameSize, weight: .medium))
                     .foregroundStyle(.white.opacity(0.85))
                     .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .allowsTightening(true)
                     .truncationMode(.tail)
+                    .padding(.trailing, 8)
                     .layoutPriority(0)
 
                 if now < timer.startDate {

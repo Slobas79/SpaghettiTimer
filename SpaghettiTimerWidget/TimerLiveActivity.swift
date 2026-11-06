@@ -41,11 +41,15 @@ struct TimerLiveActivity: Widget {
                 // Layout mirrors `RunningTimerRow`: the spacer sits inside this
                 // stack rather than beside it, so the title keeps every point the
                 // countdown doesn't need instead of splitting the row's width.
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                // No stack spacing: it also put 8pt between the spacer and the
+                // title, which the title needs on a narrow banner (the folded
+                // iPhone Duo). The title carries the gap to the countdown.
+                HStack(alignment: .firstTextBaseline, spacing: 0) {
                     Spacer(minLength: 0)
                     if let title = headerTitle(context.attributes.metadata) {
                         BannerTitle(text: title)
                             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                            .padding(.trailing, 8)
                             .layoutPriority(0)
                     }
                     sampledCountdown(state: context.state,
@@ -143,10 +147,18 @@ struct TimerLiveActivity: Widget {
                     .padding(.leading, 2)
             } compactTrailing: {
                 // Sized by the sample, not a fixed cap: a 60pt `maxWidth` fit
-                // "59:59" but clipped the seconds off "1:00:00".
-                sampledCountdown(state: context.state,
-                                 font: .system(size: 16, weight: .semibold),
-                                 color: paused ? .white.opacity(0.6) : .white)
+                // "59:59" but clipped the seconds off "1:00:00". The iPhone
+                // Duo's island stands upright and offers far less width, which
+                // cut the last digit off ("7:2"), so there the countdown steps
+                // down a size until its sample fits. An island with room for
+                // the 16pt sample keeps it; when none fits, the smallest shows.
+                let color: Color = paused ? .white.opacity(0.6) : .white
+                ViewThatFits(in: .horizontal) {
+                    compactCountdown(state: context.state, size: 16, color: color)
+                    compactCountdown(state: context.state, size: 14, color: color)
+                    compactCountdown(state: context.state, size: 12, color: color)
+                    compactCountdown(state: context.state, size: 10, color: color)
+                }
             } minimal: {
                 progressRing(state: context.state,
                              diameter: 22, stroke: 3, glyphPointSize: 10)
@@ -341,6 +353,11 @@ struct TimerLiveActivity: Widget {
             }
     }
 
+    /// One candidate size for the compact island countdown.
+    private func compactCountdown(state: AlarmPresentationState, size: CGFloat, color: Color) -> some View {
+        sampledCountdown(state: state, font: .system(size: size, weight: .semibold), color: color)
+    }
+
     @ViewBuilder
     private func countdownText(state: AlarmPresentationState) -> some View {
         switch state.mode {
@@ -492,12 +509,15 @@ private struct BannerTitle: View {
     @ScaledMetric(relativeTo: .body) private var size: CGFloat = 19
 
     var body: some View {
-        // Truncates rather than shrinks: on the banner the countdown owns the
-        // space it needs and the name is the element that gives way.
+        // On the banner the countdown owns the space it needs and the name is
+        // the element that gives way: it shrinks a little, then truncates. A
+        // name that fits is unchanged.
         Text(text)
             .font(.system(size: size, weight: .medium))
             .foregroundStyle(.white.opacity(0.85))
             .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .allowsTightening(true)
             .truncationMode(.tail)
     }
 }

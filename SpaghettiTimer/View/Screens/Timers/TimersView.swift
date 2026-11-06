@@ -40,10 +40,13 @@ struct TimersView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.openURL) private var openURL
 
-    private let columns = [
-        GridItem(.flexible(), spacing: Theme.gridGap),
-        GridItem(.flexible(), spacing: Theme.gridGap)
-    ]
+    /// The tile grid's width, so a wide screen (the unfolded iPhone Duo) gets
+    /// more columns. Zero until the first layout, which reads as two.
+    @State private var gridWidth: CGFloat = 0
+
+    private var columns: [GridItem] {
+        HomeGrid.columns(forWidth: gridWidth, spacing: Theme.gridGap)
+    }
 
     /// Whether the tour has to supply its own tile to spotlight. Unpinning
     /// deletes a preset, so the grid really can end up empty — and tips 1 and 2
@@ -144,6 +147,9 @@ struct TimersView: View {
                                 TourSampleTile()
                             }
                         }
+                        // The grid's width comes from the screen, not from its
+                        // columns, so reading it here can't feed back.
+                        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { gridWidth = $0 }
                     }
                     // Cap text growth on the fixed-aspect tiles / fixed-height
                     // rows so very large Dynamic Type sizes can't break the layout.
@@ -463,11 +469,11 @@ private struct TimersPreviewHarness: View {
     var emptyGrid = false
     @State private var showingTour = false
     @State private var homeSteps: [TutorialStep] = []
+    @State private var gridWidth: CGFloat = 0
 
-    private let columns = [
-        GridItem(.flexible(), spacing: Theme.gridGap),
-        GridItem(.flexible(), spacing: Theme.gridGap)
-    ]
+    private var columns: [GridItem] {
+        HomeGrid.columns(forWidth: gridWidth, spacing: Theme.gridGap)
+    }
 
     private let running = RunningTimer(
         id: UUID(),
@@ -499,6 +505,7 @@ private struct TimersPreviewHarness: View {
                             TourSampleTile()
                         }
                     }
+                    .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { gridWidth = $0 }
                 }
                 .padding(.horizontal, Theme.screenPadding)
                 .padding(.top, 6)

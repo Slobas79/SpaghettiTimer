@@ -73,6 +73,31 @@ private struct CoachMarksHost: ViewModifier {
     }
 }
 
+// MARK: - Card placement
+
+/// Which side of its spotlight a tip card goes on, when the step doesn't say.
+nonisolated enum CoachCardPlacement {
+    /// Room under the target that sends the card below it (mock: target
+    /// bottom < 520 on an 844pt frame).
+    static let roomBelowNeeded: CGFloat = 324
+    /// Space between the target and the card, where the connector runs.
+    static let gap: CGFloat = 30
+
+    /// Whether the card goes below `spot` on a screen `height` points tall.
+    /// Below when there's room, else above — unless the card, `cardHeight`
+    /// tall once measured, doesn't fit above either. Then it would run down
+    /// over its own target (on the unfolded iPhone Duo it covered tip 1's
+    /// tile), so it takes whichever side has more room. Wherever the card fits
+    /// above, the answer is the same as before that fallback existed.
+    static func isBelow(spot: CGRect, height: CGFloat, cardHeight: CGFloat) -> Bool {
+        let roomBelow = height - spot.maxY
+        if roomBelow > roomBelowNeeded { return true }
+        let roomAbove = spot.minY - gap
+        guard cardHeight > roomAbove else { return false }
+        return roomBelow - gap > roomAbove
+    }
+}
+
 // MARK: - Overlay
 
 private struct CoachMarksOverlay: View {
@@ -85,6 +110,9 @@ private struct CoachMarksOverlay: View {
     let onFinish: (_ completed: Bool) -> Void
 
     @State private var index = 0
+    /// The spotlight card's last measured height, for `CoachCardPlacement`.
+    /// Zero until the first card is laid out.
+    @State private var cardHeight: CGFloat = 0
     /// VoiceOver focus on the card's text. Every Next/Back rebuilds the card
     /// somewhere else on screen (and artwork ↔ spotlight tips are different
     /// views), so the button VoiceOver was on disappears. Without moving focus
@@ -159,12 +187,11 @@ private struct CoachMarksOverlay: View {
     private func spotlightLayer(step: TutorialStep, index i: Int, count: Int) -> some View {
         if let anchor = step.target.flatMap({ anchors[$0] }) {
             let spot = positionable(geo[anchor]).insetBy(dx: -step.padding, dy: -step.padding)
-            // Card placement: per-step override, else below the spotlight when
-            // there's room (mock: target bottom < 520 on an 844pt frame).
+            // Card placement: per-step override, else see `CoachCardPlacement`.
             let below = switch step.place {
             case .below: true
             case .above: false
-            case nil: spot.maxY < geo.size.height - 324
+            case nil: CoachCardPlacement.isBelow(spot: spot, height: geo.size.height, cardHeight: cardHeight)
             }
 
             scrim(spot: spot, cornerRadius: step.cornerRadius)
@@ -251,6 +278,7 @@ private struct CoachMarksOverlay: View {
     /// Spotlight card: shared card body positioned below/above the cutout.
     private func card(step: TutorialStep, index i: Int, count: Int, spot: CGRect, below: Bool) -> some View {
         cardBody(step: step, index: i, count: count, art: nil)
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { cardHeight = $0 }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: below ? .top : .bottom)
             .padding(.top, below ? spot.maxY + 30 : 0)
             .padding(.bottom, below ? 0 : geo.size.height - spot.minY + 30)
